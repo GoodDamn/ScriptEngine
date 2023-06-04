@@ -1,7 +1,7 @@
 package good.damn.scriptengine.engines.script.models;
 
-public class ScriptImage {
-    public byte[] image;
+public class ScriptGraphicsFile {
+    public byte[] file;
     public float x;
     public float y;
     public int width;

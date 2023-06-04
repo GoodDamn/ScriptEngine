@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Movie;
 import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -12,6 +13,8 @@ import androidx.annotation.Nullable;
 import java.io.InputStream;
 
 public class GifView extends View {
+
+    private static final String TAG = "GifView";
 
     private Movie mMovieGif;
 
@@ -30,7 +33,9 @@ public class GifView extends View {
     }
 
     public void setSource(byte[] byteArray) {
+        Log.d(TAG, "setSource: GIF_FILE_LENGTH:" + byteArray.length);
         mMovieGif = Movie.decodeByteArray(byteArray,0, byteArray.length);
+        mStartTime = (int) System.currentTimeMillis();
         invalidate();
     }
 

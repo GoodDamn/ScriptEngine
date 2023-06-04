@@ -220,9 +220,12 @@ public class ScriptCommandsUtils {
         byte[] args = null;
         try {
             byte[] gif = Utilities.getBytesFromIS(argv[1]);
-            byte[] origin = new byte[2];
-            origin[0] = 1; // args size
-            origin[1] = 4; // command index
+            byte[] origin = new byte[5];
+            origin[0] = 4; // argSize (4 args * 2 bytes) + 4 next args
+            origin[1] = 4; // commandIndex
+            origin[2] = (byte) (gif.length / 65025);
+            origin[3] = (byte) (gif.length / 255 % 255);
+            origin[4] = (byte) (gif.length % 255);
 
             args = ArrayUtils.concatByteArrays(origin,gif);
         } catch (IOException exception) {

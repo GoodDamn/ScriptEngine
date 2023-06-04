@@ -3,7 +3,6 @@ package good.damn.scriptengine.engines.script.utils;
 import static good.damn.scriptengine.engines.script.utils.ScriptCommandsUtils.getSpannable;
 import static good.damn.scriptengine.utils.Utilities.gn;
 
-import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.text.SpannableString;
 import android.text.style.AbsoluteSizeSpan;
@@ -11,15 +10,10 @@ import android.text.style.CharacterStyle;
 import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import good.damn.scriptengine.engines.script.models.ScriptImage;
+import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
 
 public class ScriptDefinerUtils {
 
@@ -107,8 +101,8 @@ public class ScriptDefinerUtils {
         }
     }
 
-    public static ScriptImage Image(byte[] chunk,
-                                    int currentOffset) {
+    public static ScriptGraphicsFile Image(byte[] chunk,
+                                           int currentOffset) {
         currentOffset++;
 
         // read data of image
@@ -141,8 +135,8 @@ public class ScriptDefinerUtils {
             return null;
         }
 
-        ScriptImage scriptImage = new ScriptImage();
-        scriptImage.image = imgBytes;
+        ScriptGraphicsFile scriptImage = new ScriptGraphicsFile();
+        scriptImage.file = imgBytes;
         scriptImage.height = height;
         scriptImage.width = width;
         scriptImage.x = xPos;
@@ -153,4 +147,26 @@ public class ScriptDefinerUtils {
         return scriptImage;
     }
 
+    public static ScriptGraphicsFile Gif(byte[] chunk, int currentOffset) {
+        currentOffset++;
+
+        // read data of image
+        Log.d(TAG, "read: offsets for GIFSize: " + chunk[currentOffset] + " " + chunk[currentOffset+1]);
+
+        int fileSize = (chunk[currentOffset] & 0xFF) * 65025 +
+                (chunk[currentOffset+1] & 0xFF) * 255 + (chunk[currentOffset+2] & 0xFF);
+        Log.d(TAG, "read: GIF " + currentOffset + " " + fileSize);
+        currentOffset += 3;
+
+        byte[] gif = new byte[fileSize];
+        System.arraycopy(chunk,currentOffset,gif,0,gif.length);
+
+        ScriptGraphicsFile scriptGif = new ScriptGraphicsFile();
+        scriptGif.x = 0;
+        scriptGif.y = 0;
+        scriptGif.width = 500;
+        scriptGif.height = 500;
+        scriptGif.file = gif;
+        return scriptGif;
+    }
 }

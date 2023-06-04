@@ -1,17 +1,7 @@
 package good.damn.scriptengine.engines.script;
 
-import static good.damn.scriptengine.engines.script.utils.ScriptCommandsUtils.getSpannable;
-import static good.damn.scriptengine.utils.Utilities.gn;
-
 import android.content.Context;
 import android.graphics.BitmapFactory;
-import android.graphics.Typeface;
-import android.text.SpannableString;
-import android.text.style.AbsoluteSizeSpan;
-import android.text.style.CharacterStyle;
-import android.text.style.StrikethroughSpan;
-import android.text.style.StyleSpan;
-import android.text.style.UnderlineSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -23,10 +13,11 @@ import android.widget.ImageView;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
-import good.damn.scriptengine.engines.script.models.ScriptImage;
+import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
 import good.damn.scriptengine.engines.script.utils.ScriptCommandsUtils;
 import good.damn.scriptengine.engines.script.utils.ScriptDefinerUtils;
 import good.damn.scriptengine.utils.Utilities;
+import good.damn.scriptengine.views.GifView;
 import good.damn.scriptengine.views.TextViewPhrase;
 
 public class ScriptEngine {
@@ -77,17 +68,16 @@ public class ScriptEngine {
                     ScriptDefinerUtils.Font(chunk,currentOffset,argSize,target);
                     break;
                 case 3: // img
-                    ScriptImage scriptImage = ScriptDefinerUtils.Image(chunk,currentOffset);
-
+                    ScriptGraphicsFile scriptImage = ScriptDefinerUtils.Image(chunk,currentOffset);
                     if (scriptImage == null) {
                         return;
                     }
 
-                    byte[] img = scriptImage.image;
+                    byte[] img = scriptImage.file;
                     filesOffset += img.length - 1;
 
                     ImageView imageView = new ImageView(target.getContext());
-                    imageView.setImageBitmap(BitmapFactory.decodeByteArray(scriptImage.image, 0, scriptImage.image.length));
+                    imageView.setImageBitmap(BitmapFactory.decodeByteArray(img, 0, img.length));
                     FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                     params.width = (int) (displayMetrics.density * scriptImage.width);
                     params.height = (int) (displayMetrics.density * scriptImage.height);
@@ -105,7 +95,12 @@ public class ScriptEngine {
                                             root.removeView(imageView)).start())
                             .start();
                     break;
-                case 4:
+                case 4: // Gif
+                    ScriptGraphicsFile gifScript = ScriptDefinerUtils.Gif(chunk,currentOffset);
+
+                    GifView gifView = new GifView(target.getContext());
+                    root.addView(gifView, gifScript.width, gifScript.height);
+                    gifView.setSource(gifScript.file);
 
                     break;
             }
