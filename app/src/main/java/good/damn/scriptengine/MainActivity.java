@@ -53,10 +53,12 @@ public class MainActivity extends AppCompatActivity {
                 Spannable spannable = et_phrase.getText();
                 et_phrase.setText(spannable.toString());
                 String[] arr = editTextScript.getText().toString().split("\n");
-                byte[] script = scriptEngine.execute(arr[0]);
-                byte scriptLength = script[0];
-                for (byte i = 1; i < arr.length; i++) {
+                byte[] script = new byte[0];
+                byte scriptLength = 0;
+                for (byte i = 0; i < arr.length; i++) {
                     byte[] t = scriptEngine.execute(arr[i]);
+                    if (t == null)
+                        continue;
                     script = ArrayUtils.concatByteArrays(script,t);
                     scriptLength += t.length;
                     Log.d(TAG, "onClick: " + arr[i] + " " + t.length + " " + script.length);

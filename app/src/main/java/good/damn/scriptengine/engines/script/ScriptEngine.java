@@ -84,7 +84,7 @@ public class ScriptEngine {
                     }
 
                     byte[] img = scriptImage.image;
-                    filesOffset += img.length;
+                    filesOffset += img.length - 1;
 
                     ImageView imageView = new ImageView(target.getContext());
                     imageView.setImageBitmap(BitmapFactory.decodeByteArray(scriptImage.image, 0, scriptImage.image.length));
@@ -146,7 +146,7 @@ public class ScriptEngine {
                 }
                 break;
             case "img": // put image on the screen 3
-                ScriptCommandsUtils.Image(argv,context);
+                args = ScriptCommandsUtils.Image(argv,context);
                 break;
             case "vect": // set of vectors 4
                 break;
@@ -154,7 +154,7 @@ public class ScriptEngine {
             case "bg": // background 5
                 break;
             case "gif":
-                ScriptCommandsUtils.Gif(argv,context);
+                args = ScriptCommandsUtils.Gif(argv,context);
                 break;
             default:
                 Utilities.showMessage(context, "Invalid command: " + argv[0]);
