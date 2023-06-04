@@ -59,7 +59,7 @@ public class ScriptEngine {
             int argSize = chunk[currentOffset];
             currentOffset++;
             byte commandIndex = chunk[currentOffset];
-            Log.d(TAG, "read: "+ j + " " +scriptSize + " " + currentOffset + " " + argSize + " " + commandIndex);
+            Log.d(TAG, "read: J: "+ j + " SCRIPT_SIZE:" +scriptSize + " OFFSET:" + currentOffset + " ARG_SIZE: " + argSize + " COMMAND_INDEX: " + commandIndex);
             switch (commandIndex){
                 case 0: // textSize
                     ScriptDefinerUtils.TextSize(chunk,currentOffset,argSize,target);
@@ -98,10 +98,15 @@ public class ScriptEngine {
                 case 4: // Gif
                     ScriptGraphicsFile gifScript = ScriptDefinerUtils.Gif(chunk,currentOffset);
 
+                    filesOffset += gifScript.file.length - 1;
+
                     GifView gifView = new GifView(target.getContext());
                     root.addView(gifView, gifScript.width, gifScript.height);
                     gifView.setSource(gifScript.file);
 
+                    break;
+                default:
+                    Utilities.showMessage(context, "Invalid command index: " + commandIndex);
                     break;
             }
             j += argSize;

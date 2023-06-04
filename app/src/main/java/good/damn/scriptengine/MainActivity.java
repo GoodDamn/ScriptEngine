@@ -74,9 +74,9 @@ public class MainActivity extends AppCompatActivity {
 
                 TextViewPhrase textViewPhrase = new TextViewPhrase(MainActivity.this);
                 textViewPhrase.setTypeface(et_phrase.getTypeface());
-                Log.d(TAG, "onClick: Result: " + scriptLength + " " + scriptLength + " " + text.length + " "+ t.getBytes(StandardCharsets.UTF_8).length + " " + total.length);
+                Log.d(TAG, "onClick: Result: SCRIPT_LENGTH: " + scriptLength + " TEXT_LENGTH: " + text.length + " TEXT_SIZE_BYTES: "+ t.getBytes(StandardCharsets.UTF_8).length + " TOTAL_LENTGH: " + total.length);
                 scriptEngine.read(total, textViewPhrase, root);
-                Log.d(TAG, "onClick: isEdited: START: " + isEdited);
+                Log.d(TAG, "onClick: isEdited: COMPLETED: " + isEdited);
                 isEdited = false;
             }
         });

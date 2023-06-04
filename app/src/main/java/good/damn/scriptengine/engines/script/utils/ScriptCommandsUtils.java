@@ -200,8 +200,8 @@ public class ScriptCommandsUtils {
             origin[4] = (byte) (img.length % 255);
 
             // Arguments
-            Log.d(TAG, "execute: imgLength: " + origin[2] + " " + origin[3] + " " + origin[4]);
-            Log.d(TAG, "execute: imgLength: " + ((origin[2] & 0xFF) * 65025) + " " + ((origin[3] & 0xFF) * 255) + " " + (origin[4] & 0xFF) + " " + img.length);
+            Log.d(TAG, "Image: imgLength: " + origin[2] + " " + origin[3] + " " + origin[4]);
+            Log.d(TAG, "Image: imgLength: " + ((origin[2] & 0xFF) * 65025) + " " + ((origin[3] & 0xFF) * 255) + " " + (origin[4] & 0xFF) + " " + img.length);
             args = ArrayUtils.concatByteArrays(origin,
                     gb(Integer.parseInt(argv[2])), // width of image
                     gb(Integer.parseInt(argv[3])), // height of image
