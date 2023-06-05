@@ -39,12 +39,12 @@
         android:scaleY="0.5"
         android:scaleX="0.5"
         android:rotation="180"
-        android:background="#FF0000"/>
+        android:background="#00FF0000"/>
     <View
         android:id="@+id/personalEditor_selectFile"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:background="#00FF00"
+        android:background="@drawable/ic_baseline_folder_24"
         android:scaleX="0.5"
         android:scaleY="0.5"
         android:layout_gravity="end"/>

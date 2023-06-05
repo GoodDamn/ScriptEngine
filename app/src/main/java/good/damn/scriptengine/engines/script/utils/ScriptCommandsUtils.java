@@ -193,7 +193,7 @@ public class ScriptCommandsUtils {
             byte[] img = Utilities.getBytesFromIS(argv[1]);
 
             byte[] origin = new byte[5];
-            origin[0] = 12; // argSize (4 args * 2 bytes) + 4 next args
+            origin[0] = 14; // argSize (4 args * 2 bytes) + 4 next args
             origin[1] = 3; // commandIndex
             origin[2] = (byte) (img.length / 65025);
             origin[3] = (byte) (img.length / 255 % 255);
@@ -218,16 +218,37 @@ public class ScriptCommandsUtils {
     // 4
     public static byte[] Gif(String[] argv, Context context) {
         byte[] args = null;
+
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+
         try {
             byte[] gif = Utilities.getBytesFromIS(argv[1]);
             byte[] origin = new byte[5];
-            origin[0] = 4; // argSize (4 args * 2 bytes) + 4 next args
+            origin[0] = 10; // argSize (4 args * 2 bytes) + 4 next args
             origin[1] = 4; // commandIndex
             origin[2] = (byte) (gif.length / 65025);
             origin[3] = (byte) (gif.length / 255 % 255);
             origin[4] = (byte) (gif.length % 255);
 
-            args = ArrayUtils.concatByteArrays(origin,gif);
+            short xPos = Short.parseShort(argv[2]);
+            short yPos = Short.parseShort(argv[3]);
+
+            if (xPos > displayMetrics.widthPixels || xPos < 0) {
+                Utilities.showMessage(context,"img command hasn't executed("+
+                        xPos + " on X Axis doesn't belong to [0;"+displayMetrics.widthPixels+"]");
+                return new byte[0];
+            }
+
+            if (yPos > displayMetrics.heightPixels || yPos < 0) {
+                Utilities.showMessage(context,"img command hasn't executed("+
+                        yPos + " on Y Axis doesn't belong to [0;"+displayMetrics.heightPixels+"]");
+                return new byte[0];
+            }
+
+            args = ArrayUtils.concatByteArrays(origin,
+                    gb((int) (1000.0f * xPos / displayMetrics.widthPixels)), // normal value of X pos
+                    gb((int) (1000.0f * yPos / displayMetrics.heightPixels)), // normal value of Y pos
+                    gif);
         } catch (IOException exception) {
             exception.printStackTrace();
             Utilities.showMessage(context, "GIF: " + exception.getMessage());

@@ -35,19 +35,35 @@ public class GifView extends View {
     public void setSource(byte[] byteArray) {
         Log.d(TAG, "setSource: GIF_FILE_LENGTH:" + byteArray.length);
         mMovieGif = Movie.decodeByteArray(byteArray,0, byteArray.length);
-        mStartTime = (int) System.currentTimeMillis();
-        invalidate();
     }
 
     public void setSource(String path) {
         mMovieGif = Movie.decodeFile(path);
-        invalidate();
     }
 
     public void setSource(InputStream is) {
         mMovieGif = Movie.decodeStream(is);
+    }
+
+    public void play() {
         mStartTime = (int) System.currentTimeMillis();
         invalidate();
+    }
+
+    public int width() {
+        Log.d(TAG, "width: GIVING A WIDTH: " + mMovieGif.width());
+        if (mMovieGif == null) {
+            return -1;
+        }
+        return mMovieGif.width();
+    }
+
+    public int height() {
+        Log.d(TAG, "width: GIVING A HEIGHT: " + mMovieGif.height());
+        if (mMovieGif == null) {
+            return -1;
+        }
+        return mMovieGif.height();
     }
 
     @Override

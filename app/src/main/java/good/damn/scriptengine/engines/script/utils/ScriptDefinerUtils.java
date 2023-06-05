@@ -13,6 +13,8 @@ import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.widget.TextView;
 
+import javax.crypto.spec.PSource;
+
 import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
 
 public class ScriptDefinerUtils {
@@ -158,14 +160,18 @@ public class ScriptDefinerUtils {
         Log.d(TAG, "read: GIF " + currentOffset + " " + fileSize);
         currentOffset += 3;
 
+        Log.d(TAG, "read: xPos ENCODED: " + (gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f));
+        float xPos = gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f;
+        currentOffset += 2;
+        float yPos = gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f;
+        currentOffset += 2;
+
         byte[] gif = new byte[fileSize];
         System.arraycopy(chunk,currentOffset,gif,0,gif.length);
 
         ScriptGraphicsFile scriptGif = new ScriptGraphicsFile();
-        scriptGif.x = 0;
-        scriptGif.y = 0;
-        scriptGif.width = 500;
-        scriptGif.height = 500;
+        scriptGif.x = xPos;
+        scriptGif.y = yPos;
         scriptGif.file = gif;
         return scriptGif;
     }

@@ -100,21 +100,33 @@ public class ScriptEngine {
                     filesOffset += gifScript.file.length - 1;
 
                     GifView gifView = new GifView(target.getContext());
-                    root.addView(gifView, gifScript.width, gifScript.height);
                     gifView.setSource(gifScript.file);
+
+                    FrameLayout.LayoutParams par =
+                            new FrameLayout.LayoutParams(gifView.width(), gifView.height());
+
+                    par.leftMargin = (int) (gifScript.x * displayMetrics.widthPixels);
+                    par.topMargin = (int) (gifScript.y * displayMetrics.heightPixels);
+
+                    root.addView(gifView, par);
+                    gifView.play();
+
+                    gifView.animate()
+                            .setStartDelay(5500)
+                            .alpha(0.0f)
+                            .withEndAction(()-> root.removeView(gifView)).start();
 
                     break;
                 default:
                     Utilities.showMessage(context, "Invalid command index: " + commandIndex);
                     break;
             }
-            j += argSize+2;
+            j += argSize;
         }
 
         target.setGravity(Gravity.CENTER);
         target.setAlpha(0.0f);
 
-        target.setTextColor(0);
         root.addView(target, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         target.animate().alpha(1.0f).setDuration(750)
                 .withEndAction(() -> target.fadeOutTransition(new Random(), context.getResources().getDisplayMetrics().density)).start();
