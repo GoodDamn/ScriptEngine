@@ -106,26 +106,26 @@ public class ScriptDefinerUtils {
         currentOffset++;
 
         // read data of image
-        Log.d(TAG, "read: offsets for imageSize: " + chunk[currentOffset] + " " + chunk[currentOffset+1]);
+        Log.d(TAG, "read: ENCODED IMAGE_SIZE: " + chunk[currentOffset] + " " + chunk[currentOffset+1]);
 
         int fileSize = (chunk[currentOffset] & 0xFF) * 65025 +
                 (chunk[currentOffset+1] & 0xFF) * 255 + (chunk[currentOffset+2] & 0xFF);
-        Log.d(TAG, "read: img " + currentOffset + " " + fileSize);
+        Log.d(TAG, "read: CURRENT_OFFSET: " + currentOffset + " FILE_SIZE:" + fileSize);
         currentOffset += 3;
 
         // read properties for image
         int width = gn(chunk[currentOffset], chunk[currentOffset+1]);
-        Log.d(TAG, "read: width: " + chunk[currentOffset] + " " + chunk[currentOffset+1]);
+        Log.d(TAG, "read: WIDTH_ENCODED: " + chunk[currentOffset] + " " + chunk[currentOffset+1]);
         currentOffset += 2;
         int height = gn(chunk[currentOffset], chunk[currentOffset+1]);
         currentOffset += 2;
-        Log.d(TAG, "read: xPos " + (gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f));
+        Log.d(TAG, "read: xPos ENCODED: " + (gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f));
         float xPos = gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f;
         currentOffset += 2;
         float yPos = gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f;
         currentOffset += 2;
 
-        Log.d(TAG, "read: properties " + width + " " + height + " " + xPos + " " + yPos);
+        Log.d(TAG, "read: TOTAL: WIDTH: " + width + " HEIGHT: " + height + " X_POS: " + xPos + " Y_POS: " + yPos);
 
         byte[] imgBytes = new byte[fileSize];
         // read file's bytes

@@ -45,22 +45,21 @@ public class ScriptEngine {
             current = chunk[i+1];
         }
 
-        Log.d(TAG, "read: index textBytes " + i);
         String text = new String(buffer, StandardCharsets.UTF_8).trim();
         target.setText(text);
-        Log.d(TAG, "read: index textBytes " + i + " " + text);
+        Log.d(TAG, "read: TEXT_BYTES_LENGTH: " + i + " TEXT:" + text);
         i+=1;
         short scriptSize = (short) (chunk[i] & 0xFF);
         int filesOffset = 0;
         i++;
-        Log.d(TAG, "read: "+ scriptSize);
+        Log.d(TAG, "read: SCRIPT_SIZE: "+ scriptSize);
         for (int j = 0; j < scriptSize;) {
             int currentOffset = i+j+filesOffset;
-            int argSize = chunk[currentOffset];
+            int argSize = chunk[currentOffset] & 0xFF;
             currentOffset++;
             byte commandIndex = chunk[currentOffset];
             Log.d(TAG, "read: J: "+ j + " SCRIPT_SIZE:" +scriptSize + " OFFSET:" + currentOffset + " ARG_SIZE: " + argSize + " COMMAND_INDEX: " + commandIndex);
-            switch (commandIndex){
+            switch (commandIndex) {
                 case 0: // textSize
                     ScriptDefinerUtils.TextSize(chunk,currentOffset,argSize,target);
                     break;
@@ -109,7 +108,7 @@ public class ScriptEngine {
                     Utilities.showMessage(context, "Invalid command index: " + commandIndex);
                     break;
             }
-            j += argSize;
+            j += argSize+2;
         }
 
         target.setGravity(Gravity.CENTER);

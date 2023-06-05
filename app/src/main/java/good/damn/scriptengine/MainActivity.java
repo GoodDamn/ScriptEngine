@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
                         continue;
                     script = ArrayUtils.concatByteArrays(script,t);
                     scriptLength += t.length;
-                    Log.d(TAG, "onClick: " + arr[i] + " " + t.length + " " + script.length);
+                    Log.d(TAG, "onClick: PARSED_INFO: FOR SCRIPT: " + arr[i] + " SCRIPT_BYTE_LENGTH: " + t.length + " TOTAL_LENGTH:" + script.length);
                 }
 
                 String t = et_phrase.getText().toString().trim();
