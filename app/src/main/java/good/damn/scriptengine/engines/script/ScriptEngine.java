@@ -139,6 +139,11 @@ public class ScriptEngine {
 
         Context context = et_target.getContext();
 
+        argv[0] = argv[0].trim();
+
+        if (argv[0].isEmpty())
+            return null;
+
         switch (argv[0].toLowerCase()){
             case "textsize": // 0
                 args = ScriptCommandsUtils.TextSize(argv,et_target,context);

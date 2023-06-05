@@ -49,7 +49,7 @@ public class ScriptCommandsUtils {
             case "ul":
                 return new UnderlineSpan();
             case "st":
-                style[0] = 2;
+                style[0] = 1;
                 return new StrikethroughSpan();
             case "bold":
                 style[0] = 2;
@@ -84,6 +84,7 @@ public class ScriptCommandsUtils {
             origin[0] = 4;
             args = ArrayUtils.concatByteArrays(origin,gb((int) (size * 1000)));
             et_target.setTextSize(size);
+            return args;
         }
 
         if (argv.length == 3) { // 2 arguments
@@ -95,6 +96,7 @@ public class ScriptCommandsUtils {
             } catch (NumberFormatException exception){
                 Utilities.showMessage(context, "Invalid integer-argument format for ("+argv[0] + " " + argv[1] + " " + argv[2]);
             }
+            return args;
         }
 
         if (argv.length == 4) { // 3 arguments
@@ -107,10 +109,11 @@ public class ScriptCommandsUtils {
             } catch (NumberFormatException exception){
                 Utilities.showMessage(context, "Invalid integer-argument format for (" + argv[0] + " " + argv[1] + " " + argv[2] + " " + argv[3]);
             }
+            return args;
         }
 
         Utilities.showMessage(context, "Invalid integer-argument format for (" + argv[0]);
-        return args;
+        return null;
     }
 
     // 1
@@ -137,6 +140,7 @@ public class ScriptCommandsUtils {
             origin[0] = 3;
             args = ArrayUtils.concatByteArrays(origin, new byte[]{style});
             setSpan(0, et_target.getText().length(), span,et_target);
+            return args;
         }
 
         if (argv.length == 3) { // 2 arguments
@@ -148,6 +152,7 @@ public class ScriptCommandsUtils {
             } catch (NumberFormatException exception){
                 Utilities.showMessage(context, "Invalid integer-argument format for (" + argv[0] + " " + argv[1] + " " + argv[2]);
             }
+            return args;
         }
 
         if (argv.length == 4) { // 3 arguments
@@ -160,9 +165,10 @@ public class ScriptCommandsUtils {
             } catch (NumberFormatException exception){
                 Utilities.showMessage(context, "Invalid integer-argument format for (" + argv[0] + " " + argv[1] + " " + argv[2] + " " + argv[3]);
             }
+            return args;
         }
         Utilities.showMessage(context, "No argument for (" + argv[0]);
-        return args;
+        return null;
     }
 
     // 3
