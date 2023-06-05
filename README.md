@@ -12,25 +12,25 @@ Example:
   font ul
 
 List of available commands now: 
-- font (overridable) - you can attach a specific text style with enum parameter:
-  Enum-constants for this command:
-    - italic
-    - bold
-    - st (Strikethrough)
-    - ul (Underline)
-  font (enum-constants)
-  font (enum-constants) (int-beginIndex)
-  font (enum-constants) (int-beginIndex) (int-endIndex)
+  - font (overridable) - you can attach a specific text style with enum parameter:
+    - Enum-constants for this command:
+      - italic
+      - bold
+      - st (Strikethrough)
+      - ul (Underline)
+  - font (enum-constants)
+  - font (enum-constants) (int-beginIndex)
+  - font (enum-constants) (int-beginIndex) (int-endIndex)
 
 - textSize (overridable) - you can set text size for text:
-  textSize (int-size)
-  textSize (int-size) (int-beginIndex)
-  textSize (int-size) (int-beginIndex) (int-endIndex)
+    - textSize (int-size)
+    - textSize (int-size) (int-beginIndex)
+    - textSize (int-size) (int-beginIndex) (int-endIndex)
 
 - img - you can attach an image(.png, .jpg) for this script and It show up on the screen:
-  img (string-path to image) (int-width) (int-height) (int-x) (int-y)
+    - img (string-path to image) (int-width) (int-height) (int-x) (int-y)
 
 - gif - you can attach a animatable-gif:
-  gif (string-path) (int-x) (int-y)
+    - gif (string-path) (int-x) (int-y)
   
 List will be continued...
