@@ -119,6 +119,7 @@ public class ScriptDefinerUtils {
         if (spannableString != null){
             target.setText(spannableString);
         }
+
     }
 
     public static ScriptGraphicsFile Image(byte[] chunk,
