@@ -74,14 +74,14 @@ public class ScriptDefinerUtils {
                 break;
             case 4:
 
-                int alpha = (chunk[currentOffset] & 0xFF << 24);
-                int red = (chunk[currentOffset+1] & 0xFF << 16);
-                int green = (chunk[currentOffset+2] & 0xFF << 8);
-                int blue = (chunk[currentOffset+3] & 0xFF);
+                int alpha = chunk[currentOffset] & 0xff;
+                int red = chunk[currentOffset+1] & 0xff;
+                int green = chunk[currentOffset+2] & 0xff;
+                int blue = chunk[currentOffset+3] & 0xff;
 
-                int color = alpha |
-                            red   |
-                            green |
+                int color = alpha << 24 |
+                            red << 16  |
+                            green << 8 |
                             blue;
                 currentOffset += 4;
                 argSize -= 4;
