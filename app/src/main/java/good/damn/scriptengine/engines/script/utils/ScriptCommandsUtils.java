@@ -144,7 +144,7 @@ public class ScriptCommandsUtils {
         }
 
         byte[] origin = new byte[2];
-        origin[0] = 1; // arg size
+        origin[0] = 1; // args size in bytes
         origin[1] = 1; // command index
 
         byte[] style;
@@ -158,6 +158,9 @@ public class ScriptCommandsUtils {
             style[2] = (byte) ((color >> 16) & 0xFF); // red
             style[3] = (byte) ((color >> 8) & 0xFF); // green
             style[4] = (byte) (color & 0xFF); // blue
+
+            origin[0] = 5; // args size in bytes
+
         } else {
             style = new byte[1];
         }
@@ -165,7 +168,7 @@ public class ScriptCommandsUtils {
         style[0] = a[0]; // set style type
 
         if (argv.length == 2) {
-            origin[0] = 3;
+            origin[0] += 2;
             args = ArrayUtils.concatByteArrays(origin, style);
             setSpan(0, et_target.getText().length(), span,et_target);
             return args;
@@ -173,7 +176,7 @@ public class ScriptCommandsUtils {
 
         if (argv.length == 3) { // 2 arguments
             try {
-                origin[0] = 4;
+                origin[0] += 3;
                 int startPos = Integer.parseInt(argv[2]);
                 args = ArrayUtils.concatByteArrays(origin, style, gb(startPos));
                 setSpan(startPos, et_target.getText().length(),span,et_target);
@@ -185,7 +188,7 @@ public class ScriptCommandsUtils {
 
         if (argv.length == 4) { // 3 arguments
             try {
-                origin[0] = 5;
+                origin[0] += 4;
                 int startPos = Integer.parseInt(argv[2]);
                 int endPos = Integer.parseInt(argv[3]);
                 args = ArrayUtils.concatByteArrays(origin, style, gb(startPos), gb(endPos));

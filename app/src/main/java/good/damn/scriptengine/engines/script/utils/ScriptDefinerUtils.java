@@ -80,6 +80,7 @@ public class ScriptDefinerUtils {
                             (chunk[currentOffset+2] << 8) |
                             (chunk[currentOffset+3]);
                 currentOffset += 4;
+                argSize -= 4;
                 Log.d(TAG, "Font: COLOR SPAN: " + color);
                 span = new ForegroundColorSpan(color);
                 break;
