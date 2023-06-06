@@ -2,7 +2,6 @@ package good.damn.scriptengine.engines.script.utils;
 
 import static good.damn.scriptengine.utils.Utilities.gb;
 
-import android.app.ForegroundServiceStartNotAllowedException;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -19,19 +18,16 @@ import android.util.Log;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 import good.damn.scriptengine.utils.ArrayUtils;
 import good.damn.scriptengine.utils.Utilities;
-import good.damn.scriptengine.views.GifView;
 
 public class ScriptCommandsUtils {
 
     private static final String TAG = "ScriptCommandsUtils";
 
-    public static SpannableString getSpannable(int start,
+    public static SpannableString makeSpannable(int start,
                                                 int end,
                                                 CharacterStyle characterStyle,
                                                 CharSequence text){
@@ -44,7 +40,7 @@ public class ScriptCommandsUtils {
                                 int end,
                                 CharacterStyle characterStyle,
                                 TextView target){
-        target.setText(getSpannable(start,end,characterStyle,target.getText()));
+        target.setText(makeSpannable(start,end,characterStyle,target.getText()));
     }
 
     private static CharacterStyle enumSpan(String argv, byte[] style, Context context){
@@ -153,11 +149,15 @@ public class ScriptCommandsUtils {
             ForegroundColorSpan colorSpan = (ForegroundColorSpan) span;
             int color = colorSpan.getForegroundColor();
             Log.d(TAG, "Font: COLOR_SPAN: BYTE COLOR: " + color);
+
             style = new byte[5];
             style[1] = (byte) (color >> 24); // alpha
             style[2] = (byte) ((color >> 16) & 0xFF); // red
             style[3] = (byte) ((color >> 8) & 0xFF); // green
             style[4] = (byte) (color & 0xFF); // blue
+
+            Log.d(TAG, "Font: ARGB:" + (color >> 24) + " " + ((color >> 16) & 0xFF) + " " + ((color >> 8) & 0xFF) + " " + (color & 0xFF));
+            Log.d(TAG, "Font: ARGB_BYTE: " + (style[1] & 0xFF) + " " + (style[2] & 0xFF) + " " + (style[3] & 0xFF) + " " + (style[4] & 0xFF));
 
             origin[0] = 5; // args size in bytes
 

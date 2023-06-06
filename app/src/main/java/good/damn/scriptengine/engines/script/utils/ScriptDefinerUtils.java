@@ -1,6 +1,6 @@
 package good.damn.scriptengine.engines.script.utils;
 
-import static good.damn.scriptengine.engines.script.utils.ScriptCommandsUtils.getSpannable;
+import static good.damn.scriptengine.engines.script.utils.ScriptCommandsUtils.makeSpannable;
 import static good.damn.scriptengine.utils.Utilities.gn;
 
 import android.graphics.Typeface;
@@ -13,8 +13,6 @@ import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.widget.TextView;
-
-import javax.crypto.spec.PSource;
 
 import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
 
@@ -38,13 +36,13 @@ public class ScriptDefinerUtils {
         }
 
         if (argSize == 6) { // 2 args
-            spannableString = getSpannable(gn(chunk[offset],chunk[offset+1]),
+            spannableString = makeSpannable(gn(chunk[offset],chunk[offset+1]),
                     text.length(),
                     new AbsoluteSizeSpan(textSize,true),text);
         }
 
         if (argSize == 8) { // 3 args
-            spannableString = getSpannable(gn(chunk[offset],chunk[offset+1]),
+            spannableString = makeSpannable(gn(chunk[offset],chunk[offset+1]),
                     gn(chunk[offset+2],chunk[offset+3]),
                     new AbsoluteSizeSpan(textSize,true),text);
         }
@@ -75,12 +73,21 @@ public class ScriptDefinerUtils {
                 span = new StyleSpan(Typeface.ITALIC);
                 break;
             case 4:
-                int color = (chunk[currentOffset] << 24) |
-                            (chunk[currentOffset+1] << 16) |
-                            (chunk[currentOffset+2] << 8) |
-                            (chunk[currentOffset+3]);
+
+                int alpha = (chunk[currentOffset] & 0xFF << 24);
+                int red = (chunk[currentOffset+1] & 0xFF << 16);
+                int green = (chunk[currentOffset+2] & 0xFF << 8);
+                int blue = (chunk[currentOffset+3] & 0xFF);
+
+                int color = alpha |
+                            red   |
+                            green |
+                            blue;
                 currentOffset += 4;
                 argSize -= 4;
+
+                Log.d(TAG, "Font: ARGB_GET:" + alpha + " " + red + " " + green + " " + blue);
+
                 Log.d(TAG, "Font: COLOR SPAN: " + color);
                 span = new ForegroundColorSpan(color);
                 break;
@@ -94,17 +101,17 @@ public class ScriptDefinerUtils {
         CharSequence text = target.getText();
 
         if (argSize == 3) { // 2 args
-            spannableString = getSpannable(0,text.length(), span,text);
+            spannableString = makeSpannable(0,text.length(), span,text);
         }
 
         if (argSize == 5) { // 3 args
-            spannableString = getSpannable(gn(chunk[currentOffset],chunk[currentOffset+1]),
+            spannableString = makeSpannable(gn(chunk[currentOffset],chunk[currentOffset+1]),
                     text.length(),
                     span,text);
         }
 
         if (argSize == 7) { // 4 args
-            spannableString = getSpannable(gn(chunk[currentOffset],chunk[currentOffset+1]),
+            spannableString = makeSpannable(gn(chunk[currentOffset],chunk[currentOffset+1]),
                     gn(chunk[currentOffset+2],chunk[currentOffset+3]),
                     span,text);
         }
