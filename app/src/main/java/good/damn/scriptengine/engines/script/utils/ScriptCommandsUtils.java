@@ -2,12 +2,15 @@ package good.damn.scriptengine.engines.script.utils;
 
 import static good.damn.scriptengine.utils.Utilities.gb;
 
+import android.app.ForegroundServiceStartNotAllowedException;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.CharacterStyle;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
@@ -45,7 +48,7 @@ public class ScriptCommandsUtils {
     }
 
     private static CharacterStyle enumSpan(String argv, byte[] style, Context context){
-        switch (argv){
+        switch (argv) {
             case "ul":
                 return new UnderlineSpan();
             case "st":
@@ -57,6 +60,17 @@ public class ScriptCommandsUtils {
             case "italic":
                 style[0] = 3;
                 return new StyleSpan(Typeface.ITALIC);
+        }
+
+        if (argv.contains("#")) {
+            try {
+                int color = Color.parseColor(argv);
+                style[0] = 4;
+                return new ForegroundColorSpan(color);
+            } catch (IllegalArgumentException exception) {
+                Utilities.showMessage(context, "Invalid text color of hexadecimal value: " + argv);
+                return null;
+            }
         }
 
         Utilities.showMessage(context, "Invalid enum-argument for (" + argv);
@@ -121,33 +135,47 @@ public class ScriptCommandsUtils {
 
         byte[] args = null;
 
-        byte style;
         byte[] a = new byte[1];
 
         CharacterStyle span = enumSpan(argv[1].toLowerCase(),a,context);
 
-        style = a[0];
-
-        if (span == null){
+        if (span == null) {
             return new byte[0];
         }
 
         byte[] origin = new byte[2];
-        origin[0] = 1;
-        origin[1] = 1;
+        origin[0] = 1; // arg size
+        origin[1] = 1; // command index
+
+        byte[] style;
+
+        if (a[0] == 4) { // span is ForegroundColorSpan
+            ForegroundColorSpan colorSpan = (ForegroundColorSpan) span;
+            int color = colorSpan.getForegroundColor();
+            Log.d(TAG, "Font: COLOR_SPAN: BYTE COLOR: " + color);
+            style = new byte[5];
+            style[1] = (byte) (color >> 24); // alpha
+            style[2] = (byte) ((color >> 16) & 0xFF); // red
+            style[3] = (byte) ((color >> 8) & 0xFF); // green
+            style[4] = (byte) (color & 0xFF); // blue
+        } else {
+            style = new byte[1];
+        }
+
+        style[0] = a[0]; // set style type
 
         if (argv.length == 2) {
             origin[0] = 3;
-            args = ArrayUtils.concatByteArrays(origin, new byte[]{style});
+            args = ArrayUtils.concatByteArrays(origin, style);
             setSpan(0, et_target.getText().length(), span,et_target);
             return args;
         }
 
         if (argv.length == 3) { // 2 arguments
             try {
-                origin[0] = 5;
+                origin[0] = 4;
                 int startPos = Integer.parseInt(argv[2]);
-                args = ArrayUtils.concatByteArrays(origin, new byte[]{style}, gb(startPos));
+                args = ArrayUtils.concatByteArrays(origin, style, gb(startPos));
                 setSpan(startPos, et_target.getText().length(),span,et_target);
             } catch (NumberFormatException exception){
                 Utilities.showMessage(context, "Invalid integer-argument format for (" + argv[0] + " " + argv[1] + " " + argv[2]);
@@ -157,10 +185,10 @@ public class ScriptCommandsUtils {
 
         if (argv.length == 4) { // 3 arguments
             try {
-                origin[0] = 7;
+                origin[0] = 5;
                 int startPos = Integer.parseInt(argv[2]);
                 int endPos = Integer.parseInt(argv[3]);
-                args = ArrayUtils.concatByteArrays(origin, new byte[]{style}, gb(startPos), gb(endPos));
+                args = ArrayUtils.concatByteArrays(origin, style, gb(startPos), gb(endPos));
                 setSpan(startPos, endPos,span,et_target);
             } catch (NumberFormatException exception){
                 Utilities.showMessage(context, "Invalid integer-argument format for (" + argv[0] + " " + argv[1] + " " + argv[2] + " " + argv[3]);

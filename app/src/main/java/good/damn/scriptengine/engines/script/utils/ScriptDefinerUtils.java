@@ -7,6 +7,7 @@ import android.graphics.Typeface;
 import android.text.SpannableString;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.CharacterStyle;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
@@ -72,6 +73,15 @@ public class ScriptDefinerUtils {
                 break;
             case 3:
                 span = new StyleSpan(Typeface.ITALIC);
+                break;
+            case 4:
+                int color = (chunk[currentOffset] << 24) |
+                            (chunk[currentOffset+1] << 16) |
+                            (chunk[currentOffset+2] << 8) |
+                            (chunk[currentOffset+3]);
+                currentOffset += 4;
+                Log.d(TAG, "Font: COLOR SPAN: " + color);
+                span = new ForegroundColorSpan(color);
                 break;
         }
 
