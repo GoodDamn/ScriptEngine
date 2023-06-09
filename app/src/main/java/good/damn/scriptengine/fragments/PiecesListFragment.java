@@ -12,7 +12,11 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import good.damn.scriptengine.R;
+import good.damn.scriptengine.utils.FileReaderUtils;
 
 public class PiecesListFragment extends Fragment {
 
@@ -26,6 +30,13 @@ public class PiecesListFragment extends Fragment {
         RecyclerView piecesRecyclerView = v.findViewById(R.id.f_pieces_list_recyclerView);
         piecesRecyclerView.setHasFixedSize(true);
         piecesRecyclerView.setLayoutManager(new LinearLayoutManager(context));
+
+        InputStream inputStream = context.getResources().openRawResource(R.raw.text);
+        try {
+            FileReaderUtils.Txt(inputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         return v;
     }
