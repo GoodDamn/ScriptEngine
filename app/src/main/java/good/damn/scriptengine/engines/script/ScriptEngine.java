@@ -27,6 +27,16 @@ public class ScriptEngine {
     private final EditText et_target;
     private final DisplayMetrics displayMetrics;
 
+    private void createPhrase(TextViewPhrase target, ViewGroup root, Context context) {
+        target.setGravity(Gravity.CENTER);
+        target.setAlpha(0.0f);
+
+        root.addView(target, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        target.animate().alpha(1.0f).setDuration(750)
+                .withEndAction(() -> target.fadeOutTransition(new Random(), context.getResources().getDisplayMetrics().density)).start();
+
+    }
+
     public ScriptEngine(EditText target){
         et_target = target;
         displayMetrics = et_target.getContext().getResources().getDisplayMetrics();
@@ -48,6 +58,12 @@ public class ScriptEngine {
         target.setText(text);
         Log.d(TAG, "read: TEXT_BYTES_LENGTH: " + i + " TEXT:" + text);
         i+=1;
+
+        if (chunk.length == i) { // No script to miss this one
+            createPhrase(target,root,context);
+            return;
+        }
+
         short scriptSize = (short) (chunk[i] & 0xFF);
         int filesOffset = 0;
         i++;
@@ -122,13 +138,7 @@ public class ScriptEngine {
             }
             j += argSize;
         }
-
-        target.setGravity(Gravity.CENTER);
-        target.setAlpha(0.0f);
-
-        root.addView(target, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        target.animate().alpha(1.0f).setDuration(750)
-                .withEndAction(() -> target.fadeOutTransition(new Random(), context.getResources().getDisplayMetrics().density)).start();
+        createPhrase(target,root,context);
     }
 
     public byte[] execute(String line) {

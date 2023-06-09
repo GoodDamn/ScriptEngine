@@ -26,7 +26,11 @@ public class FileReaderUtils {
         String line;
 
         while((line = bufferedReader.readLine()) != null) {
-            arrayList.add(new Piece(null,new SpannableString(line)));
+            byte[] textChunk = line.getBytes(StandardCharsets.UTF_8);
+            arrayList.add(new Piece(
+                    ArrayUtils.concatByteArrays(textChunk, new byte[]{0}),
+                    line)
+            );
         }
 
         inputStreamReader.close();

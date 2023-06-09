@@ -4,10 +4,10 @@ import android.text.SpannableString;
 
 public class Piece {
 
-    private SpannableString mString;
+    private CharSequence mString;
     private byte[] mChunk;
 
-    public Piece(byte[] chunk, SpannableString spannableString) {
+    public Piece(byte[] chunk, CharSequence spannableString) {
         mChunk = chunk;
         mString = spannableString;
     }
@@ -16,7 +16,7 @@ public class Piece {
         this.mChunk = mChunk;
     }
 
-    public void setString(SpannableString mString) {
+    public void setString(CharSequence mString) {
         this.mString = mString;
     }
 
@@ -24,7 +24,7 @@ public class Piece {
         return mChunk;
     }
 
-    public SpannableString getString() {
+    public CharSequence getString() {
         return mString;
     }
 }

@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import good.damn.scriptengine.R;
-import good.damn.scriptengine.activities.MainActivity;
 import good.damn.scriptengine.adapters.FilesAdapter;
 import good.damn.scriptengine.engines.script.ScriptEngine;
 import good.damn.scriptengine.models.Piece;
@@ -37,7 +36,10 @@ public class ScriptEditorFragment extends Fragment {
 
     private EditText et_phrase;
 
+    private Piece mPiece;
+
     public void startScript(Piece piece) {
+        mPiece = piece;
         et_phrase.setText(piece.getString());
     }
 
@@ -47,6 +49,8 @@ public class ScriptEditorFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_script_editor, container,false);
 
         Context context = getContext();
+
+        assert context != null;
 
         Log.d(TAG, "onCreateView: CREATING THE VIEW...");
         et_phrase = v.findViewById(R.id.personalEditor_editText_phrase);
@@ -79,6 +83,9 @@ public class ScriptEditorFragment extends Fragment {
                 byte[] total = ArrayUtils.concatByteArrays(text,
                         new byte[]{scriptLength},
                         script);
+
+                mPiece.setString(et_phrase.getText());
+                mPiece.setChunk(total);
 
                 TextViewPhrase textViewPhrase = new TextViewPhrase(context);
                 textViewPhrase.setTypeface(et_phrase.getTypeface());
