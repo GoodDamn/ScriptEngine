@@ -184,7 +184,7 @@ public class ScriptCommandsUtils {
 
         if (argv.length == 4) { // 3 arguments
             try {
-                origin[0] += 4;
+                origin[0] += 6;
                 int startPos = Integer.parseInt(argv[2]);
                 int endPos = Integer.parseInt(argv[3]);
                 args = ArrayUtils.concatByteArrays(origin, style, gb(startPos), gb(endPos));
