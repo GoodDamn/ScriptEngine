@@ -131,26 +131,25 @@ public class ScriptCommandsUtils {
 
         byte[] args = null;
 
-        byte[] a = new byte[1];
+        byte[] style = new byte[1];
 
-        CharacterStyle span = enumSpan(argv[1].toLowerCase(),a,context);
+        CharacterStyle span = enumSpan(argv[1].toLowerCase(),style,context);
 
         if (span == null) {
             return new byte[0];
         }
 
         byte[] origin = new byte[2];
-        origin[0] = 1; // args size in bytes
+        origin[0] = 1; // args size in bytes (command index + style)
         origin[1] = 1; // command index
 
-        byte[] style;
-
-        if (a[0] == 4) { // span is ForegroundColorSpan
+        if (style[0] == 4) { // span is ForegroundColorSpan
             ForegroundColorSpan colorSpan = (ForegroundColorSpan) span;
             int color = colorSpan.getForegroundColor();
             Log.d(TAG, "Font: COLOR_SPAN: BYTE COLOR: " + color);
 
             style = new byte[5];
+            style[0] = 4; // style type
             style[1] = (byte) (color >> 24); // alpha
             style[2] = (byte) ((color >> 16) & 0xFF); // red
             style[3] = (byte) ((color >> 8) & 0xFF); // green
@@ -160,25 +159,22 @@ public class ScriptCommandsUtils {
             Log.d(TAG, "Font: ARGB_BYTE: " + (style[1] & 0xFF) + " " + (style[2] & 0xFF) + " " + (style[3] & 0xFF) + " " + (style[4] & 0xFF));
 
             origin[0] = 5; // args size in bytes
-
-        } else {
-            style = new byte[1];
         }
-
-        style[0] = a[0]; // set style type
 
         if (argv.length == 2) {
             origin[0] += 2;
             args = ArrayUtils.concatByteArrays(origin, style);
+            Log.d(TAG, "Font: ARG_1: " + args.length + " " + origin[0]);
             setSpan(0, et_target.getText().length(), span,et_target);
             return args;
         }
 
         if (argv.length == 3) { // 2 arguments
             try {
-                origin[0] += 3;
+                origin[0] += 4;
                 int startPos = Integer.parseInt(argv[2]);
                 args = ArrayUtils.concatByteArrays(origin, style, gb(startPos));
+                Log.d(TAG, "Font: ARG_2: " + args.length + " " + origin[0]);
                 setSpan(startPos, et_target.getText().length(),span,et_target);
             } catch (NumberFormatException exception){
                 Utilities.showMessage(context, "Invalid integer-argument format for (" + argv[0] + " " + argv[1] + " " + argv[2]);
@@ -192,6 +188,7 @@ public class ScriptCommandsUtils {
                 int startPos = Integer.parseInt(argv[2]);
                 int endPos = Integer.parseInt(argv[3]);
                 args = ArrayUtils.concatByteArrays(origin, style, gb(startPos), gb(endPos));
+                Log.d(TAG, "Font: ARG_3: " + args.length + " " + origin[0]);
                 setSpan(startPos, endPos,span,et_target);
             } catch (NumberFormatException exception){
                 Utilities.showMessage(context, "Invalid integer-argument format for (" + argv[0] + " " + argv[1] + " " + argv[2] + " " + argv[3]);
@@ -230,7 +227,7 @@ public class ScriptCommandsUtils {
             byte[] img = Utilities.getBytesFromIS(argv[1]);
 
             byte[] origin = new byte[5];
-            origin[0] = 14; // argSize (4 args * 2 bytes) + 4 next args
+            origin[0] = 12; // argSize (4 args * 2 bytes) + 4 next args
             origin[1] = 3; // commandIndex
             origin[2] = (byte) (img.length / 65025);
             origin[3] = (byte) (img.length / 255 % 255);
@@ -261,7 +258,7 @@ public class ScriptCommandsUtils {
         try {
             byte[] gif = Utilities.getBytesFromIS(argv[1]);
             byte[] origin = new byte[5];
-            origin[0] = 10; // argSize (4 args * 2 bytes) + 4 next args
+            origin[0] = 8; // argSize (2 args * 2 bytes) + 4 next args
             origin[1] = 4; // commandIndex
             origin[2] = (byte) (gif.length / 65025);
             origin[3] = (byte) (gif.length / 255 % 255);

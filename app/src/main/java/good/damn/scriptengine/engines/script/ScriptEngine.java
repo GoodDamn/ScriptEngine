@@ -27,7 +27,6 @@ public class ScriptEngine {
     private final EditText et_target;
     private final DisplayMetrics displayMetrics;
 
-
     public ScriptEngine(EditText target){
         et_target = target;
         displayMetrics = et_target.getContext().getResources().getDisplayMetrics();
