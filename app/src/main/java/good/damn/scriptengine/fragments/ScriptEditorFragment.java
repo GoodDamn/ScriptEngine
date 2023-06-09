@@ -1,53 +1,54 @@
-package good.damn.scriptengine;
-
-import androidx.appcompat.app.AppCompatActivity;
+package good.damn.scriptengine.fragments;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.FrameLayout;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import good.damn.scriptengine.R;
+import good.damn.scriptengine.activities.MainActivity;
 import good.damn.scriptengine.adapters.FilesAdapter;
 import good.damn.scriptengine.engines.script.ScriptEngine;
 import good.damn.scriptengine.utils.ArrayUtils;
 import good.damn.scriptengine.utils.ToolsUtilities;
 import good.damn.scriptengine.views.TextViewPhrase;
 
-public class MainActivity extends AppCompatActivity {
+public class ScriptEditorFragment extends Fragment {
 
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "ScriptEditorFragment";
 
-    private FrameLayout mContainer;
     private boolean isEdited = false;
 
-    public void setContainer(FrameLayout container) {
-        mContainer = container;
-    }
-
-
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.fragment_script_editor, container,false);
+
+        Context context = getContext();
 
         Log.d(TAG, "onCreateView: CREATING THE VIEW...");
-        EditText et_phrase = findViewById(R.id.personalEditor_editText_phrase);
-        EditText editTextScript = findViewById(R.id.personalEditor_editText_script);
+        EditText et_phrase = v.findViewById(R.id.personalEditor_editText_phrase);
+        EditText editTextScript = v.findViewById(R.id.personalEditor_editText_script);
 
         ScriptEngine scriptEngine = new ScriptEngine(et_phrase);
 
         ViewGroup root = (ViewGroup) editTextScript.getParent().getParent();
-        findViewById(R.id.personalEditor_button_start).setOnClickListener(new View.OnClickListener() {
+        v.findViewById(R.id.personalEditor_button_start).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Spannable spannable = et_phrase.getText();
@@ -72,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
                         new byte[]{scriptLength},
                         script);
 
-                TextViewPhrase textViewPhrase = new TextViewPhrase(MainActivity.this);
+                TextViewPhrase textViewPhrase = new TextViewPhrase(context);
                 textViewPhrase.setTypeface(et_phrase.getTypeface());
                 Log.d(TAG, "onClick: Result: SCRIPT_LENGTH: " + scriptLength + " TEXT_LENGTH: " + text.length + " TEXT_SIZE_BYTES: "+ t.getBytes(StandardCharsets.UTF_8).length + " TOTAL_LENTGH: " + total.length);
                 scriptEngine.read(total, textViewPhrase, root);
@@ -109,10 +110,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        findViewById(R.id.personalEditor_selectFile).setOnClickListener(new View.OnClickListener() {
+        v.findViewById(R.id.personalEditor_selectFile).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ToolsUtilities.startFileManager(MainActivity.this, new FilesAdapter.Click() {
+                ToolsUtilities.startFileManager(getActivity(), new FilesAdapter.Click() {
                     @Override public void onClickedFolder(String prevFolder, String currentFolder) { }
                     @Override
                     public void onAudioFile(File file) {
@@ -134,5 +135,7 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         });
+
+        return v;
     }
 }
