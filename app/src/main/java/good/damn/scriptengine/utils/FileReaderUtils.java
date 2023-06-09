@@ -1,26 +1,37 @@
 package good.damn.scriptengine.utils;
 
+import android.text.SpannableString;
 import android.util.Log;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+
+import good.damn.scriptengine.models.Piece;
 
 public class FileReaderUtils {
 
     private static final String TAG = "FileReaderUtils";
 
-    public static String[] Txt(InputStream inputStream) throws IOException {
+    public static ArrayList<Piece> Txt(InputStream inputStream) throws IOException {
+        ArrayList<Piece> arrayList = new ArrayList<>();
 
-        byte[] buffer = new byte[512];
+        InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
-        while (true) {
-            int n = inputStream.read(buffer);
-            Log.d(TAG, "Txt: READ_LENGTH: " + n + " BUFFER: " + Arrays.toString(buffer));
-            if (n == -1) {
-                break;
-            }
+        String line;
+
+        while((line = bufferedReader.readLine()) != null) {
+            arrayList.add(new Piece(null,new SpannableString(line)));
         }
-        return null;
+
+        inputStreamReader.close();
+        bufferedReader.close();
+
+        return arrayList;
     }
 }

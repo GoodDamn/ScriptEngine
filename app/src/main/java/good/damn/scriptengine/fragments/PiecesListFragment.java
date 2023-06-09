@@ -14,8 +14,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 import good.damn.scriptengine.R;
+import good.damn.scriptengine.adapters.recycler_view.PiecesAdapter;
+import good.damn.scriptengine.models.Piece;
 import good.damn.scriptengine.utils.FileReaderUtils;
 
 public class PiecesListFragment extends Fragment {
@@ -32,11 +35,25 @@ public class PiecesListFragment extends Fragment {
         piecesRecyclerView.setLayoutManager(new LinearLayoutManager(context));
 
         InputStream inputStream = context.getResources().openRawResource(R.raw.text);
+        ArrayList<Piece> pieces = null;
         try {
-            FileReaderUtils.Txt(inputStream);
+            pieces = FileReaderUtils.Txt(inputStream);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
+
+        if (inputStream != null) {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (pieces == null)
+            return v;
+
+        piecesRecyclerView.setAdapter(new PiecesAdapter(pieces));
 
         return v;
     }
