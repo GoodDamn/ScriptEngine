@@ -24,6 +24,7 @@ import good.damn.scriptengine.R;
 import good.damn.scriptengine.activities.MainActivity;
 import good.damn.scriptengine.adapters.FilesAdapter;
 import good.damn.scriptengine.engines.script.ScriptEngine;
+import good.damn.scriptengine.models.Piece;
 import good.damn.scriptengine.utils.ArrayUtils;
 import good.damn.scriptengine.utils.ToolsUtilities;
 import good.damn.scriptengine.views.TextViewPhrase;
@@ -34,6 +35,12 @@ public class ScriptEditorFragment extends Fragment {
 
     private boolean isEdited = false;
 
+    private EditText et_phrase;
+
+    public void startScript(Piece piece) {
+        et_phrase.setText(piece.getString());
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -42,7 +49,7 @@ public class ScriptEditorFragment extends Fragment {
         Context context = getContext();
 
         Log.d(TAG, "onCreateView: CREATING THE VIEW...");
-        EditText et_phrase = v.findViewById(R.id.personalEditor_editText_phrase);
+        et_phrase = v.findViewById(R.id.personalEditor_editText_phrase);
         EditText editTextScript = v.findViewById(R.id.personalEditor_editText_script);
 
         ScriptEngine scriptEngine = new ScriptEngine(et_phrase);

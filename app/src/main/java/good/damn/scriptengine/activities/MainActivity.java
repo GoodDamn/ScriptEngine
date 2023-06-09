@@ -26,6 +26,8 @@ import good.damn.scriptengine.adapters.FragmentPagerAdapter;
 import good.damn.scriptengine.engines.script.ScriptEngine;
 import good.damn.scriptengine.fragments.PiecesListFragment;
 import good.damn.scriptengine.fragments.ScriptEditorFragment;
+import good.damn.scriptengine.interfaces.OnClickTextPiece;
+import good.damn.scriptengine.models.Piece;
 import good.damn.scriptengine.utils.ArrayUtils;
 import good.damn.scriptengine.utils.ToolsUtilities;
 import good.damn.scriptengine.views.TextViewPhrase;
@@ -39,8 +41,19 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         ViewPager2 viewPager = new ViewPager2(this);
 
+        viewPager.setOffscreenPageLimit(3);
+
         PiecesListFragment piecesListFragment = new PiecesListFragment();
+
         ScriptEditorFragment scriptEditorFragment = new ScriptEditorFragment();
+
+        piecesListFragment.setOnClickTextPiece(new OnClickTextPiece() {
+            @Override
+            public void onClick(Piece piece, int position) {
+                scriptEditorFragment.startScript(piece);
+                viewPager.setCurrentItem(1);
+            }
+        });
 
         viewPager.setAdapter(new FragmentPagerAdapter(this, new Fragment[]{
                 piecesListFragment,

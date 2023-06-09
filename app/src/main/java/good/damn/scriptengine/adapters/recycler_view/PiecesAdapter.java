@@ -3,7 +3,6 @@ package good.damn.scriptengine.adapters.recycler_view;
 import android.graphics.Color;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -13,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
+import good.damn.scriptengine.interfaces.OnClickTextPiece;
 import good.damn.scriptengine.models.Piece;
 
 public class PiecesAdapter extends RecyclerView.Adapter<PiecesAdapter.PiecesViewHolder> {
@@ -21,9 +21,12 @@ public class PiecesAdapter extends RecyclerView.Adapter<PiecesAdapter.PiecesView
 
     private final ArrayList<Piece> mPieces;
 
-    public PiecesAdapter(ArrayList<Piece> pieces) {
+    private final OnClickTextPiece mOnClickTextPiece;
+
+    public PiecesAdapter(ArrayList<Piece> pieces, OnClickTextPiece textPiece) {
         Log.d(TAG, "PiecesAdapter: ADAPTER_SIZE:" + pieces.size());
         mPieces = pieces;
+        mOnClickTextPiece = textPiece;
     }
 
     @NonNull
@@ -47,13 +50,18 @@ public class PiecesAdapter extends RecyclerView.Adapter<PiecesAdapter.PiecesView
         return mPieces.size();
     }
 
-    public static class PiecesViewHolder extends RecyclerView.ViewHolder {
+    public class PiecesViewHolder extends RecyclerView.ViewHolder {
         public TextView mTextView;
 
         public PiecesViewHolder(@NonNull View itemView) {
             super(itemView);
 
             mTextView = (TextView) itemView;
+
+            mTextView.setOnClickListener((view) -> {
+                int position = getAdapterPosition();
+                mOnClickTextPiece.onClick(mPieces.get(position),position);
+            });
         }
     }
 }

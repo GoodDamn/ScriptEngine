@@ -18,10 +18,17 @@ import java.util.ArrayList;
 
 import good.damn.scriptengine.R;
 import good.damn.scriptengine.adapters.recycler_view.PiecesAdapter;
+import good.damn.scriptengine.interfaces.OnClickTextPiece;
 import good.damn.scriptengine.models.Piece;
 import good.damn.scriptengine.utils.FileReaderUtils;
 
 public class PiecesListFragment extends Fragment {
+
+    private OnClickTextPiece mOnClickTextPiece;
+
+    public void setOnClickTextPiece(OnClickTextPiece mOnClickTextPiece) {
+        this.mOnClickTextPiece = mOnClickTextPiece;
+    }
 
     @Nullable
     @Override
@@ -53,7 +60,7 @@ public class PiecesListFragment extends Fragment {
         if (pieces == null)
             return v;
 
-        piecesRecyclerView.setAdapter(new PiecesAdapter(pieces));
+        piecesRecyclerView.setAdapter(new PiecesAdapter(pieces, mOnClickTextPiece));
 
         return v;
     }
