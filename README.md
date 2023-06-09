@@ -13,14 +13,15 @@ Example:
 
 List of available commands now: 
   - font (overridable) - you can attach a specific text style with enum parameter:
-    - Enum-constants for this command:
-      - italic
-      - bold
-      - st (Strikethrough)
-      - ul (Underline)
-  - font (enum-constants)
-  - font (enum-constants) (int-beginIndex)
-  - font (enum-constants) (int-beginIndex) (int-endIndex)
+    - Valid values for this command:
+      - italic (enum)
+      - bold (enum)
+      - st (Strikethrough) (enum)
+      - ul (Underline) (enum)
+      - hex-value(#000000 (RGB) or #00000000 (ARGB)) (not constant)
+  - font (value or enum-constant)
+  - font (value or enum-constant) (int-beginIndex)
+  - font (value or enum-constant) (int-beginIndex) (int-endIndex)
 
 - textSize (overridable) - you can set text size for text:
     - textSize (int-size)
