@@ -1,6 +1,7 @@
 package good.damn.scriptengine.fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +18,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 import good.damn.scriptengine.R;
+import good.damn.scriptengine.activities.PreviewActivity;
 import good.damn.scriptengine.adapters.recycler_view.PiecesAdapter;
 import good.damn.scriptengine.interfaces.OnClickTextPiece;
 import good.damn.scriptengine.models.Piece;
@@ -25,6 +27,8 @@ import good.damn.scriptengine.utils.FileReaderUtils;
 public class PiecesListFragment extends Fragment {
 
     private OnClickTextPiece mOnClickTextPiece;
+
+    private ArrayList<Piece> pieces = null;
 
     public void setOnClickTextPiece(OnClickTextPiece mOnClickTextPiece) {
         this.mOnClickTextPiece = mOnClickTextPiece;
@@ -41,8 +45,18 @@ public class PiecesListFragment extends Fragment {
         piecesRecyclerView.setHasFixedSize(true);
         piecesRecyclerView.setLayoutManager(new LinearLayoutManager(context));
 
+        v.findViewById(R.id.f_pieces_list_start_debug)
+                .setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getActivity(), PreviewActivity.class);
+                //intent.putExtra("content");
+                startActivity(intent);
+            }
+        });
+
         InputStream inputStream = context.getResources().openRawResource(R.raw.text);
-        ArrayList<Piece> pieces = null;
+
         try {
             pieces = FileReaderUtils.Txt(inputStream);
         } catch (IOException e) {
