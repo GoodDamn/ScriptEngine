@@ -56,9 +56,12 @@ public class ScriptEditorFragment extends Fragment {
         et_phrase = v.findViewById(R.id.personalEditor_editText_phrase);
         EditText editTextScript = v.findViewById(R.id.personalEditor_editText_script);
 
-        ScriptEngine scriptEngine = new ScriptEngine(et_phrase);
-
         ViewGroup root = (ViewGroup) editTextScript.getParent().getParent();
+
+        ScriptEngine scriptEngine = new ScriptEngine(context);
+        scriptEngine.setRootViewGroup(root);
+        scriptEngine.setSourceEditText(et_phrase);
+
         v.findViewById(R.id.personalEditor_button_start).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -90,7 +93,7 @@ public class ScriptEditorFragment extends Fragment {
                 TextViewPhrase textViewPhrase = new TextViewPhrase(context);
                 textViewPhrase.setTypeface(et_phrase.getTypeface());
                 Log.d(TAG, "onClick: Result: SCRIPT_LENGTH: " + scriptLength + " TEXT_LENGTH: " + text.length + " TEXT_SIZE_BYTES: "+ t.getBytes(StandardCharsets.UTF_8).length + " TOTAL_LENTGH: " + total.length);
-                scriptEngine.read(total, textViewPhrase, root);
+                scriptEngine.read(total, textViewPhrase);
                 Log.d(TAG, "onClick: isEdited: COMPLETED: " + isEdited);
                 isEdited = false;
             }

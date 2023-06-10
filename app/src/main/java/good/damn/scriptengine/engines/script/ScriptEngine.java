@@ -24,121 +24,34 @@ public class ScriptEngine {
 
     private static final String TAG = "ScriptEngine";
 
-    private final EditText et_target;
-    private final DisplayMetrics displayMetrics;
+    private final Context mContext;
+    private final DisplayMetrics metrics;
 
-    private void createPhrase(TextViewPhrase target, ViewGroup root, Context context) {
+    private ViewGroup mRoot;
+
+    private EditText et_target;
+
+    private void createPhrase(TextViewPhrase target) {
         target.setGravity(Gravity.CENTER);
         target.setAlpha(0.0f);
 
-        root.addView(target, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        mRoot.addView(target, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         target.animate().alpha(1.0f).setDuration(750)
-                .withEndAction(() -> target.fadeOutTransition(new Random(), context.getResources().getDisplayMetrics().density)).start();
+                .withEndAction(() -> target.fadeOutTransition(new Random(), metrics.density)).start();
 
     }
 
-    public ScriptEngine(EditText target){
-        et_target = target;
-        displayMetrics = et_target.getContext().getResources().getDisplayMetrics();
+    public ScriptEngine(Context context){
+        mContext = context;
+        metrics = context.getResources().getDisplayMetrics();
     }
 
-    public void read(byte[] chunk, TextViewPhrase target, ViewGroup root) {
+    public void setSourceEditText(EditText et_target) {
+        this.et_target = et_target;
+    }
 
-        Context context = target.getContext();
-
-        byte[] buffer = new byte[512];
-        byte current = chunk[0];
-        short i = 0;
-        for (; current != 0; i++){
-            buffer[i] = current;
-            current = chunk[i+1];
-        }
-
-        String text = new String(buffer, StandardCharsets.UTF_8).trim();
-        target.setText(text);
-        Log.d(TAG, "read: TEXT_BYTES_LENGTH: " + i + " TEXT:" + text);
-        i+=1;
-
-        if (chunk.length == i) { // No script to miss this one
-            createPhrase(target,root,context);
-            return;
-        }
-
-        short scriptSize = (short) (chunk[i] & 0xFF);
-        int filesOffset = 0;
-        i++;
-        Log.d(TAG, "read: SCRIPT_SIZE: "+ scriptSize);
-        for (int j = 0; j < scriptSize;) {
-            int currentOffset = i+j+filesOffset;
-            int argSize = chunk[currentOffset] & 0xFF;
-            currentOffset++;
-            byte commandIndex = chunk[currentOffset];
-            Log.d(TAG, "read: J: "+ j + " SCRIPT_SIZE:" +scriptSize + " OFFSET:" + currentOffset + " ARG_SIZE: " + argSize + " COMMAND_INDEX: " + commandIndex);
-            switch (commandIndex) {
-                case 0: // textSize
-                    ScriptDefinerUtils.TextSize(chunk,currentOffset,argSize,target);
-                    break;
-                case 1: // font
-                    ScriptDefinerUtils.Font(chunk,currentOffset,argSize,target);
-                    break;
-                case 3: // img
-                    ScriptGraphicsFile scriptImage = ScriptDefinerUtils.Image(chunk,currentOffset);
-                    if (scriptImage == null) {
-                        return;
-                    }
-
-                    byte[] img = scriptImage.file;
-                    filesOffset += img.length - 1;
-
-                    ImageView imageView = new ImageView(target.getContext());
-                    imageView.setImageBitmap(BitmapFactory.decodeByteArray(img, 0, img.length));
-                    FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                    params.width = (int) (displayMetrics.density * scriptImage.width);
-                    params.height = (int) (displayMetrics.density * scriptImage.height);
-                    params.gravity = Gravity.START | Gravity.TOP;
-                    imageView.setScaleX(.0f);
-                    imageView.setScaleY(.0f);
-                    imageView.setScaleType(ImageView.ScaleType.FIT_XY);
-                    root.addView(imageView,params);
-
-                    imageView.setX(scriptImage.x * displayMetrics.widthPixels);
-                    imageView.setY(scriptImage.y * displayMetrics.heightPixels);
-
-                    imageView.animate().scaleY(1.0f).scaleX(1.0f).withEndAction(() ->
-                                    imageView.animate().scaleX(.0f).scaleY(.0f).setStartDelay(1250).withEndAction(() ->
-                                            root.removeView(imageView)).start())
-                            .start();
-                    break;
-                case 4: // Gif
-                    ScriptGraphicsFile gifScript = ScriptDefinerUtils.Gif(chunk,currentOffset);
-
-                    filesOffset += gifScript.file.length - 1;
-
-                    GifView gifView = new GifView(target.getContext());
-                    gifView.setSource(gifScript.file);
-
-                    FrameLayout.LayoutParams par =
-                            new FrameLayout.LayoutParams(gifView.width(), gifView.height());
-
-                    par.leftMargin = (int) (gifScript.x * displayMetrics.widthPixels);
-                    par.topMargin = (int) (gifScript.y * displayMetrics.heightPixels);
-
-                    root.addView(gifView, par);
-                    gifView.play();
-
-                    gifView.animate()
-                            .setStartDelay(5500)
-                            .alpha(0.0f)
-                            .withEndAction(()-> root.removeView(gifView)).start();
-
-                    break;
-                default:
-                    Utilities.showMessage("Invalid command index: " + commandIndex, context);
-                    break;
-            }
-            j += argSize;
-        }
-        createPhrase(target,root,context);
+    public void setRootViewGroup(ViewGroup root) {
+        mRoot = root;
     }
 
     public byte[] execute(String line) {
@@ -187,5 +100,105 @@ public class ScriptEngine {
         }
 
         return args;
+    }
+
+
+    public void read(byte[] chunk, TextViewPhrase target) {
+
+        Context context = mRoot.getContext();
+
+        byte[] buffer = new byte[512];
+        byte current = chunk[0];
+        short i = 0;
+        for (; current != 0; i++){
+            buffer[i] = current;
+            current = chunk[i+1];
+        }
+
+        String text = new String(buffer, StandardCharsets.UTF_8).trim();
+        target.setText(text);
+        Log.d(TAG, "read: TEXT_BYTES_LENGTH: " + i + " TEXT:" + text);
+        i+=1;
+
+        if (chunk.length == i) { // No script to miss this one
+            createPhrase(target);
+            return;
+        }
+
+        short scriptSize = (short) (chunk[i] & 0xFF);
+        int filesOffset = 0;
+        i++;
+        Log.d(TAG, "read: SCRIPT_SIZE: "+ scriptSize);
+        for (int j = 0; j < scriptSize;) {
+            int currentOffset = i+j+filesOffset;
+            int argSize = chunk[currentOffset] & 0xFF;
+            currentOffset++;
+            byte commandIndex = chunk[currentOffset];
+            Log.d(TAG, "read: J: "+ j + " SCRIPT_SIZE:" +scriptSize + " OFFSET:" + currentOffset + " ARG_SIZE: " + argSize + " COMMAND_INDEX: " + commandIndex);
+            switch (commandIndex) {
+                case 0: // textSize
+                    ScriptDefinerUtils.TextSize(chunk,currentOffset,argSize,target);
+                    break;
+                case 1: // font
+                    ScriptDefinerUtils.Font(chunk,currentOffset,argSize,target);
+                    break;
+                case 3: // img
+                    ScriptGraphicsFile scriptImage = ScriptDefinerUtils.Image(chunk,currentOffset);
+                    if (scriptImage == null) {
+                        return;
+                    }
+
+                    byte[] img = scriptImage.file;
+                    filesOffset += img.length - 1;
+
+                    ImageView imageView = new ImageView(context);
+                    imageView.setImageBitmap(BitmapFactory.decodeByteArray(img, 0, img.length));
+                    FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    params.width = (int) (metrics.density * scriptImage.width);
+                    params.height = (int) (metrics.density * scriptImage.height);
+                    params.gravity = Gravity.START | Gravity.TOP;
+                    imageView.setScaleX(.0f);
+                    imageView.setScaleY(.0f);
+                    imageView.setScaleType(ImageView.ScaleType.FIT_XY);
+                    mRoot.addView(imageView,params);
+
+                    imageView.setX(scriptImage.x * metrics.widthPixels);
+                    imageView.setY(scriptImage.y * metrics.heightPixels);
+
+                    imageView.animate().scaleY(1.0f).scaleX(1.0f).withEndAction(() ->
+                                    imageView.animate().scaleX(.0f).scaleY(.0f).setStartDelay(1250).withEndAction(() ->
+                                            mRoot.removeView(imageView)).start())
+                            .start();
+                    break;
+                case 4: // Gif
+                    ScriptGraphicsFile gifScript = ScriptDefinerUtils.Gif(chunk,currentOffset);
+
+                    filesOffset += gifScript.file.length - 1;
+
+                    GifView gifView = new GifView(context);
+                    gifView.setSource(gifScript.file);
+
+                    FrameLayout.LayoutParams par =
+                            new FrameLayout.LayoutParams(gifView.width(), gifView.height());
+
+                    par.leftMargin = (int) (gifScript.x * metrics.widthPixels);
+                    par.topMargin = (int) (gifScript.y * metrics.heightPixels);
+
+                    mRoot.addView(gifView, par);
+                    gifView.play();
+
+                    gifView.animate()
+                            .setStartDelay(5500)
+                            .alpha(0.0f)
+                            .withEndAction(()-> mRoot.removeView(gifView)).start();
+
+                    break;
+                default:
+                    Utilities.showMessage("Invalid command index: " + commandIndex, mContext);
+                    break;
+            }
+            j += argSize;
+        }
+        createPhrase(target);
     }
 }

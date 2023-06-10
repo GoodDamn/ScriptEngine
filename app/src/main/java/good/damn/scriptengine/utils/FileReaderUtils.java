@@ -4,6 +4,7 @@ import android.text.SpannableString;
 import android.util.Log;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -37,5 +38,25 @@ public class FileReaderUtils {
         bufferedReader.close();
 
         return arrayList;
+    }
+
+    public static byte[] getBytesFromFile(InputStream inputStream)
+            throws IOException {
+
+        byte[] buffer = new byte[512];
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        int n;
+
+        do {
+            n = inputStream.read(buffer);
+            baos.write(buffer, 0, n);
+        } while(n != -1);
+
+        byte[] total = baos.toByteArray();
+
+        inputStream.close();
+
+        return total;
     }
 }

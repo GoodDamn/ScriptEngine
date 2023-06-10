@@ -57,7 +57,8 @@ public class PiecesListFragment extends Fragment {
                 assert context != null;
 
                 long current = System.currentTimeMillis();
-                if (!FileOutputUtils.makeSKCFile(pieces,context)) {
+                String path = FileOutputUtils.makeSKCFile(pieces,context);
+                if (path == null) {
                     Utilities.showMessage("ERROR IS OCCURRED DURING LINKING PROCESS",
                             context);
                     return;
@@ -65,6 +66,7 @@ public class PiecesListFragment extends Fragment {
 
                 Utilities.showMessage("STARTING PREVIEW PROCESS AFTER " + (System.currentTimeMillis()-current), context);
                 Intent intent = new Intent(getActivity(), PreviewActivity.class);
+                intent.putExtra("dumbPath", path);
                 startActivity(intent);
             }
         });

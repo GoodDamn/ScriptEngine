@@ -14,34 +14,36 @@ public class FileOutputUtils {
 
     private static final String TAG = "FileOutputUtils";
     
-    public static boolean makeSKCFile(ArrayList<Piece> arrayList, Context context) {
+    public static String makeSKCFile(ArrayList<Piece> arrayList, Context context) {
 
         FileOutputStream fileOutputStream;
-        
+
+        String path = context.getCacheDir()
+                + FileUtils.DUMB_DIR;
+
         try {
 
-            String path = context.getCacheDir()
-                    + FileUtils.DUMB_DIR;
-
-            String fileName= "/dumb.skc";
+            String fileName = "/dumb.skc";
 
             File file = new File(path);
 
             if (!file.exists()) {
                 if (!file.mkdirs()) {
-                    return false;
+                    return null;
                 }
 
                 Log.d(TAG, "makeSKCFile: DUMB DIR HAS BEEN CREATED!");
                 File skcFile = new File(file + fileName);
                 if (!skcFile.createNewFile()) {
-                    return false;
+                    return null;
                 }
             }
 
             Log.d(TAG, "makeSKCFile: DUMB FILE HAS BEEN CREATED!");
 
-            fileOutputStream = new FileOutputStream(file+fileName);
+            path += fileName;
+
+            fileOutputStream = new FileOutputStream(path);
 
             for (Piece piece : arrayList) {
                 fileOutputStream.write(piece.getChunk());
@@ -49,7 +51,7 @@ public class FileOutputUtils {
 
         } catch (IOException exception) {
             exception.printStackTrace();
-            return false;
+            return null;
         }
 
         try {
@@ -58,6 +60,6 @@ public class FileOutputUtils {
             e.printStackTrace();
         }
 
-        return true;
+        return path;
     }
 }
