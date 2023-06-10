@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,7 +23,9 @@ import good.damn.scriptengine.activities.PreviewActivity;
 import good.damn.scriptengine.adapters.recycler_view.PiecesAdapter;
 import good.damn.scriptengine.interfaces.OnClickTextPiece;
 import good.damn.scriptengine.models.Piece;
+import good.damn.scriptengine.utils.FileOutputUtils;
 import good.damn.scriptengine.utils.FileReaderUtils;
+import good.damn.scriptengine.utils.Utilities;
 
 public class PiecesListFragment extends Fragment {
 
@@ -49,8 +52,19 @@ public class PiecesListFragment extends Fragment {
                 .setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Utilities.showMessage("LINKING...",context);
+
+                assert context != null;
+
+                long current = System.currentTimeMillis();
+                if (!FileOutputUtils.makeSKCFile(pieces,context)) {
+                    Utilities.showMessage("ERROR IS OCCURRED DURING LINKING PROCESS",
+                            context);
+                    return;
+                }
+
+                Utilities.showMessage("STARTING PREVIEW PROCESS AFTER " + (System.currentTimeMillis()-current), context);
                 Intent intent = new Intent(getActivity(), PreviewActivity.class);
-                //intent.putExtra("content");
                 startActivity(intent);
             }
         });

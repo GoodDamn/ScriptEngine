@@ -64,12 +64,14 @@ public class ScriptCommandsUtils {
                 style[0] = 4;
                 return new ForegroundColorSpan(color);
             } catch (IllegalArgumentException exception) {
-                Utilities.showMessage(context, "Invalid text color of hexadecimal value: " + argv);
+                Utilities.showMessage("Invalid text color of hexadecimal value: " + argv,
+                        context);
                 return null;
             }
         }
 
-        Utilities.showMessage(context, "Invalid enum-argument for (" + argv);
+        Utilities.showMessage("Invalid enum-argument for (" + argv,
+                context);
         return null;
     }
 
@@ -80,7 +82,8 @@ public class ScriptCommandsUtils {
         try {
             size = Float.parseFloat(argv[1]);
         } catch (NumberFormatException exception){
-            Utilities.showMessage(context, "Invalid format argument " + argv[1]);
+            Utilities.showMessage("Invalid format argument " + argv[1],
+                    context);
             return null;
         }
 
@@ -104,7 +107,8 @@ public class ScriptCommandsUtils {
                 origin[0] = 6;
                 args = ArrayUtils.concatByteArrays(origin,gb((short) (size * 1000)), gb(startPos));
             } catch (NumberFormatException exception){
-                Utilities.showMessage(context, "Invalid integer-argument format for ("+argv[0] + " " + argv[1] + " " + argv[2]);
+                Utilities.showMessage("Invalid integer-argument format for ("+argv[0] + " " + argv[1] + " " + argv[2],
+                        context);
             }
             return args;
         }
@@ -117,12 +121,14 @@ public class ScriptCommandsUtils {
                 origin[0] = 8;
                 args = ArrayUtils.concatByteArrays(origin, gb((short) (size * 1000)), gb(startPos), gb(endPos));
             } catch (NumberFormatException exception){
-                Utilities.showMessage(context, "Invalid integer-argument format for (" + argv[0] + " " + argv[1] + " " + argv[2] + " " + argv[3]);
+                Utilities.showMessage("Invalid integer-argument format for (" + argv[0] + " " + argv[1] + " " + argv[2] + " " + argv[3],
+                        context);
             }
             return args;
         }
 
-        Utilities.showMessage(context, "Invalid integer-argument format for (" + argv[0]);
+        Utilities.showMessage("Invalid integer-argument format for (" + argv[0],
+                context);
         return null;
     }
 
@@ -177,7 +183,8 @@ public class ScriptCommandsUtils {
                 Log.d(TAG, "Font: ARG_2: " + args.length + " " + origin[0]);
                 setSpan(startPos, et_target.getText().length(),span,et_target);
             } catch (NumberFormatException exception){
-                Utilities.showMessage(context, "Invalid integer-argument format for (" + argv[0] + " " + argv[1] + " " + argv[2]);
+                Utilities.showMessage("Invalid integer-argument format for (" + argv[0] + " " + argv[1] + " " + argv[2],
+                        context);
             }
             return args;
         }
@@ -191,11 +198,13 @@ public class ScriptCommandsUtils {
                 Log.d(TAG, "Font: ARG_3: " + args.length + " " + origin[0]);
                 setSpan(startPos, endPos,span,et_target);
             } catch (NumberFormatException exception){
-                Utilities.showMessage(context, "Invalid integer-argument format for (" + argv[0] + " " + argv[1] + " " + argv[2] + " " + argv[3]);
+                Utilities.showMessage("Invalid integer-argument format for (" + argv[0] + " " + argv[1] + " " + argv[2] + " " + argv[3],
+                        context);
             }
             return args;
         }
-        Utilities.showMessage(context, "No argument for (" + argv[0]);
+        Utilities.showMessage("No argument for (" + argv[0],
+                context);
         return null;
     }
 
@@ -213,14 +222,16 @@ public class ScriptCommandsUtils {
             short yPos = Short.parseShort(argv[5]);
 
             if (xPos > displayMetrics.widthPixels || xPos < 0) {
-                Utilities.showMessage(context,"img command hasn't executed("+
-                        xPos + " on X Axis doesn't belong to [0;"+displayMetrics.widthPixels+"]");
+                Utilities.showMessage("img command hasn't executed("+
+                        xPos + " on X Axis doesn't belong to [0;"+displayMetrics.widthPixels+"]",
+                        context);
                 return new byte[0];
             }
 
             if (yPos > displayMetrics.heightPixels || yPos < 0) {
-                Utilities.showMessage(context,"img command hasn't executed("+
-                        yPos + " on Y Axis doesn't belong to [0;"+displayMetrics.heightPixels+"]");
+                Utilities.showMessage("img command hasn't executed("+
+                        yPos + " on Y Axis doesn't belong to [0;"+displayMetrics.heightPixels+"]",
+                        context);
                 return new byte[0];
             }
 
@@ -268,14 +279,15 @@ public class ScriptCommandsUtils {
             short yPos = Short.parseShort(argv[3]);
 
             if (xPos > displayMetrics.widthPixels || xPos < 0) {
-                Utilities.showMessage(context,"img command hasn't executed("+
-                        xPos + " on X Axis doesn't belong to [0;"+displayMetrics.widthPixels+"]");
+                Utilities.showMessage("img command hasn't executed("+
+                        xPos + " on X Axis doesn't belong to [0;"+displayMetrics.widthPixels+"]",context);
                 return new byte[0];
             }
 
             if (yPos > displayMetrics.heightPixels || yPos < 0) {
-                Utilities.showMessage(context,"img command hasn't executed("+
-                        yPos + " on Y Axis doesn't belong to [0;"+displayMetrics.heightPixels+"]");
+                Utilities.showMessage("img command hasn't executed("+
+                        yPos + " on Y Axis doesn't belong to [0;"+displayMetrics.heightPixels+"]",
+                        context);
                 return new byte[0];
             }
 
@@ -285,7 +297,8 @@ public class ScriptCommandsUtils {
                     gif);
         } catch (IOException exception) {
             exception.printStackTrace();
-            Utilities.showMessage(context, "GIF: " + exception.getMessage());
+            Utilities.showMessage("GIF: " + exception.getMessage(),
+                    context);
         }
         return args;
     }

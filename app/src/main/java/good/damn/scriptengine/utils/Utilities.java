@@ -41,7 +41,7 @@ public class Utilities {
         return file;
     }
 
-    public static void showMessage(Context context, String m) {
+    public static void showMessage(String m, Context context) {
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(() -> Toast.makeText(context, m, Toast.LENGTH_SHORT).show());
     }

@@ -18,7 +18,7 @@ public class PreviewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         FrameLayout root_FrameLayout = new FrameLayout(this);
-        root_FrameLayout.setBackgroundColor(0xFFFF0000);
+        root_FrameLayout.setBackgroundColor(0xFFFF00FF);
 
         setContentView(root_FrameLayout);
     }

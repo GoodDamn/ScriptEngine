@@ -133,7 +133,7 @@ public class ScriptEngine {
 
                     break;
                 default:
-                    Utilities.showMessage(context, "Invalid command index: " + commandIndex);
+                    Utilities.showMessage("Invalid command index: " + commandIndex, context);
                     break;
             }
             j += argSize;
@@ -182,7 +182,7 @@ public class ScriptEngine {
                 args = ScriptCommandsUtils.Gif(argv,context);
                 break;
             default:
-                Utilities.showMessage(context, "Invalid command: " + argv[0]);
+                Utilities.showMessage("Invalid command: " + argv[0], context);
                 break;
         }
 
