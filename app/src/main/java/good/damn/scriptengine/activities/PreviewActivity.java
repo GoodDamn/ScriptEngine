@@ -7,6 +7,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,17 +15,23 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Random;
 
 import good.damn.scriptengine.engines.script.ScriptEngine;
 import good.damn.scriptengine.engines.script.ScriptReader;
+import good.damn.scriptengine.engines.script.interfaces.OnConfigureViewListener;
 import good.damn.scriptengine.utils.FileReaderUtils;
 import good.damn.scriptengine.utils.Utilities;
+import good.damn.scriptengine.views.TextViewPhrase;
 
 public class PreviewActivity extends AppCompatActivity {
 
     private static final String TAG = "PreviewActivity";
+    private static final Random sRandom = new Random();
 
     private byte[] mContent;
+
+    private TextViewPhrase mCurrentViewPhrase;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -57,11 +64,26 @@ public class PreviewActivity extends AppCompatActivity {
 
         scriptEngine.setRootViewGroup(root_FrameLayout);
 
+        scriptEngine.setOnConfigureView(new OnConfigureViewListener() {
+            @Override
+            public void onConfigured(TextViewPhrase textViewPhrase) {
+                textViewPhrase.animate()
+                        .alpha(1.0f)
+                        .setDuration(1500)
+                        .start();
+                mCurrentViewPhrase = textViewPhrase;
+            }
+        });
+
         setContentView(root_FrameLayout);
+
 
         root_FrameLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (mCurrentViewPhrase != null) {
+                    mCurrentViewPhrase.fadeOutTransition(sRandom, 2.1f);
+                }
                 scriptReader.next();
             }
         });

@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
+import good.damn.scriptengine.engines.script.interfaces.OnConfigureViewListener;
 import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
 import good.damn.scriptengine.engines.script.utils.ScriptCommandsUtils;
 import good.damn.scriptengine.engines.script.utils.ScriptDefinerUtils;
@@ -31,14 +32,16 @@ public class ScriptEngine {
 
     private EditText et_target;
 
+    private OnConfigureViewListener mOnConfigureViewListener;
+
     private void createPhrase(TextViewPhrase target) {
         target.setGravity(Gravity.CENTER);
         target.setAlpha(0.0f);
 
         mRoot.addView(target, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        target.animate().alpha(1.0f).setDuration(750)
-                .withEndAction(() -> target.fadeOutTransition(new Random(), metrics.density)).start();
-
+        if (mOnConfigureViewListener != null) {
+            mOnConfigureViewListener.onConfigured(target);
+        }
     }
 
     public ScriptEngine(Context context){
@@ -48,6 +51,10 @@ public class ScriptEngine {
 
     public void setSourceEditText(EditText et_target) {
         this.et_target = et_target;
+    }
+
+    public void setOnConfigureView(OnConfigureViewListener configureViewListener) {
+        mOnConfigureViewListener = configureViewListener;
     }
 
     public void setRootViewGroup(ViewGroup root) {

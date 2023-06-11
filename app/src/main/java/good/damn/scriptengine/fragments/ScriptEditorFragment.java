@@ -20,10 +20,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Random;
 
 import good.damn.scriptengine.R;
 import good.damn.scriptengine.adapters.FilesAdapter;
 import good.damn.scriptengine.engines.script.ScriptEngine;
+import good.damn.scriptengine.engines.script.interfaces.OnConfigureViewListener;
 import good.damn.scriptengine.models.Piece;
 import good.damn.scriptengine.utils.ArrayUtils;
 import good.damn.scriptengine.utils.ToolsUtilities;
@@ -32,6 +34,7 @@ import good.damn.scriptengine.views.TextViewPhrase;
 public class ScriptEditorFragment extends Fragment {
 
     private static final String TAG = "ScriptEditorFragment";
+    private static final Random sRandom = new Random();
 
     private boolean isEdited = false;
 
@@ -62,6 +65,18 @@ public class ScriptEditorFragment extends Fragment {
         ScriptEngine scriptEngine = new ScriptEngine(context);
         scriptEngine.setRootViewGroup(root);
         scriptEngine.setSourceEditText(et_phrase);
+        scriptEngine.setOnConfigureView(new OnConfigureViewListener() {
+            @Override
+            public void onConfigured(TextViewPhrase textViewPhrase) {
+                textViewPhrase.animate()
+                        .alpha(1.0f)
+                        .setDuration(750)
+                        .withEndAction(()-> {
+                            textViewPhrase.fadeOutTransition(sRandom,2.1f); // FIX
+                        }).start();
+
+            }
+        });
 
         v.findViewById(R.id.personalEditor_button_start).setOnClickListener(new View.OnClickListener() {
             @Override
