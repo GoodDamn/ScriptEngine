@@ -15,16 +15,32 @@ public class Utilities {
 
     private static final String TAG = "Utilities";
 
-    public static byte[] gb(int number){ // big-endian (getBytesFromNumber)
-        byte[] b = new byte[2];
-        b[0] = (byte) (number/255);
-        b[1] = (byte) (number%255);
-        return b;
+    public static byte[] gb(short number){ // big-endian (getBytesFromNumber)
+        return new byte[] {
+                (byte) (number >> 8),
+                (byte) (number & 0xFF)
+        };
+    }
+
+    public static byte[] gbInt(int number) {
+        return new byte[] {
+                (byte) (number >> 24),
+                (byte) ((number >> 16) & 0xFF),
+                (byte) ((number >> 8) & 0xFF),
+                (byte) (number & 0xFF)
+        };
     }
 
     public static short gn(byte a, byte b){
-        return (short) ((a & 0xFF) * 255 + (b & 0xFF));
+        return (short) (a << 8 | b);
     } // get number from bytes
+
+    public static int gn(byte[] bytes, int offset) {
+        return (bytes[offset] << 24) |
+               (bytes[offset+1] << 16) |
+               (bytes[offset+2] << 8) |
+               (bytes[offset+3]);
+    }
 
     public static byte[] getBytesFromIS(String userPath)
             throws IOException {

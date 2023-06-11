@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 import good.damn.scriptengine.R;
@@ -71,7 +72,7 @@ public class ScriptEditorFragment extends Fragment {
                 byte[] script = new byte[0];
                 byte scriptLength = 0;
                 for (byte i = 0; i < arr.length; i++) {
-                    byte[] t = scriptEngine.execute(arr[i]);
+                    byte[] t = scriptEngine.compile(arr[i]);
                     if (t == null)
                         continue;
                     script = ArrayUtils.concatByteArrays(script,t);
@@ -83,7 +84,18 @@ public class ScriptEditorFragment extends Fragment {
                 byte[] text = ArrayUtils.concatByteArrays(t.getBytes(StandardCharsets.UTF_8),
                         new byte[]{0});
 
-                byte[] total = ArrayUtils.concatByteArrays(text,
+                int length = text.length+1+script.length;
+
+                byte[] chunkLength = new byte[]{
+                        (byte) (length >> 24),
+                        (byte) ((length >> 16) & 0xFF),
+                        (byte) ((length >> 8) & 0xFF),
+                        (byte) (length & 0xFF)
+                };
+
+                byte[] total = ArrayUtils.concatByteArrays(
+                        chunkLength,
+                        text,
                         new byte[]{scriptLength},
                         script);
 

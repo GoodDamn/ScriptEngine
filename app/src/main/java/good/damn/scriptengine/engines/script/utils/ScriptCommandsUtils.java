@@ -95,7 +95,7 @@ public class ScriptCommandsUtils {
 
         if (argv.length == 2){
             origin[0] = 4;
-            args = ArrayUtils.concatByteArrays(origin,gb((int) (size * 1000)));
+            args = ArrayUtils.concatByteArrays(origin,gb((short) (size * 1000)));
             et_target.setTextSize(size);
             return args;
         }
@@ -105,7 +105,7 @@ public class ScriptCommandsUtils {
                 int startPos = Integer.parseInt(argv[2]);
                 setSpan(startPos, et_target.getText().length(),new AbsoluteSizeSpan((int) size,true),et_target);
                 origin[0] = 6;
-                args = ArrayUtils.concatByteArrays(origin,gb((short) (size * 1000)), gb(startPos));
+                args = ArrayUtils.concatByteArrays(origin,gb((short) (size * 1000)), gb((short) startPos));
             } catch (NumberFormatException exception){
                 Utilities.showMessage("Invalid integer-argument format for ("+argv[0] + " " + argv[1] + " " + argv[2],
                         context);
@@ -119,7 +119,10 @@ public class ScriptCommandsUtils {
                 int endPos = Integer.parseInt(argv[3]);
                 setSpan(startPos, endPos,new AbsoluteSizeSpan((int) size,true),et_target);
                 origin[0] = 8;
-                args = ArrayUtils.concatByteArrays(origin, gb((short) (size * 1000)), gb(startPos), gb(endPos));
+                args = ArrayUtils.concatByteArrays(origin,
+                        gb((short) (size * 1000)),
+                        gb((short) startPos),
+                        gb((short) endPos));
             } catch (NumberFormatException exception){
                 Utilities.showMessage("Invalid integer-argument format for (" + argv[0] + " " + argv[1] + " " + argv[2] + " " + argv[3],
                         context);
@@ -179,7 +182,7 @@ public class ScriptCommandsUtils {
             try {
                 origin[0] += 4;
                 int startPos = Integer.parseInt(argv[2]);
-                args = ArrayUtils.concatByteArrays(origin, style, gb(startPos));
+                args = ArrayUtils.concatByteArrays(origin, style, gb((short) startPos));
                 Log.d(TAG, "Font: ARG_2: " + args.length + " " + origin[0]);
                 setSpan(startPos, et_target.getText().length(),span,et_target);
             } catch (NumberFormatException exception){
@@ -194,7 +197,10 @@ public class ScriptCommandsUtils {
                 origin[0] += 6;
                 int startPos = Integer.parseInt(argv[2]);
                 int endPos = Integer.parseInt(argv[3]);
-                args = ArrayUtils.concatByteArrays(origin, style, gb(startPos), gb(endPos));
+                args = ArrayUtils.concatByteArrays(origin,
+                        style,
+                        gb((short) startPos),
+                        gb((short) endPos));
                 Log.d(TAG, "Font: ARG_3: " + args.length + " " + origin[0]);
                 setSpan(startPos, endPos,span,et_target);
             } catch (NumberFormatException exception){
@@ -248,10 +254,10 @@ public class ScriptCommandsUtils {
             Log.d(TAG, "Image: imgLength: " + origin[2] + " " + origin[3] + " " + origin[4]);
             Log.d(TAG, "Image: imgLength: " + ((origin[2] & 0xFF) * 65025) + " " + ((origin[3] & 0xFF) * 255) + " " + (origin[4] & 0xFF) + " " + img.length);
             args = ArrayUtils.concatByteArrays(origin,
-                    gb(Integer.parseInt(argv[2])), // width of image
-                    gb(Integer.parseInt(argv[3])), // height of image
-                    gb((int) (1000.0f * xPos / displayMetrics.widthPixels)), // normal value of X pos
-                    gb((int) (1000.0f * yPos / displayMetrics.heightPixels)), // normal value of Y pos
+                    gb(Short.parseShort(argv[2])), // width of image
+                    gb(Short.parseShort(argv[3])), // height of image
+                    gb((short) (1000.0f * xPos / displayMetrics.widthPixels)), // normal value of X pos
+                    gb((short) (1000.0f * yPos / displayMetrics.heightPixels)), // normal value of Y pos
                     img);
         } catch (IOException exception) {
             exception.printStackTrace();
@@ -292,8 +298,8 @@ public class ScriptCommandsUtils {
             }
 
             args = ArrayUtils.concatByteArrays(origin,
-                    gb((int) (1000.0f * xPos / displayMetrics.widthPixels)), // normal value of X pos
-                    gb((int) (1000.0f * yPos / displayMetrics.heightPixels)), // normal value of Y pos
+                    gb((short) (1000.0f * xPos / displayMetrics.widthPixels)), // normal value of X pos
+                    gb((short) (1000.0f * yPos / displayMetrics.heightPixels)), // normal value of Y pos
                     gif);
         } catch (IOException exception) {
             exception.printStackTrace();

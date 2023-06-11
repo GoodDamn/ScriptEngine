@@ -16,6 +16,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import good.damn.scriptengine.engines.script.ScriptEngine;
+import good.damn.scriptengine.engines.script.ScriptReader;
 import good.damn.scriptengine.utils.FileReaderUtils;
 import good.damn.scriptengine.utils.Utilities;
 
@@ -50,12 +51,21 @@ public class PreviewActivity extends AppCompatActivity {
         }
 
         ScriptEngine scriptEngine = new ScriptEngine(this);
+        ScriptReader scriptReader = new ScriptReader(scriptEngine, mContent);
+
         FrameLayout root_FrameLayout = new FrameLayout(this);
 
         scriptEngine.setRootViewGroup(root_FrameLayout);
 
-
-
         setContentView(root_FrameLayout);
+
+        root_FrameLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                scriptReader.next();
+            }
+        });
+
+        scriptReader.next();
     }
 }

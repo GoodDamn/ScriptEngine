@@ -54,7 +54,11 @@ public class ScriptEngine {
         mRoot = root;
     }
 
-    public byte[] execute(String line) {
+    public Context getContext() {
+        return mContext;
+    }
+
+    public byte[] compile(String line) {
         byte[] args = null;
 
         String[] argv = line.split("\\s+");
@@ -102,17 +106,26 @@ public class ScriptEngine {
         return args;
     }
 
-
     public void read(byte[] chunk, TextViewPhrase target) {
+        read(chunk, target, 0);
+    }
+
+    public int read(byte[] chunk, TextViewPhrase target, int offsetChunk) {
 
         Context context = mRoot.getContext();
 
+        int chunkLength = Utilities.gn(chunk,offsetChunk) + 4;
+
+        Log.d(TAG, "read: CHUNK_LENGTH: " + chunkLength + " CHUNK[offsetChunk]:" + chunk[offsetChunk] + " OFFSET_CHUNK: " + offsetChunk);
+
+        int offset = offsetChunk + 4;
+
         byte[] buffer = new byte[512];
-        byte current = chunk[0];
+        byte current = chunk[offset];
         short i = 0;
         for (; current != 0; i++){
             buffer[i] = current;
-            current = chunk[i+1];
+            current = chunk[i+1+offset];
         }
 
         String text = new String(buffer, StandardCharsets.UTF_8).trim();
@@ -120,17 +133,17 @@ public class ScriptEngine {
         Log.d(TAG, "read: TEXT_BYTES_LENGTH: " + i + " TEXT:" + text);
         i+=1;
 
-        if (chunk.length == i) { // No script to miss this one
+        if (chunk.length == i+offset) { // No script to miss this one
             createPhrase(target);
-            return;
+            return chunkLength;
         }
 
-        short scriptSize = (short) (chunk[i] & 0xFF);
+        short scriptSize = (short) (chunk[i+offset] & 0xFF);
         int filesOffset = 0;
         i++;
         Log.d(TAG, "read: SCRIPT_SIZE: "+ scriptSize);
         for (int j = 0; j < scriptSize;) {
-            int currentOffset = i+j+filesOffset;
+            int currentOffset = i+j+filesOffset+offset;
             int argSize = chunk[currentOffset] & 0xFF;
             currentOffset++;
             byte commandIndex = chunk[currentOffset];
@@ -145,7 +158,7 @@ public class ScriptEngine {
                 case 3: // img
                     ScriptGraphicsFile scriptImage = ScriptDefinerUtils.Image(chunk,currentOffset);
                     if (scriptImage == null) {
-                        return;
+                        return chunkLength;
                     }
 
                     byte[] img = scriptImage.file;
@@ -200,5 +213,6 @@ public class ScriptEngine {
             j += argSize;
         }
         createPhrase(target);
+        return chunkLength;
     }
 }

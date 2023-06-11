@@ -28,8 +28,13 @@ public class FileReaderUtils {
 
         while((line = bufferedReader.readLine()) != null) {
             byte[] textChunk = line.getBytes(StandardCharsets.UTF_8);
+            int length = Utilities.gn(Utilities.gbInt(textChunk.length+1),0);
+            Log.d(TAG, "Txt: FACT_LENGTH: " + (textChunk.length+1) + " READ LENGTH: " + length);
             arrayList.add(new Piece(
-                    ArrayUtils.concatByteArrays(textChunk, new byte[]{0}),
+                    ArrayUtils.concatByteArrays(
+                            Utilities.gbInt(textChunk.length+1),
+                            textChunk,
+                            new byte[]{0}),
                     line)
             );
         }
@@ -48,10 +53,10 @@ public class FileReaderUtils {
 
         int n;
 
-        do {
-            n = inputStream.read(buffer);
+        while ((n = inputStream.read(buffer)) != -1) {
+            Log.d(TAG, "getBytesFromFile: READ: " + n + " " + Arrays.toString(buffer));
             baos.write(buffer, 0, n);
-        } while(n != -1);
+        }
 
         byte[] total = baos.toByteArray();
 
