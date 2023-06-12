@@ -1,6 +1,7 @@
 package good.damn.scriptengine.adapters;
 
 import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Environment;
@@ -86,6 +87,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
         Log.d(TAG, "onBindViewHolder: " + mimeType);
         holder.isImageFile = mimeType != null && mimeType.contains("image");
         holder.isAudioFile = mimeType != null && mimeType.contains("audio/mpeg");
+
         holder.preview.setBackgroundResource(R.drawable.ic_file);
 
         if (f.isDirectory()){
@@ -93,15 +95,21 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
         }
 
         if (holder.isImageFile){
-            try {
-                holder.preview.setBackground(new BitmapDrawable(holder.itemView.getContext().getResources(),
-                        MediaStore.Images.Media.getBitmap(
-                                holder.itemView.getContext().getContentResolver(),
-                                Uri.fromFile(f))
-                ));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+                holder.preview.post(()->{
+                    try {
+                        holder.preview.setBackground(new BitmapDrawable(
+                                    Bitmap.createScaledBitmap(MediaStore.Images.Media.getBitmap(
+                                            holder.itemView.getContext().getContentResolver(),
+                                            Uri.fromFile(f)),
+                                    holder.preview.getWidth(),
+                                    holder.preview.getHeight(),
+                                    false)
+                                )
+                        );
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
         }
 
         if (holder.isAudioFile){

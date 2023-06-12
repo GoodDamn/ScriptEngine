@@ -32,14 +32,17 @@ public class Utilities {
     }
 
     public static short gn(byte a, byte b){
-        return (short) (a << 8 | b);
+        return (short) (
+                (a & 0xff) << 8 |
+                (b & 0xff)
+        );
     } // get number from bytes
 
     public static int gn(byte[] bytes, int offset) {
-        return (bytes[offset] << 24) |
-               (bytes[offset+1] << 16) |
-               (bytes[offset+2] << 8) |
-               (bytes[offset+3]);
+        return ((bytes[offset] & 0xFF) << 24) |
+               ((bytes[offset+1] & 0xFF) << 16) |
+               ((bytes[offset+2] & 0xFF) << 8) |
+               ((bytes[offset+3] & 0xFF));
     }
 
     public static byte[] getBytesFromIS(String userPath)

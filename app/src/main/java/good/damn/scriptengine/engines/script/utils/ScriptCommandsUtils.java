@@ -275,7 +275,7 @@ public class ScriptCommandsUtils {
         try {
             byte[] gif = Utilities.getBytesFromIS(argv[1]);
             byte[] origin = new byte[5];
-            origin[0] = 8; // argSize (2 args * 2 bytes) + 4 next args
+            origin[0] = 10; // argSize (2 args * 2 bytes) + 4 next args
             origin[1] = 4; // commandIndex
             origin[2] = (byte) (gif.length / 65025);
             origin[3] = (byte) (gif.length / 255 % 255);

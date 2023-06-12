@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Random;
 
 import good.damn.scriptengine.R;
@@ -29,6 +30,7 @@ import good.damn.scriptengine.engines.script.interfaces.OnConfigureViewListener;
 import good.damn.scriptengine.models.Piece;
 import good.damn.scriptengine.utils.ArrayUtils;
 import good.damn.scriptengine.utils.ToolsUtilities;
+import good.damn.scriptengine.utils.Utilities;
 import good.damn.scriptengine.views.TextViewPhrase;
 
 public class ScriptEditorFragment extends Fragment {
@@ -74,7 +76,6 @@ public class ScriptEditorFragment extends Fragment {
                         .withEndAction(()-> {
                             textViewPhrase.fadeOutTransition(sRandom,2.1f); // FIX
                         }).start();
-
             }
         });
 
@@ -101,12 +102,11 @@ public class ScriptEditorFragment extends Fragment {
 
                 int length = text.length+1+script.length;
 
-                byte[] chunkLength = new byte[]{
-                        (byte) (length >> 24),
-                        (byte) ((length >> 16) & 0xFF),
-                        (byte) ((length >> 8) & 0xFF),
-                        (byte) (length & 0xFF)
-                };
+                Log.d(TAG, "onClick: CHUNK_LENGTH: FACT: " + length);
+
+
+                byte[] chunkLength = Utilities.gbInt(length);
+                Log.d(TAG, "onClick: OWN: " + Arrays.toString(chunkLength));
 
                 byte[] total = ArrayUtils.concatByteArrays(
                         chunkLength,
