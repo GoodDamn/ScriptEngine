@@ -19,6 +19,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import good.damn.scriptengine.utils.ArrayUtils;
 import good.damn.scriptengine.utils.Utilities;
@@ -212,6 +213,30 @@ public class ScriptCommandsUtils {
         Utilities.showMessage("No argument for (" + argv[0],
                 context);
         return null;
+    }
+
+    // 2
+    public static byte[] Background(String[] argv, Context context) {
+
+        int color = 0;
+
+        if (argv[1].contains("#")) {
+            try {
+                color = Color.parseColor(argv[1]);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+                Utilities.showMessage("Invalid hex-format value for (" + argv[0], context);
+                return null;
+            }
+
+        }
+
+        Log.d(TAG, "Background: COLOR: " + color + " BYTES:"+ Arrays.toString(Utilities.gbInt(color)));
+
+        return ArrayUtils.concatByteArrays(new byte[] {
+            6, // arg size
+            2 // command index
+        }, Utilities.gbInt(color));
     }
 
     // 3

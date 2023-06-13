@@ -84,7 +84,19 @@ public class ScriptEngine {
             case "font": // 1
                 args = ScriptCommandsUtils.Font(argv,et_target,context);
                 break;
-            case "action": // 2
+            case "bg": // 2 background
+                args = ScriptCommandsUtils.Background(argv,context);
+                break;
+            case "img": // put image on the screen 3
+                args = ScriptCommandsUtils.Image(argv,context);
+                break;
+            case "vect": // set of vectors 4
+                break;
+            // global commands
+            case "gif": // 4
+                args = ScriptCommandsUtils.Gif(argv,context);
+                break;
+            case "action": // 5
                 switch (argv[1].toLowerCase()) {
                     case "lp": // long press
                         break;
@@ -93,17 +105,6 @@ public class ScriptEngine {
                     case "sp": // swipe
                         break;
                 }
-                break;
-            case "img": // put image on the screen 3
-                args = ScriptCommandsUtils.Image(argv,context);
-                break;
-            case "vect": // set of vectors 4
-                break;
-            // global commands
-            case "bg": // background 5
-                break;
-            case "gif":
-                args = ScriptCommandsUtils.Gif(argv,context);
                 break;
             default:
                 Utilities.showMessage("Invalid command: " + argv[0], context);
@@ -162,6 +163,11 @@ public class ScriptEngine {
                 case 1: // font
                     ScriptDefinerUtils.Font(chunk,currentOffset,argSize,target);
                     break;
+                case 2: // bg
+                    int color = ScriptDefinerUtils.Background(chunk,currentOffset);
+                    Log.d(TAG, "read: BACKGROUND COLOR: " + color);
+                    mRoot.setBackgroundColor(color);
+                    break;
                 case 3: // img
                     ScriptGraphicsFile scriptImage = ScriptDefinerUtils.Image(chunk,currentOffset);
                     if (scriptImage == null) {
@@ -190,7 +196,7 @@ public class ScriptEngine {
                                             mRoot.removeView(imageView)).start())
                             .start();
                     break;
-                case 4: // Gif
+                case 4: // gif
                     ScriptGraphicsFile gifScript = ScriptDefinerUtils.Gif(chunk,currentOffset);
 
                     filesOffset += gifScript.file.length - 1;

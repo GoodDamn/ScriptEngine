@@ -15,6 +15,7 @@ import android.util.Log;
 import android.widget.TextView;
 
 import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
+import good.damn.scriptengine.utils.Utilities;
 
 public class ScriptDefinerUtils {
 
@@ -122,6 +123,13 @@ public class ScriptDefinerUtils {
 
     }
 
+    //2
+    public static int Background(byte[] chunk, int currentOffset) {
+        currentOffset++;
+        return Utilities.gn(chunk, currentOffset);
+    }
+
+    // 3
     public static ScriptGraphicsFile Image(byte[] chunk,
                                            int currentOffset) {
         currentOffset++;
