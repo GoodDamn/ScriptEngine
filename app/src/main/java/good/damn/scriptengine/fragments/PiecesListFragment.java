@@ -64,12 +64,20 @@ public class PiecesListFragment extends Fragment {
                     return;
                 }
 
-                Utilities.showMessage("STARTING PREVIEW PROCESS AFTER " + (System.currentTimeMillis()-current), context);
+                Utilities.showMessage("STARTING PREVIEW PROCESS AFTER " + (System.currentTimeMillis()-current) + "ms", context);
                 Intent intent = new Intent(getActivity(), PreviewActivity.class);
                 intent.putExtra("dumbPath", path);
                 startActivity(intent);
             }
         });
+
+        v.findViewById(R.id.f_pieces_list_resources_page)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                    }
+                });
 
         InputStream inputStream = context.getResources().openRawResource(R.raw.text);
 

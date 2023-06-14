@@ -9,7 +9,9 @@
     <LinearLayout
         tools:contentDescription="Tab bar for debugging process"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
 
         <ImageView
             android:id="@+id/f_pieces_list_start_debug"
@@ -18,6 +20,14 @@
             android:scaleX="0.5"
             android:scaleY="0.5"
             app:srcCompat="@drawable/ic_play_arrow"/>
+
+        <ImageView
+            android:id="@+id/f_pieces_list_resources_page"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:scaleX="0.5"
+            android:scaleY="0.5"
+            app:srcCompat="@drawable/ic_folder_special"/>
 
     </LinearLayout>
 
