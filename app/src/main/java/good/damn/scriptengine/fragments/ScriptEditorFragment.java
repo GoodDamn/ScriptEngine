@@ -18,7 +18,6 @@ import androidx.fragment.app.Fragment;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Random;
@@ -157,7 +156,7 @@ public class ScriptEditorFragment extends Fragment {
         v.findViewById(R.id.personalEditor_selectFile).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ToolsUtilities.startFileManager(getActivity(), new FilesAdapter.Click() {
+                ToolsUtilities.startFileManager(getActivity(), new FilesAdapter.OnFileClickListener() {
                     @Override public void onClickedFolder(String prevFolder, String currentFolder) { }
                     @Override
                     public void onAudioFile(File file) {

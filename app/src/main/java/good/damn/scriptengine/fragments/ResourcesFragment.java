@@ -2,6 +2,7 @@ package good.damn.scriptengine.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,11 +15,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
 
-import good.damn.scriptengine.R;
+import good.damn.scriptengine.adapters.AddFilesAdapter;
 import good.damn.scriptengine.adapters.FilesAdapter;
 
 public class ResourcesFragment extends Fragment {
 
+    private static final String TAG = "ResourcesFragment";
 
     @Nullable
     @Override
@@ -29,10 +31,14 @@ public class ResourcesFragment extends Fragment {
         if (context == null)
             return null;
 
+        File dirResources = new File(context.getCacheDir()+"/resources");
+        if (dirResources.mkdir()) {
+            Log.d(TAG, "onCreateView: RESOURCES FOLDER HAS BEEN CREATED");
+        }
+        
         RecyclerView recyclerView = new RecyclerView(context);
-
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        recyclerView.setAdapter(new FilesAdapter(new FilesAdapter.Click() {
+        recyclerView.setAdapter(new AddFilesAdapter(new FilesAdapter.OnFileClickListener() {
             @Override
             public void onClickedFolder(String prevFolder, String currentFolder) {
 
@@ -47,7 +53,7 @@ public class ResourcesFragment extends Fragment {
             public void onImageFile(File file) {
 
             }
-        }));
+        }, dirResources.getAbsolutePath()));
 
         return recyclerView;
     }

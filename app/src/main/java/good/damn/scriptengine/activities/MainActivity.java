@@ -8,6 +8,7 @@ import android.os.Bundle;
 
 import good.damn.scriptengine.adapters.FragmentPagerAdapter;
 import good.damn.scriptengine.fragments.PiecesListFragment;
+import good.damn.scriptengine.fragments.ResourcesFragment;
 import good.damn.scriptengine.fragments.ScriptEditorFragment;
 import good.damn.scriptengine.interfaces.OnClickTextPiece;
 import good.damn.scriptengine.models.Piece;
@@ -39,7 +40,8 @@ public class MainActivity extends AppCompatActivity {
 
         mViewPager.setAdapter(new FragmentPagerAdapter(this, new Fragment[]{
                 piecesListFragment,
-                scriptEditorFragment
+                scriptEditorFragment,
+                new ResourcesFragment()
         }));
 
         setContentView(mViewPager);

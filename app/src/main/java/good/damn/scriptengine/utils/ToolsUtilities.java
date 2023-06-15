@@ -3,9 +3,7 @@ package good.damn.scriptengine.utils;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -22,7 +20,7 @@ import good.damn.scriptengine.adapters.FilesAdapter;
 
 public class ToolsUtilities {
 
-    public static void startFileManager(Activity context, FilesAdapter.Click onClick){
+    public static void startFileManager(Activity context, FilesAdapter.OnFileClickListener onOnFileClickListener){
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
             Dialog dialog = new Dialog(context);
             dialog.setCancelable(false);
@@ -33,23 +31,23 @@ public class ToolsUtilities {
             TextView tv_currentFolder = dialog.findViewById(R.id.file_manager_tv_current_folder),
                     tv_back = dialog.findViewById(R.id.file_manager_tv_back);
 
-            FilesAdapter adapter = new FilesAdapter(new FilesAdapter.Click() {
+            FilesAdapter adapter = new FilesAdapter(new FilesAdapter.OnFileClickListener() {
                 @Override
                 public void onClickedFolder(String prevFolder, String currentFolder) {
                     tv_back.setText(prevFolder);
                     tv_currentFolder.setText(currentFolder);
-                    onClick.onClickedFolder(prevFolder,currentFolder);
+                    onOnFileClickListener.onClickedFolder(prevFolder,currentFolder);
                 }
 
                 @Override
                 public void onAudioFile(File file) {
-                    onClick.onAudioFile(file);
+                    onOnFileClickListener.onAudioFile(file);
                     dialog.dismiss();
                 }
 
                 @Override
                 public void onImageFile(File file) {
-                    onClick.onImageFile(file);
+                    onOnFileClickListener.onImageFile(file);
                     dialog.dismiss();
                 }
             });
@@ -57,11 +55,11 @@ public class ToolsUtilities {
             tv_back.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (adapter.pages.size()== 0){
+                    if (adapter.mPages.size()== 0){
                         dialog.dismiss();
                         return;
                     }
-                    adapter.pages.remove(adapter.pages.size()-1);
+                    adapter.mPages.remove(adapter.mPages.size()-1);
                     adapter.updatePath();
                 }
             });

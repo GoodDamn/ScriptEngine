@@ -25,46 +25,67 @@ import good.damn.scriptengine.R;
 
 public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
 
-    private File[] files;
-    private final Click click;
-    public final ArrayList<String> pages;
+    private static final String TAG = "FilesAdapter";
 
-    public interface Click{
+    public final ArrayList<String> mPages;
+
+    protected File[] mFiles;
+    private final OnFileClickListener onFileClickListener;
+    private final String mPath;
+
+    public interface OnFileClickListener {
         void onClickedFolder(String prevFolder, String currentFolder);
         void onAudioFile(File file);
         void onImageFile(File file);
     }
 
-    private static final String TAG = "FilesAdapter";
-    public FilesAdapter(Click click){
-        files = Environment.getExternalStorageDirectory().listFiles();
-        Log.d(TAG, "FilesAdapter: " + Environment.getExternalStorageDirectory().getAbsolutePath() + " Files:" + files.length);
-        pages = new ArrayList<>();
-        this.click = click;
+    private String getMimeType(File file){
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(Uri.parse(Uri.fromFile(file).toString()).getEncodedSchemeSpecificPart()));
     }
 
     private String getCurrentPath(){
-        String path = Environment.getExternalStorageDirectory().getAbsolutePath();
-        for (String p: pages){
-            path += ("/"+p);
+        String st = new String(mPath);
+        for (String p: mPages){
+            st += ("/"+p);
         }
-        return path;
+        return st;
     }
 
-    public void updatePath(){
-        files = new File(getCurrentPath(),"").listFiles();
+    public void updatePath() {
+        mFiles = new File(getCurrentPath(),"").listFiles();
         String prevFolder = "";
         String currentFolder = "Device";
 
-        if (pages.size() >= 1)
-            currentFolder = pages.get(pages.size()-1);
+        Log.d(TAG, "updatePath: FILES: "+ mFiles.length);
 
-        if (pages.size() == 1)
+        if (mPages.size() >= 1)
+            currentFolder = mPages.get(mPages.size()-1);
+
+        if (mPages.size() == 1)
             prevFolder = "Device";
-        else if (pages.size() > 1)
-            prevFolder = pages.get(pages.size()-2);
-        click.onClickedFolder(prevFolder,currentFolder);
+        else if (mPages.size() > 1)
+            prevFolder = mPages.get(mPages.size()-2);
+        onFileClickListener.onClickedFolder(prevFolder,currentFolder);
         notifyDataSetChanged();
+    }
+
+
+    public FilesAdapter(OnFileClickListener onFileClickListener){
+        File dirEx = Environment.getExternalStorageDirectory();
+        mPath = dirEx.getAbsolutePath();
+        mFiles = dirEx.listFiles();
+        Log.d(TAG, "FilesAdapter: PATH: " + mPath + " FILES:" + mFiles.length);
+        mPages = new ArrayList<>();
+        this.onFileClickListener = onFileClickListener;
+    }
+
+    public FilesAdapter(OnFileClickListener onFileClickListener, String path) {
+        mPath = path;
+        mFiles = new File(path).listFiles();
+        Log.d(TAG, "FilesAdapter: PATH: " + path);
+        Log.d(TAG, "FilesAdapter: FILES: " + mFiles.length);
+        mPages = new ArrayList<>();
+        this.onFileClickListener = onFileClickListener;
     }
 
     @NonNull
@@ -73,36 +94,34 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
         return new FileItem(LayoutInflater.from(parent.getContext()).inflate(R.layout.card_file_row, parent,false));
     }
 
-    private String getMimeType(File file){
-        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(Uri.parse(Uri.fromFile(file).toString()).getEncodedSchemeSpecificPart()));
-    }
-
     @SuppressLint({"UseCompatLoadingForDrawables", "SetTextI18n"})
     @Override
     public void onBindViewHolder(@NonNull FileItem holder, int position) {
-        File f = files[position];
-        holder.name_file.setText(f.getName());
+        File f = mFiles[position];
+        holder.mTextView.setText(f.getName());
         Log.d(TAG, "onBindViewHolder: " + f.isDirectory() + " " + f.getName());
         String mimeType = getMimeType(f);
         Log.d(TAG, "onBindViewHolder: " + mimeType);
-        holder.isImageFile = mimeType != null && mimeType.contains("image");
-        holder.isAudioFile = mimeType != null && mimeType.contains("audio/mpeg");
+        if (mimeType != null) {
+            holder.isImageFile = mimeType.contains("image");
+            holder.isAudioFile = mimeType.contains("audio/mpeg");
+        }
 
-        holder.preview.setBackgroundResource(R.drawable.ic_file);
+        holder.mPreview.setBackgroundResource(R.drawable.ic_file);
 
         if (f.isDirectory()){
-            holder.preview.setBackgroundResource(R.drawable.ic_baseline_folder_24);
+            holder.mPreview.setBackgroundResource(R.drawable.ic_baseline_folder_24);
         }
 
         if (holder.isImageFile){
-                holder.preview.post(()->{
+                holder.mPreview.post(()->{
                     try {
-                        holder.preview.setBackground(new BitmapDrawable(
+                        holder.mPreview.setBackground(new BitmapDrawable(
                                     Bitmap.createScaledBitmap(MediaStore.Images.Media.getBitmap(
                                             holder.itemView.getContext().getContentResolver(),
                                             Uri.fromFile(f)),
-                                    holder.preview.getWidth(),
-                                    holder.preview.getHeight(),
+                                    holder.mPreview.getWidth(),
+                                    holder.mPreview.getHeight(),
                                     false)
                                 )
                         );
@@ -113,37 +132,37 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
         }
 
         if (holder.isAudioFile){
-            holder.preview.setBackgroundResource(R.drawable.ic_music_note);
+            holder.mPreview.setBackgroundResource(R.drawable.ic_music_note);
         }
     }
 
     @Override
     public int getItemCount() {
-        if (files == null)
+        if (mFiles == null)
             return 0;
-        return files.length;
+        return mFiles.length;
     }
 
     class FileItem extends RecyclerView.ViewHolder{
         boolean isImageFile = false,
             isAudioFile = false;
-        TextView name_file;
-        ImageView preview;
+        TextView mTextView;
+        ImageView mPreview;
         public FileItem(@NonNull View itemView) {
             super(itemView);
-            name_file = itemView.findViewById(R.id.file_manager_tv_item);
-            preview = itemView.findViewById(R.id.file_manager_iv_item);
+            mTextView = itemView.findViewById(R.id.file_manager_tv_item);
+            mPreview = itemView.findViewById(R.id.file_manager_iv_item);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    pages.add(name_file.getText().toString());
+                    mPages.add(mTextView.getText().toString());
                     if (isImageFile){
-                        click.onImageFile(files[getAdapterPosition()]);
+                        onFileClickListener.onImageFile(mFiles[getAdapterPosition()]);
                         return;
                     }
                     if (isAudioFile) {
-                        click.onAudioFile(files[getAdapterPosition()]);
+                        onFileClickListener.onAudioFile(mFiles[getAdapterPosition()]);
                         return;
                     }
                     updatePath();
