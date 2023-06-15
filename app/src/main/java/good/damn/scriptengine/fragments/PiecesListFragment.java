@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -57,7 +56,7 @@ public class PiecesListFragment extends Fragment {
                 assert context != null;
 
                 long current = System.currentTimeMillis();
-                String path = FileOutputUtils.makeSKCFile(pieces,context);
+                String path = FileOutputUtils.mkSKCFile(pieces,context);
                 if (path == null) {
                     Utilities.showMessage("ERROR IS OCCURRED DURING LINKING PROCESS",
                             context);

@@ -74,7 +74,7 @@ public class ScriptEditorFragment extends Fragment {
                         .alpha(1.0f)
                         .setDuration(750)
                         .withEndAction(()-> {
-                            textViewPhrase.fadeOutTransition(sRandom,2.1f); // FIX
+                            textViewPhrase.fadeOutTransition(sRandom,2.1f); // FIX DENSITY VALUE
                         }).start();
             }
         });

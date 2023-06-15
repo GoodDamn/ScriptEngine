@@ -169,7 +169,7 @@ public class ScriptEngine {
                     mRoot.setBackgroundColor(color);
                     break;
                 case 3: // img
-                    ScriptGraphicsFile scriptImage = ScriptDefinerUtils.Image(chunk,currentOffset);
+                    /*ScriptGraphicsFile scriptImage = ScriptDefinerUtils.Image(chunk,currentOffset);
                     if (scriptImage == null) {
                         return chunkLength;
                     }
@@ -194,7 +194,7 @@ public class ScriptEngine {
                     imageView.animate().scaleY(1.0f).scaleX(1.0f).withEndAction(() ->
                                     imageView.animate().scaleX(.0f).scaleY(.0f).setStartDelay(1250).withEndAction(() ->
                                             mRoot.removeView(imageView)).start())
-                            .start();
+                            .start();*/
                     break;
                 case 4: // gif
                     ScriptGraphicsFile gifScript = ScriptDefinerUtils.Gif(chunk,currentOffset);

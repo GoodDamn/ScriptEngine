@@ -243,52 +243,33 @@ public class ScriptCommandsUtils {
     public static byte[] Image(String[] argv, Context context) {
         Log.d(TAG, "execute: IMAGE COMMAND: " + argv[1]);
 
-        byte[] args = null;
-
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
 
-        try {
+        short xPos = Short.parseShort(argv[4]);
+        short yPos = Short.parseShort(argv[5]);
 
-            short xPos = Short.parseShort(argv[4]);
-            short yPos = Short.parseShort(argv[5]);
-
-            if (xPos > displayMetrics.widthPixels || xPos < 0) {
-                Utilities.showMessage("img command hasn't executed("+
-                        xPos + " on X Axis doesn't belong to [0;"+displayMetrics.widthPixels+"]",
-                        context);
-                return new byte[0];
-            }
-
-            if (yPos > displayMetrics.heightPixels || yPos < 0) {
-                Utilities.showMessage("img command hasn't executed("+
-                        yPos + " on Y Axis doesn't belong to [0;"+displayMetrics.heightPixels+"]",
-                        context);
-                return new byte[0];
-            }
-
-            byte[] img = Utilities.getBytesFromResources(argv[1],context);
-
-            byte[] origin = new byte[5];
-            origin[0] = 12; // argSize (4 args * 2 bytes) + 4 next args
-            origin[1] = 3; // commandIndex
-            origin[2] = (byte) (img.length / 65025);
-            origin[3] = (byte) (img.length / 255 % 255);
-            origin[4] = (byte) (img.length % 255);
-
-            // Arguments
-            Log.d(TAG, "Image: imgLength: " + origin[2] + " " + origin[3] + " " + origin[4]);
-            Log.d(TAG, "Image: imgLength: " + ((origin[2] & 0xFF) * 65025) + " " + ((origin[3] & 0xFF) * 255) + " " + (origin[4] & 0xFF) + " " + img.length);
-            args = ArrayUtils.concatByteArrays(origin,
-                    gb(Short.parseShort(argv[2])), // width of image
-                    gb(Short.parseShort(argv[3])), // height of image
-                    gb((short) (1000.0f * xPos / displayMetrics.widthPixels)), // normal value of X pos
-                    gb((short) (1000.0f * yPos / displayMetrics.heightPixels)), // normal value of Y pos
-                    img);
-        } catch (IOException exception) {
-            exception.printStackTrace();
+        if (xPos > displayMetrics.widthPixels || xPos < 0) {
+            Utilities.showMessage("img command hasn't executed("+ xPos + " on X Axis doesn't belong to [0;"+displayMetrics.widthPixels+"]",
+                    context);
+            return new byte[0];
         }
 
-        return args;
+        if (yPos > displayMetrics.heightPixels || yPos < 0) {
+            Utilities.showMessage("img command hasn't executed("+ yPos + " on Y Axis doesn't belong to [0;"+displayMetrics.heightPixels+"]",
+                    context);
+            return new byte[0];
+        }
+
+        byte[] origin = new byte[2];
+        origin[0] = 9; // argSize (4 args * 2 bytes) + 1 next arg
+        origin[1] = 3; // commandIndex
+        
+        return ArrayUtils.concatByteArrays(origin,
+                gb(Short.parseShort(argv[2])), // width of image
+                gb(Short.parseShort(argv[3])), // height of image
+                gb((short) (1000.0f * xPos / displayMetrics.widthPixels)), // normal value of X pos
+                gb((short) (1000.0f * yPos / displayMetrics.heightPixels)), // normal value of Y pos
+                new byte[]{-1}); // res mark
     }
 
     // 4
