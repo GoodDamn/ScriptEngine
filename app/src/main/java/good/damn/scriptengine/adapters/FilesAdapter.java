@@ -30,8 +30,9 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
     public final ArrayList<String> mPages;
 
     protected File[] mFiles;
+    protected final String mPath;
+
     private final OnFileClickListener onFileClickListener;
-    private final String mPath;
 
     public interface OnFileClickListener {
         void onClickedFolder(String prevFolder, String currentFolder);
@@ -126,7 +127,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
                                 )
                         );
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        e.printStackTrace();
                     }
                 });
         }

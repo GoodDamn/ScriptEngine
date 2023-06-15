@@ -53,7 +53,7 @@ public class ResourcesFragment extends Fragment {
             public void onImageFile(File file) {
 
             }
-        }, dirResources.getAbsolutePath()));
+        }, dirResources.getAbsolutePath(), getActivity()));
 
         return recyclerView;
     }

@@ -20,7 +20,7 @@ import good.damn.scriptengine.adapters.FilesAdapter;
 
 public class ToolsUtilities {
 
-    public static void startFileManager(Activity context, FilesAdapter.OnFileClickListener onOnFileClickListener){
+    public static void startFileManager(Activity context, FilesAdapter.OnFileClickListener onFileClickListener){
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
             Dialog dialog = new Dialog(context);
             dialog.setCancelable(false);
@@ -36,18 +36,18 @@ public class ToolsUtilities {
                 public void onClickedFolder(String prevFolder, String currentFolder) {
                     tv_back.setText(prevFolder);
                     tv_currentFolder.setText(currentFolder);
-                    onOnFileClickListener.onClickedFolder(prevFolder,currentFolder);
+                    onFileClickListener.onClickedFolder(prevFolder,currentFolder);
                 }
 
                 @Override
                 public void onAudioFile(File file) {
-                    onOnFileClickListener.onAudioFile(file);
+                    onFileClickListener.onAudioFile(file);
                     dialog.dismiss();
                 }
 
                 @Override
                 public void onImageFile(File file) {
-                    onOnFileClickListener.onImageFile(file);
+                    onFileClickListener.onImageFile(file);
                     dialog.dismiss();
                 }
             });
