@@ -167,7 +167,7 @@ public class ScriptEditorFragment extends Fragment {
                     @SuppressLint("SetTextI18n")
                     @Override
                     public void onImageFile(File file) {
-                        editTextScript.setText(editTextScript.getText().toString().trim() + file.getName());
+                        editTextScript.setText(editTextScript.getText().toString().trim() + " " + file.getName());
                         try {
                             Log.d(TAG, "onImageFile: CANON: " + file.getCanonicalPath() + " ABS:" + file.getAbsolutePath());
                         } catch (IOException e) {

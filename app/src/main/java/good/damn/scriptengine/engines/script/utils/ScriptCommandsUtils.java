@@ -266,7 +266,7 @@ public class ScriptCommandsUtils {
                 return new byte[0];
             }
 
-            byte[] img = Utilities.getBytesFromIS(argv[1]);
+            byte[] img = Utilities.getBytesFromResources(argv[1],context);
 
             byte[] origin = new byte[5];
             origin[0] = 12; // argSize (4 args * 2 bytes) + 4 next args
@@ -298,7 +298,7 @@ public class ScriptCommandsUtils {
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
 
         try {
-            byte[] gif = Utilities.getBytesFromIS(argv[1]);
+            byte[] gif = Utilities.getBytesFromResources(argv[1], context);
             byte[] origin = new byte[5];
             origin[0] = 10; // argSize (2 args * 2 bytes) + 4 next args
             origin[1] = 4; // commandIndex

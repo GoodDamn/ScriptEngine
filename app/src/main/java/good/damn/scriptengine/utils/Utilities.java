@@ -3,11 +3,9 @@ package good.damn.scriptengine.utils;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
@@ -45,9 +43,19 @@ public class Utilities {
                ((bytes[offset+3] & 0xFF));
     }
 
-    public static byte[] getBytesFromIS(String userPath)
+    public static byte[] getBytesFromResources(String resourceName, Context context)
             throws IOException {
-        FileInputStream inputStream = new FileInputStream("storage/emulated/0/"+userPath);
+        return getBytesFromStorage(context.getCacheDir()+FileUtils.RES_DIR+"/"+resourceName);
+    }
+
+    public static byte[] getBytesFromExternalStorage(String userPath)
+            throws IOException {
+        return getBytesFromStorage("storage/emulated/0/"+userPath);
+    }
+
+    public static byte[] getBytesFromStorage(String path)
+            throws IOException{
+        FileInputStream inputStream = new FileInputStream(path);
         byte[] buffer = new byte[512];
         int n;
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -62,6 +70,6 @@ public class Utilities {
 
     public static void showMessage(String m, Context context) {
         Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(() -> Toast.makeText(context, m, Toast.LENGTH_SHORT).show());
+        handler.post(() -> Toast.makeText(context, m, Toast.LENGTH_LONG).show());
     }
 }
