@@ -28,6 +28,7 @@ import good.damn.scriptengine.engines.script.ScriptEngine;
 import good.damn.scriptengine.engines.script.interfaces.OnConfigureViewListener;
 import good.damn.scriptengine.models.Piece;
 import good.damn.scriptengine.utils.ArrayUtils;
+import good.damn.scriptengine.utils.FileUtils;
 import good.damn.scriptengine.utils.ToolsUtilities;
 import good.damn.scriptengine.utils.Utilities;
 import good.damn.scriptengine.views.TextViewPhrase;
@@ -166,16 +167,14 @@ public class ScriptEditorFragment extends Fragment {
                     @SuppressLint("SetTextI18n")
                     @Override
                     public void onImageFile(File file) {
-                        String userPath = file.getPath().substring(20);
-                        Log.d(TAG, "onImageFile: " + userPath);
-                        editTextScript.setText(editTextScript.getText().toString().trim() + " " + userPath);
+                        editTextScript.setText(editTextScript.getText().toString().trim() + file.getName());
                         try {
-                            Log.d(TAG, "onImageFile: " + file.getCanonicalPath());
+                            Log.d(TAG, "onImageFile: CANON: " + file.getCanonicalPath() + " ABS:" + file.getAbsolutePath());
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
-                });
+                }, context.getCacheDir() + FileUtils.RES_DIR);
             }
         });
 

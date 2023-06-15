@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.pm.PackageManager;
+import android.os.Environment;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -20,9 +21,11 @@ import good.damn.scriptengine.adapters.FilesAdapter;
 
 public class ToolsUtilities {
 
-    public static void startFileManager(Activity context, FilesAdapter.OnFileClickListener onFileClickListener){
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
-            Dialog dialog = new Dialog(context);
+    public static void startFileManager(Activity activity,
+                                        FilesAdapter.OnFileClickListener onFileClickListener,
+                                        String path) {
+        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+            Dialog dialog = new Dialog(activity);
             dialog.setCancelable(false);
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
             dialog.setContentView(R.layout.file_manager);
@@ -50,7 +53,7 @@ public class ToolsUtilities {
                     onFileClickListener.onImageFile(file);
                     dialog.dismiss();
                 }
-            });
+            }, path);
 
             tv_back.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -66,12 +69,19 @@ public class ToolsUtilities {
 
             RecyclerView recyclerView = dialog.findViewById(R.id.file_manager_recyclerView);
             recyclerView.setHasFixedSize(true);
-            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+            recyclerView.setLayoutManager(new LinearLayoutManager(activity));
             recyclerView.setAdapter(adapter);
 
             dialog.show();
             return;
         }
-        ActivityCompat.requestPermissions(context, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 200);
+        ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 200);
+
+    }
+
+    public static void startFileManager(Activity activity, FilesAdapter.OnFileClickListener onFileClickListener){
+        startFileManager(activity,
+                onFileClickListener,
+                Environment.getExternalStorageDirectory().getAbsolutePath());
     }
 }

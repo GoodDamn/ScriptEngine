@@ -30,6 +30,8 @@ public class MainActivity extends AppCompatActivity {
 
         ScriptEditorFragment scriptEditorFragment = new ScriptEditorFragment();
 
+        ResourcesFragment resourcesFragment = new ResourcesFragment();
+
         piecesListFragment.setOnClickTextPiece(new OnClickTextPiece() {
             @Override
             public void onClick(Piece piece, int position) {
@@ -41,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         mViewPager.setAdapter(new FragmentPagerAdapter(this, new Fragment[]{
                 piecesListFragment,
                 scriptEditorFragment,
-                new ResourcesFragment()
+                resourcesFragment
         }));
 
         setContentView(mViewPager);

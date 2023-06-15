@@ -53,7 +53,6 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
     }
 
     public void updatePath() {
-        mFiles = new File(getCurrentPath(),"").listFiles();
         String prevFolder = "";
         String currentFolder = "Device";
 
@@ -67,9 +66,13 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
         else if (mPages.size() > 1)
             prevFolder = mPages.get(mPages.size()-2);
         onFileClickListener.onClickedFolder(prevFolder,currentFolder);
-        notifyDataSetChanged();
+        notifyDataSet();
     }
 
+    public void notifyDataSet() {
+        mFiles = new File(mPath).listFiles();
+        notifyDataSetChanged();
+    }
 
     public FilesAdapter(OnFileClickListener onFileClickListener){
         File dirEx = Environment.getExternalStorageDirectory();
@@ -111,7 +114,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
         holder.mPreview.setBackgroundResource(R.drawable.ic_file);
 
         if (f.isDirectory()){
-            holder.mPreview.setBackgroundResource(R.drawable.ic_baseline_folder_24);
+            holder.mPreview.setBackgroundResource(R.drawable.ic_folder);
         }
 
         if (holder.isImageFile){
@@ -144,11 +147,16 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
         return mFiles.length;
     }
 
-    class FileItem extends RecyclerView.ViewHolder{
+    public class FileItem extends RecyclerView.ViewHolder{
         boolean isImageFile = false,
             isAudioFile = false;
         TextView mTextView;
         ImageView mPreview;
+
+        public String getFileFullName() {
+            return mTextView.getText().toString();
+        }
+
         public FileItem(@NonNull View itemView) {
             super(itemView);
             mTextView = itemView.findViewById(R.id.file_manager_tv_item);

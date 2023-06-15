@@ -15,6 +15,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import good.damn.scriptengine.R;
+import good.damn.scriptengine.utils.FileUtils;
 import good.damn.scriptengine.utils.ToolsUtilities;
 import good.damn.scriptengine.utils.Utilities;
 
@@ -67,12 +68,46 @@ public class AddFilesAdapter extends FilesAdapter {
         super.onBindViewHolder(holder, position);
     }
 
+    private void copyFile(File sourceFile) {
+        Utilities.showMessage("COPYING FILE...", mActivity);
+
+        File resFile = new File(mActivity.getCacheDir()+ FileUtils.RES_DIR+"/"+sourceFile.getName());
+
+        FileInputStream fis;
+        FileOutputStream fos;
+
+        try {
+
+            if (!resFile.exists() && resFile.createNewFile()) {
+                Log.d(TAG, "copyFile: " + resFile.getName() + " HAS BEEN CREATED!");
+            }
+
+
+            fis = new FileInputStream(sourceFile);
+            fos = new FileOutputStream(resFile);
+
+            byte[] buffer = new byte[2048];
+            int n;
+            while ((n = fis.read(buffer)) != -1) {
+                fos.write(buffer, 0, n);
+            }
+
+            fis.close();
+            fos.close();
+
+            notifyDataSet();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     class AddFileItem extends FileItem {
 
         public AddFileItem(@NonNull View itemView) {
             super(itemView);
             mTextView.setText("Add file");
-            mPreview.setBackgroundColor(0xFFFF0000);
+            mPreview.setBackgroundResource(R.drawable.ic_add);
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -83,49 +118,13 @@ public class AddFilesAdapter extends FilesAdapter {
                         @Override
                         public void onAudioFile(File file) {
                             Log.d(TAG, "onAudioFile: FILE: " + file);
+                            copyFile(file);
                         }
 
                         @Override
                         public void onImageFile(File file) {
-
-                            Utilities.showMessage("COPYING FILE...", mActivity);
-
-                            String fullName = file.getName();
-                            String name = fullName.substring(0,fullName.indexOf("."));
-                            Log.d(TAG, "onImageFile: FILE: " + file + " NAME: " + name);
-
-                            File resFile = new File(mActivity.getCacheDir()+"/resources/"+name+".skres");
-
-                            FileInputStream fis;
-                            FileOutputStream fos;
-
-                            try {
-
-                                if (!resFile.exists() && resFile.createNewFile()) {
-                                    Log.d(TAG, "onImageFile: " + resFile.getName() + " HAS BEEN CREATED!");
-                                }
-
-
-                                fis = new FileInputStream(file);
-                                fos = new FileOutputStream(resFile);
-
-                                fos.write(0);
-
-                                byte[] buffer = new byte[2048];
-                                int n;
-                                while ((n = fis.read(buffer)) != -1) {
-                                    fos.write(buffer, 0, n);
-                                }
-
-                                fis.close();
-                                fos.close();
-
-                                mFiles = new File(mPath).listFiles();
-                                notifyDataSetChanged();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-
+                            Log.d(TAG, "onImageFile: " + file);
+                            copyFile(file);
                         }
                     });
                 }

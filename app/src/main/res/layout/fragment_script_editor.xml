@@ -44,7 +44,7 @@
         android:id="@+id/personalEditor_selectFile"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:background="@drawable/ic_baseline_folder_24"
+        android:background="@drawable/ic_folder"
         android:scaleX="0.5"
         android:scaleY="0.5"
         android:layout_gravity="end"/>
