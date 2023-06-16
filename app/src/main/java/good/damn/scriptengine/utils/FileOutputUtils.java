@@ -66,7 +66,8 @@ public class FileOutputUtils {
 
     public static String mkSKCFile(ArrayList<Piece> arrayList, Context context) {
 
-        FileOutputStream fileOutputStream;
+        FileOutputStream fosSKC;
+        FileInputStream fisRes;
 
         String path = context.getCacheDir()
                 + FileUtils.DUMB_DIR;
@@ -93,7 +94,7 @@ public class FileOutputUtils {
 
             path += fileName;
 
-            fileOutputStream = new FileOutputStream(path);
+            fosSKC = new FileOutputStream(path);
 
             // Compile resource section
             ResourceBuildResult result = mkSKResFile(context);
@@ -118,7 +119,17 @@ public class FileOutputUtils {
                     }
                 }
 
-                fileOutputStream.write(chunk);
+                fosSKC.write(chunk);
+            }
+
+            // Write resources to .skc file
+
+            fisRes = new FileInputStream(result.getOutFile());
+            byte[] buffer = new byte[8192];
+
+            int n;
+            while ((n = fisRes.read(buffer)) != -1) {
+                fosSKC.write(buffer,0,n);
             }
 
         } catch (IOException exception) {
@@ -127,7 +138,8 @@ public class FileOutputUtils {
         }
 
         try {
-            fileOutputStream.close();
+            fosSKC.close();
+            fisRes.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
