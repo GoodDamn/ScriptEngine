@@ -28,4 +28,15 @@ public class ArrayUtils {
 
         return var3;
     }
+
+
+    public static int bruteForceSearch(String[] arr, String val) {
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i].equals(val)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
 }

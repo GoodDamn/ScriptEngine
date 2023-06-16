@@ -64,9 +64,9 @@ public class PiecesListFragment extends Fragment {
                 }
 
                 Utilities.showMessage("STARTING PREVIEW PROCESS AFTER " + (System.currentTimeMillis()-current) + "ms", context);
-                Intent intent = new Intent(getActivity(), PreviewActivity.class);
+                /*Intent intent = new Intent(getActivity(), PreviewActivity.class);
                 intent.putExtra("dumbPath", path);
-                startActivity(intent);
+                startActivity(intent);*/
             }
         });
 

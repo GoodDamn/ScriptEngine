@@ -21,6 +21,7 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.util.Arrays;
 
+import good.damn.scriptengine.models.ScriptBuildResult;
 import good.damn.scriptengine.utils.ArrayUtils;
 import good.damn.scriptengine.utils.Utilities;
 
@@ -240,8 +241,10 @@ public class ScriptCommandsUtils {
     }
 
     // 3
-    public static byte[] Image(String[] argv, Context context) {
+    public static byte[] Image(String[] argv, Context context, ScriptBuildResult buildResult) {
         Log.d(TAG, "execute: IMAGE COMMAND: " + argv[1]);
+
+        buildResult.setResName(argv[1]);
 
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
 
@@ -261,7 +264,7 @@ public class ScriptCommandsUtils {
         }
 
         byte[] origin = new byte[2];
-        origin[0] = 9; // argSize (4 args * 2 bytes) + 1 next arg
+        origin[0] = 10; // argSize (4 args * 2 bytes) + 1 next arg
         origin[1] = 3; // commandIndex
         
         return ArrayUtils.concatByteArrays(origin,

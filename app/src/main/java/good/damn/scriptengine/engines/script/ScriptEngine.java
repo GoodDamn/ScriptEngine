@@ -17,6 +17,7 @@ import good.damn.scriptengine.engines.script.interfaces.OnConfigureViewListener;
 import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
 import good.damn.scriptengine.engines.script.utils.ScriptCommandsUtils;
 import good.damn.scriptengine.engines.script.utils.ScriptDefinerUtils;
+import good.damn.scriptengine.models.ScriptBuildResult;
 import good.damn.scriptengine.utils.Utilities;
 import good.damn.scriptengine.views.GifView;
 import good.damn.scriptengine.views.TextViewPhrase;
@@ -65,17 +66,19 @@ public class ScriptEngine {
         return mContext;
     }
 
-    public byte[] compile(String line) {
+    public ScriptBuildResult compile(String line) {
         byte[] args = null;
 
         String[] argv = line.split("\\s+");
+
+        ScriptBuildResult scriptBuildResult = new ScriptBuildResult();
 
         Context context = et_target.getContext();
 
         argv[0] = argv[0].trim();
 
         if (argv[0].isEmpty())
-            return null;
+            return scriptBuildResult;
 
         switch (argv[0].toLowerCase()){
             case "textsize": // 0
@@ -88,7 +91,7 @@ public class ScriptEngine {
                 args = ScriptCommandsUtils.Background(argv,context);
                 break;
             case "img": // put image on the screen 3
-                args = ScriptCommandsUtils.Image(argv,context);
+                args = ScriptCommandsUtils.Image(argv,context,scriptBuildResult);
                 break;
             case "vect": // set of vectors 4
                 break;
@@ -111,7 +114,8 @@ public class ScriptEngine {
                 break;
         }
 
-        return args;
+        scriptBuildResult.setCompiledScript(args);
+        return scriptBuildResult;
     }
 
     public void read(byte[] chunk, TextViewPhrase target) {

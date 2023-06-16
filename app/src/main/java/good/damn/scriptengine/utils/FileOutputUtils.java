@@ -8,9 +8,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 
 import good.damn.scriptengine.models.Piece;
 import good.damn.scriptengine.models.ResourceBuildResult;
+import good.damn.scriptengine.models.ResourceReference;
 
 public class FileOutputUtils {
 
@@ -30,7 +33,8 @@ public class FileOutputUtils {
             Log.d(TAG, "mkSCKRefFile: FILE ref.skres HAS BEEN CREATED");
         }
 
-        // It needs to surrounds by try/catch because this shit doesn't close your streams
+        // It needs to surrounds by try/catch because this shit
+        // doesn't close your streams after throwing IOException
         FileOutputStream fos = new FileOutputStream(skresFile);
         FileInputStream fis;
         int n;
@@ -94,13 +98,27 @@ public class FileOutputUtils {
             // Compile resource section
             ResourceBuildResult result = mkSKResFile(context);
 
-
+            String[] compiledRes = result.getCompiledResources();
 
             for (Piece piece : arrayList) {
 
+                LinkedList<ResourceReference> references = piece.getResRef();
 
+                byte[] chunk = piece.getChunk();
 
-                fileOutputStream.write(piece.getChunk());
+                Log.d(TAG, "mkSKCFile: COMPILED RESOURCES: " + Arrays.toString(compiledRes));
+                if (references != null) {
+                    for (ResourceReference ref: references) {
+                        int index = ArrayUtils.bruteForceSearch(compiledRes,ref.getResName());
+                        short textLength = Utilities.gn(chunk[4],chunk[5]);
+                        int resPosition = 7+textLength+ref.getResPosition(); // 7 = 4(chunkLength) + 1(scriptSize) + 2(textLength)
+                        Log.d(TAG, "mkSKCFile: RES_NAME: " + ref.getResName());
+                        chunk[resPosition] = (byte) index;
+                        Log.d(TAG, "mkSKCFile: RES_POSITION: " + resPosition + " INDEX: " + index + " CHUNK: " + Arrays.toString(chunk));
+                    }
+                }
+
+                fileOutputStream.write(chunk);
             }
 
         } catch (IOException exception) {

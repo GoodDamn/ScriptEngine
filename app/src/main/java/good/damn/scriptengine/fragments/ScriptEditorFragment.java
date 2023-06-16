@@ -19,7 +19,9 @@ import androidx.fragment.app.Fragment;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.Random;
 
 import good.damn.scriptengine.R;
@@ -27,6 +29,8 @@ import good.damn.scriptengine.adapters.FilesAdapter;
 import good.damn.scriptengine.engines.script.ScriptEngine;
 import good.damn.scriptengine.engines.script.interfaces.OnConfigureViewListener;
 import good.damn.scriptengine.models.Piece;
+import good.damn.scriptengine.models.ResourceReference;
+import good.damn.scriptengine.models.ScriptBuildResult;
 import good.damn.scriptengine.utils.ArrayUtils;
 import good.damn.scriptengine.utils.FileUtils;
 import good.damn.scriptengine.utils.ToolsUtilities;
@@ -87,14 +91,31 @@ public class ScriptEditorFragment extends Fragment {
                 String[] arr = editTextScript.getText().toString().split("\n");
                 byte[] script = new byte[0];
                 byte scriptLength = 0;
+
+                LinkedList<ResourceReference> resPositions = null;
+
                 for (byte i = 0; i < arr.length; i++) {
-                    byte[] t = scriptEngine.compile(arr[i]);
+                    ScriptBuildResult result = scriptEngine.compile(arr[i]);
+                    byte[] t = result.getCompiledScript();
                     if (t == null)
                         continue;
+                    Log.d(TAG, "onClick: SCRIPT: " + Arrays.toString(t));
+                    if (t[1] == 3) { // if it's an image
+                        if (resPositions == null) {
+                            resPositions = new LinkedList<>();
+                        }
+
+                        resPositions.add(new ResourceReference(result.getResName(),
+                                scriptLength+t[0]));
+                    }
                     script = ArrayUtils.concatByteArrays(script,t);
                     scriptLength += t.length;
                     Log.d(TAG, "onClick: PARSED_INFO: FOR SCRIPT: " + arr[i] + " SCRIPT_BYTE_LENGTH: " + t.length + " TOTAL_LENGTH:" + script.length);
                 }
+
+                Log.d(TAG, "onClick: SCRIPTS: " + Arrays.toString(script));
+
+                Log.d(TAG, "onClick: RES_POSITIONS: " + resPositions);
 
                 String t = et_phrase.getText().toString().trim();
                 byte[] text = ArrayUtils.concatByteArrays(t.getBytes(StandardCharsets.UTF_8),
@@ -104,25 +125,27 @@ public class ScriptEditorFragment extends Fragment {
 
                 Log.d(TAG, "onClick: CHUNK_LENGTH: FACT: " + length);
 
-
                 byte[] chunkLength = Utilities.gbInt(length);
                 Log.d(TAG, "onClick: OWN: " + Arrays.toString(chunkLength));
 
+
                 byte[] total = ArrayUtils.concatByteArrays(
                         chunkLength,
+                        Utilities.gb((short) text.length),
                         text,
                         new byte[]{scriptLength},
                         script);
 
                 mPiece.setString(et_phrase.getText());
                 mPiece.setChunk(total);
+                mPiece.setResRef(resPositions);
 
-                TextViewPhrase textViewPhrase = new TextViewPhrase(context);
+                /*TextViewPhrase textViewPhrase = new TextViewPhrase(context);
                 textViewPhrase.setTypeface(et_phrase.getTypeface());
                 Log.d(TAG, "onClick: Result: SCRIPT_LENGTH: " + scriptLength + " TEXT_LENGTH: " + text.length + " TEXT_SIZE_BYTES: "+ t.getBytes(StandardCharsets.UTF_8).length + " TOTAL_LENTGH: " + total.length);
                 scriptEngine.read(total, textViewPhrase);
                 Log.d(TAG, "onClick: isEdited: COMPLETED: " + isEdited);
-                isEdited = false;
+                isEdited = false;*/
             }
         });
         et_phrase.setText("Simple a piece of text");
