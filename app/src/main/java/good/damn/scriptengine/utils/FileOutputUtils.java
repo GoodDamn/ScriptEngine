@@ -101,6 +101,10 @@ public class FileOutputUtils {
 
             String[] compiledRes = result.getCompiledResources();
 
+            int resSectionLength = (int) result.getOutFile().length();
+
+            fosSKC.write(Utilities.gbInt(resSectionLength));
+
             for (Piece piece : arrayList) {
 
                 LinkedList<ResourceReference> references = piece.getResRef();
@@ -112,7 +116,7 @@ public class FileOutputUtils {
                     for (ResourceReference ref: references) {
                         int index = ArrayUtils.bruteForceSearch(compiledRes,ref.getResName());
                         short textLength = Utilities.gn(chunk[4],chunk[5]);
-                        int resPosition = 7+textLength+ref.getResPosition(); // 7 = 4(chunkLength) + 1(scriptSize) + 2(textLength)
+                        int resPosition = 6+textLength+ref.getResPosition(); // 7 = 4(chunkLength) + 1(scriptSize) + 2(textLength)
                         Log.d(TAG, "mkSKCFile: RES_NAME: " + ref.getResName());
                         chunk[resPosition] = (byte) index;
                         Log.d(TAG, "mkSKCFile: RES_POSITION: " + resPosition + " INDEX: " + index + " CHUNK: " + Arrays.toString(chunk));

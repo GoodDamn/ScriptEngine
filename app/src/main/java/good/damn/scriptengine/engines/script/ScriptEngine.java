@@ -122,40 +122,37 @@ public class ScriptEngine {
         read(chunk, target, 0);
     }
 
-    public int read(byte[] chunk, TextViewPhrase target, int offsetChunk) {
+    public void read(byte[] chunk, TextViewPhrase target, int offsetChunk) {
 
         Context context = mRoot.getContext();
 
-        int chunkLength = Utilities.gn(chunk,offsetChunk) + 4;
+        Log.d(TAG, "read: CHUNK_LENGTH: " + " CHUNK[offsetChunk]:" + chunk[offsetChunk] + " OFFSET_CHUNK: " + offsetChunk);
 
-        Log.d(TAG, "read: CHUNK_LENGTH: " + chunkLength + " CHUNK[offsetChunk]:" + chunk[offsetChunk] + " OFFSET_CHUNK: " + offsetChunk);
+        int offset = offsetChunk;
 
-        int offset = offsetChunk + 4;
+        short textLength = Utilities.gn(chunk[offset],chunk[offset+1]);
 
-        byte[] buffer = new byte[512];
-        byte current = chunk[offset];
-        short i = 0;
-        for (; current != 0; i++){
-            buffer[i] = current;
-            current = chunk[i+1+offset];
-        }
+        offset += 2;
 
-        String text = new String(buffer, StandardCharsets.UTF_8).trim();
+        byte[] textBytes = new byte[textLength];
+        System.arraycopy(chunk, offset,textBytes,0,textLength);
+
+        String text = new String(textBytes, StandardCharsets.UTF_8).trim();
         target.setText(text);
-        Log.d(TAG, "read: TEXT_BYTES_LENGTH: " + i + " TEXT:" + text);
-        i+=1;
+        Log.d(TAG, "read: TEXT_BYTES_LENGTH: " + textBytes.length + " TEXT:" + text);
+
+        int i = textLength;
 
         if (chunk.length == i+offset) { // No script to miss this one
             createPhrase(target);
-            return chunkLength;
+            return;
         }
 
         short scriptSize = (short) (chunk[i+offset] & 0xFF);
-        int filesOffset = 0;
         i++;
         Log.d(TAG, "read: SCRIPT_SIZE: "+ scriptSize);
         for (int j = 0; j < scriptSize;) {
-            int currentOffset = i+j+filesOffset+offset;
+            int currentOffset = i+j+offset;
             int argSize = chunk[currentOffset] & 0xFF;
             currentOffset++;
             byte commandIndex = chunk[currentOffset];
@@ -173,13 +170,12 @@ public class ScriptEngine {
                     mRoot.setBackgroundColor(color);
                     break;
                 case 3: // img
-                    /*ScriptGraphicsFile scriptImage = ScriptDefinerUtils.Image(chunk,currentOffset);
+                    ScriptGraphicsFile scriptImage = ScriptDefinerUtils.Image(chunk,currentOffset);
                     if (scriptImage == null) {
-                        return chunkLength;
+                        return;
                     }
 
-                    byte[] img = scriptImage.file;
-                    filesOffset += img.length - 1;
+                    /*byte[] img = scriptImage.file;
 
                     ImageView imageView = new ImageView(context);
                     imageView.setImageBitmap(BitmapFactory.decodeByteArray(img, 0, img.length));
@@ -203,9 +199,7 @@ public class ScriptEngine {
                 case 4: // gif
                     ScriptGraphicsFile gifScript = ScriptDefinerUtils.Gif(chunk,currentOffset);
 
-                    filesOffset += gifScript.file.length - 1;
-
-                    GifView gifView = new GifView(context);
+                    /*GifView gifView = new GifView(context);
                     gifView.setSource(gifScript.file);
 
                     FrameLayout.LayoutParams par =
@@ -221,7 +215,7 @@ public class ScriptEngine {
                             .setStartDelay(5500)
                             .alpha(0.0f)
                             .withEndAction(()-> mRoot.removeView(gifView)).start();
-
+*/
                     break;
                 default:
                     Utilities.showMessage("Invalid command index: " + commandIndex, mContext);
@@ -230,6 +224,5 @@ public class ScriptEngine {
             j += argSize;
         }
         createPhrase(target);
-        return chunkLength;
     }
 }

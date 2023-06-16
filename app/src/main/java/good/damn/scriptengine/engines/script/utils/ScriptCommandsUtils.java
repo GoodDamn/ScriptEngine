@@ -264,7 +264,7 @@ public class ScriptCommandsUtils {
         }
 
         byte[] origin = new byte[2];
-        origin[0] = 10; // argSize (4 args * 2 bytes) + 1 next arg
+        origin[0] = 11; // argSize (4 args * 2 bytes) + 1 next arg
         origin[1] = 3; // commandIndex
         
         return ArrayUtils.concatByteArrays(origin,

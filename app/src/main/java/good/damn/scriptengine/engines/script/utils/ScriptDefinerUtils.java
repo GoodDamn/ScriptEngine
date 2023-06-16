@@ -135,20 +135,16 @@ public class ScriptDefinerUtils {
         currentOffset++;
 
         // read data of image
-        Log.d(TAG, "read: ENCODED IMAGE_SIZE: " + chunk[currentOffset] + " " + chunk[currentOffset+1]);
-
-        int fileSize = (chunk[currentOffset] & 0xFF) * 65025 +
-                (chunk[currentOffset+1] & 0xFF) * 255 + (chunk[currentOffset+2] & 0xFF);
-        Log.d(TAG, "read: CURRENT_OFFSET: " + currentOffset + " FILE_SIZE:" + fileSize);
-        currentOffset += 3;
+        Log.d(TAG, "Image: ENCODED ARGS: " + chunk[currentOffset] + " " + chunk[currentOffset+1]);
+        Log.d(TAG, "Image: CURRENT_OFFSET: " + currentOffset);
 
         // read properties for image
         int width = gn(chunk[currentOffset], chunk[currentOffset+1]);
-        Log.d(TAG, "read: WIDTH_ENCODED: " + chunk[currentOffset] + " " + chunk[currentOffset+1]);
+        Log.d(TAG, "Image: WIDTH_ENCODED: " + chunk[currentOffset] + " " + chunk[currentOffset+1]);
         currentOffset += 2;
         int height = gn(chunk[currentOffset], chunk[currentOffset+1]);
         currentOffset += 2;
-        Log.d(TAG, "read: xPos ENCODED: " + (gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f));
+        Log.d(TAG, "Image: xPos ENCODED: " + (gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f));
         float xPos = gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f;
         currentOffset += 2;
         float yPos = gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f;
@@ -156,22 +152,19 @@ public class ScriptDefinerUtils {
 
         Log.d(TAG, "read: TOTAL: WIDTH: " + width + " HEIGHT: " + height + " X_POS: " + xPos + " Y_POS: " + yPos);
 
-        byte[] imgBytes = new byte[fileSize];
-        // read file's bytes
+        byte resID = chunk[currentOffset];
 
-        if (imgBytes.length > chunk.length) {
-            Log.d(TAG, "read: ERROR pre-exception: IndexOutOfBounds: imgBytes.length > chunk.length" + imgBytes.length + "  " + chunk.length);
+        if (resID <= -1) {
+            Log.d(TAG, "read: ERROR pre-exception: InvalidResourceReference: RES_ID: " + resID);
             return null;
         }
 
         ScriptGraphicsFile scriptImage = new ScriptGraphicsFile();
-        scriptImage.file = imgBytes;
+        scriptImage.resID = resID;
         scriptImage.height = height;
         scriptImage.width = width;
         scriptImage.x = xPos;
         scriptImage.y = yPos;
-
-        System.arraycopy(chunk, currentOffset, imgBytes,0, imgBytes.length);
 
         return scriptImage;
     }
@@ -180,12 +173,8 @@ public class ScriptDefinerUtils {
         currentOffset++;
 
         // read data of image
-        Log.d(TAG, "read: offsets for GIFSize: " + chunk[currentOffset] + " " + chunk[currentOffset+1]);
-
-        int fileSize = (chunk[currentOffset] & 0xFF) * 65025 +
-                (chunk[currentOffset+1] & 0xFF) * 255 + (chunk[currentOffset+2] & 0xFF);
-        Log.d(TAG, "read: GIF " + currentOffset + " " + fileSize);
-        currentOffset += 3;
+        Log.d(TAG, "Gif: offsets for GIFSize: " + chunk[currentOffset] + " " + chunk[currentOffset+1]);
+        Log.d(TAG, "Gif: GIF " + currentOffset);
 
         Log.d(TAG, "read: xPos ENCODED: " + (gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f));
         float xPos = gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f;
@@ -193,13 +182,12 @@ public class ScriptDefinerUtils {
         float yPos = gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f;
         currentOffset += 2;
 
-        byte[] gif = new byte[fileSize];
-        System.arraycopy(chunk,currentOffset,gif,0,gif.length);
+        byte resID = chunk[currentOffset];
 
         ScriptGraphicsFile scriptGif = new ScriptGraphicsFile();
         scriptGif.x = xPos;
         scriptGif.y = yPos;
-        scriptGif.file = gif;
+        scriptGif.resID = resID;
         return scriptGif;
     }
 }

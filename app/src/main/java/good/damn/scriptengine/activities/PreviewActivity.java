@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Random;
@@ -20,7 +21,9 @@ import java.util.Random;
 import good.damn.scriptengine.engines.script.ScriptEngine;
 import good.damn.scriptengine.engines.script.ScriptReader;
 import good.damn.scriptengine.engines.script.interfaces.OnConfigureViewListener;
+import good.damn.scriptengine.utils.FileOutputUtils;
 import good.damn.scriptengine.utils.FileReaderUtils;
+import good.damn.scriptengine.utils.FileUtils;
 import good.damn.scriptengine.utils.Utilities;
 import good.damn.scriptengine.views.TextViewPhrase;
 
@@ -29,14 +32,11 @@ public class PreviewActivity extends AppCompatActivity {
     private static final String TAG = "PreviewActivity";
     private static final Random sRandom = new Random();
 
-    private byte[] mContent;
-
     private TextViewPhrase mCurrentViewPhrase;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
 
         Log.d(TAG, "onCreate: INITIALIZING CONTENT FILE .SKC");
 
@@ -48,17 +48,11 @@ public class PreviewActivity extends AppCompatActivity {
             return;
         }
 
-        try {
-            mContent = FileReaderUtils.getBytesFromFile(new FileInputStream(path));
-        } catch (IOException exception) {
-            exception.printStackTrace();
-            Utilities.showMessage("ERROR WITH GETTING A CONTENT FILE",
-                    this);
-            return;
-        }
+        Log.d(TAG, "onCreate: PATH TO CONTENT: " + path);
 
         ScriptEngine scriptEngine = new ScriptEngine(this);
-        ScriptReader scriptReader = new ScriptReader(scriptEngine, mContent);
+        ScriptReader scriptReader = new ScriptReader(scriptEngine, new File(path));
+
 
         FrameLayout root_FrameLayout = new FrameLayout(this);
 

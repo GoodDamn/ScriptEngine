@@ -3,6 +3,8 @@ package good.damn.scriptengine.fragments;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,17 +58,24 @@ public class PiecesListFragment extends Fragment {
                 assert context != null;
 
                 long current = System.currentTimeMillis();
-                String path = FileOutputUtils.mkSKCFile(pieces,context);
-                if (path == null) {
-                    Utilities.showMessage("ERROR IS OCCURRED DURING LINKING PROCESS",
-                            context);
-                    return;
-                }
+                new Thread(()->{
+                    String path = FileOutputUtils.mkSKCFile(pieces,context);
+                    if (path == null) {
+                        Utilities.showMessage("ERROR IS OCCURRED DURING LINKING PROCESS",
+                                context);
+                        return;
+                    }
 
-                Utilities.showMessage("STARTING PREVIEW PROCESS AFTER " + (System.currentTimeMillis()-current) + "ms", context);
-                /*Intent intent = new Intent(getActivity(), PreviewActivity.class);
-                intent.putExtra("dumbPath", path);
-                startActivity(intent);*/
+                    new Handler(Looper.getMainLooper())
+                            .post(()->{
+                                Utilities.showMessage("STARTING PREVIEW PROCESS AFTER " + (System.currentTimeMillis()-current) + "ms", context);
+                                Intent intent = new Intent(getActivity(), PreviewActivity.class);
+                                intent.putExtra("dumbPath", path);
+                                startActivity(intent);
+                            });
+
+                    Thread.currentThread().interrupt();
+                }).start();
             }
         });
 
