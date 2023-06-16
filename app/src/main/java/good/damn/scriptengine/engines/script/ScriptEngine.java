@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
+import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
@@ -119,16 +120,12 @@ public class ScriptEngine {
     }
 
     public void read(byte[] chunk, TextViewPhrase target) {
-        read(chunk, target, 0);
-    }
-
-    public void read(byte[] chunk, TextViewPhrase target, int offsetChunk) {
 
         Context context = mRoot.getContext();
 
-        Log.d(TAG, "read: CHUNK_LENGTH: " + " CHUNK[offsetChunk]:" + chunk[offsetChunk] + " OFFSET_CHUNK: " + offsetChunk);
+        int offset = 0;
 
-        int offset = offsetChunk;
+        Log.d(TAG, "read: CHUNK_LENGTH: " + " CHUNK[0]:" + chunk[offset]);
 
         short textLength = Utilities.gn(chunk[offset],chunk[offset+1]);
 
@@ -139,7 +136,7 @@ public class ScriptEngine {
 
         String text = new String(textBytes, StandardCharsets.UTF_8).trim();
         target.setText(text);
-        Log.d(TAG, "read: TEXT_BYTES_LENGTH: " + textBytes.length + " TEXT:" + text);
+        Log.d(TAG, "read: TEXT_BYTES_LENGTH: " + textBytes.length + " TEXT_LENGTH: " + textLength + " TEXT:" + text);
 
         int i = textLength;
 

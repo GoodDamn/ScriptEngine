@@ -33,6 +33,7 @@ public class FileReaderUtils {
             arrayList.add(new Piece(
                     ArrayUtils.concatByteArrays(
                             Utilities.gbInt(textChunk.length+1),
+                            Utilities.gb((short) (textChunk.length)),
                             textChunk,
                             new byte[]{0}),
                     line)
