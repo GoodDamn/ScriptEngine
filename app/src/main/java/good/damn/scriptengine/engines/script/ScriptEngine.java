@@ -3,6 +3,8 @@ package good.damn.scriptengine.engines.script;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
+import android.media.SoundPool;
+import android.net.Uri;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -247,8 +249,6 @@ public class ScriptEngine {
                         return;
                     }
 
-                    MediaPlayer mediaPlayer = new MediaPlayer();
-
                     try {
                         File tempSFX = File.createTempFile(String.valueOf(System.currentTimeMillis()),".mp3",context.getCacheDir());
 
@@ -256,10 +256,7 @@ public class ScriptEngine {
                         fos.write(sfx);
                         fos.close();
 
-                        FileInputStream fis = new FileInputStream(tempSFX);
-
-                        mediaPlayer.setDataSource(fis.getFD());
-                        mediaPlayer.prepare();
+                        MediaPlayer mediaPlayer = MediaPlayer.create(context,Uri.fromFile(tempSFX));
 
                         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                             @Override

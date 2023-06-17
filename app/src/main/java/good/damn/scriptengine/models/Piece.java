@@ -1,5 +1,6 @@
 package good.damn.scriptengine.models;
 
+import android.text.Editable;
 import android.text.SpannableString;
 
 import java.util.ArrayList;
@@ -10,6 +11,8 @@ public class Piece {
     private CharSequence mString;
     private byte[] mChunk;
     private LinkedList<ResourceReference> mResPositions;
+
+    private Editable mSourceCode;
 
     public Piece(byte[] chunk, CharSequence spannableString) {
         mChunk = chunk;
@@ -28,6 +31,10 @@ public class Piece {
         this.mString = mString;
     }
 
+    public void setSourceCode(Editable mSourceCode) {
+        this.mSourceCode = mSourceCode;
+    }
+
     public byte[] getChunk() {
         return mChunk;
     }
@@ -38,5 +45,9 @@ public class Piece {
 
     public CharSequence getString() {
         return mString;
+    }
+
+    public Editable getSourceCode() {
+        return mSourceCode;
     }
 }

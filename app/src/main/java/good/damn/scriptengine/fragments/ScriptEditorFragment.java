@@ -44,12 +44,14 @@ public class ScriptEditorFragment extends Fragment {
     private boolean isEdited = false;
 
     private EditText et_phrase;
+    private EditText et_script;
 
     private Piece mPiece;
 
     public void startScript(Piece piece) {
         mPiece = piece;
         et_phrase.setText(piece.getString());
+        et_script.setText(piece.getSourceCode());
     }
 
     @Nullable
@@ -63,9 +65,9 @@ public class ScriptEditorFragment extends Fragment {
 
         Log.d(TAG, "onCreateView: CREATING THE VIEW...");
         et_phrase = v.findViewById(R.id.personalEditor_editText_phrase);
-        EditText editTextScript = v.findViewById(R.id.personalEditor_editText_script);
+        et_script = v.findViewById(R.id.personalEditor_editText_script);
 
-        ViewGroup root = (ViewGroup) editTextScript.getParent().getParent();
+        ViewGroup root = (ViewGroup) et_script.getParent().getParent();
 
         ScriptEngine scriptEngine = new ScriptEngine(context);
         scriptEngine.setRootViewGroup(root);
@@ -87,7 +89,7 @@ public class ScriptEditorFragment extends Fragment {
             public void onClick(View v) {
                 Spannable spannable = et_phrase.getText();
                 et_phrase.setText(spannable.toString());
-                String[] arr = editTextScript.getText().toString().split("\n");
+                String[] arr = et_script.getText().toString().split("\n");
                 byte[] script = new byte[0];
                 byte scriptLength = 0;
 
@@ -138,6 +140,7 @@ public class ScriptEditorFragment extends Fragment {
                 mPiece.setString(et_phrase.getText());
                 mPiece.setChunk(total);
                 mPiece.setResRef(resPositions);
+                mPiece.setSourceCode(et_script.getText());
 
                 /*TextViewPhrase textViewPhrase = new TextViewPhrase(context);
                 textViewPhrase.setTypeface(et_phrase.getTypeface());
@@ -189,7 +192,7 @@ public class ScriptEditorFragment extends Fragment {
                     @SuppressLint("SetTextI18n")
                     @Override
                     public void onImageFile(File file) {
-                        editTextScript.setText(editTextScript.getText().toString().trim() + " " + file.getName());
+                        et_script.setText(et_script.getText().toString().trim() + " " + file.getName());
                         try {
                             Log.d(TAG, "onImageFile: CANON: " + file.getCanonicalPath() + " ABS:" + file.getAbsolutePath());
                         } catch (IOException e) {
