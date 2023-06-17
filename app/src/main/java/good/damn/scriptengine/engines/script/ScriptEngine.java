@@ -18,6 +18,7 @@ import good.damn.scriptengine.engines.script.interfaces.OnConfigureViewListener;
 import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
 import good.damn.scriptengine.engines.script.utils.ScriptCommandsUtils;
 import good.damn.scriptengine.engines.script.utils.ScriptDefinerUtils;
+import good.damn.scriptengine.interfaces.OnFileScriptListener;
 import good.damn.scriptengine.models.ScriptBuildResult;
 import good.damn.scriptengine.utils.Utilities;
 import good.damn.scriptengine.views.GifView;
@@ -35,6 +36,8 @@ public class ScriptEngine {
     private EditText et_target;
 
     private OnConfigureViewListener mOnConfigureViewListener;
+
+    private OnFileScriptListener mOnFileScriptListener;
 
     private void createPhrase(TextViewPhrase target) {
         target.setGravity(Gravity.CENTER);
@@ -57,6 +60,10 @@ public class ScriptEngine {
 
     public void setOnConfigureView(OnConfigureViewListener configureViewListener) {
         mOnConfigureViewListener = configureViewListener;
+    }
+
+    public void setFileScriptListener(OnFileScriptListener mOnFileScriptListener) {
+        this.mOnFileScriptListener = mOnFileScriptListener;
     }
 
     public void setRootViewGroup(ViewGroup root) {
@@ -172,8 +179,12 @@ public class ScriptEngine {
                         return;
                     }
 
-                    /*byte[] img = scriptImage.file;
+                    if (mOnFileScriptListener != null) {
+                        mOnFileScriptListener.onResource(scriptImage.resID);
+                    }
 
+
+                    /*
                     ImageView imageView = new ImageView(context);
                     imageView.setImageBitmap(BitmapFactory.decodeByteArray(img, 0, img.length));
                     FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -195,6 +206,10 @@ public class ScriptEngine {
                     break;
                 case 4: // gif
                     ScriptGraphicsFile gifScript = ScriptDefinerUtils.Gif(chunk,currentOffset);
+
+                    if (mOnFileScriptListener != null) {
+                        mOnFileScriptListener.onResource(gifScript.resID);
+                    }
 
                     /*GifView gifView = new GifView(context);
                     gifView.setSource(gifScript.file);
