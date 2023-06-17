@@ -276,45 +276,35 @@ public class ScriptCommandsUtils {
     }
 
     // 4
-    public static byte[] Gif(String[] argv, Context context) {
-        byte[] args = null;
+    public static byte[] Gif(String[] argv, Context context, ScriptBuildResult buildResult) {
+        byte[] args;
 
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        buildResult.setResName(argv[1]);
 
-        try {
-            byte[] gif = Utilities.getBytesFromResources(argv[1], context);
-            byte[] origin = new byte[5];
-            origin[0] = 10; // argSize (2 args * 2 bytes) + 4 next args
-            origin[1] = 4; // commandIndex
-            origin[2] = (byte) (gif.length / 65025);
-            origin[3] = (byte) (gif.length / 255 % 255);
-            origin[4] = (byte) (gif.length % 255);
+        byte[] origin = new byte[5];
+        origin[0] = 7; // argSize (2 args * 2 bytes) + 4 next args
+        origin[1] = 4; // commandIndex
+        short xPos = Short.parseShort(argv[2]);
+        short yPos = Short.parseShort(argv[3]);
 
-            short xPos = Short.parseShort(argv[2]);
-            short yPos = Short.parseShort(argv[3]);
-
-            if (xPos > displayMetrics.widthPixels || xPos < 0) {
-                Utilities.showMessage("img command hasn't executed("+
-                        xPos + " on X Axis doesn't belong to [0;"+displayMetrics.widthPixels+"]",context);
-                return new byte[0];
-            }
-
-            if (yPos > displayMetrics.heightPixels || yPos < 0) {
-                Utilities.showMessage("img command hasn't executed("+
-                        yPos + " on Y Axis doesn't belong to [0;"+displayMetrics.heightPixels+"]",
-                        context);
-                return new byte[0];
-            }
-
-            args = ArrayUtils.concatByteArrays(origin,
-                    gb((short) (1000.0f * xPos / displayMetrics.widthPixels)), // normal value of X pos
-                    gb((short) (1000.0f * yPos / displayMetrics.heightPixels)), // normal value of Y pos
-                    gif);
-        } catch (IOException exception) {
-            exception.printStackTrace();
-            Utilities.showMessage("GIF: " + exception.getMessage(),
-                    context);
+        if (xPos > displayMetrics.widthPixels || xPos < 0) {
+            Utilities.showMessage("img command hasn't executed("+
+                    xPos + " on X Axis doesn't belong to [0;"+displayMetrics.widthPixels+"]",context);
+            return new byte[0];
         }
+
+        if (yPos > displayMetrics.heightPixels || yPos < 0) {
+            Utilities.showMessage("img command hasn't executed("+ yPos + " on Y Axis doesn't belong to [0;"+displayMetrics.heightPixels+"]",
+                    context);
+            return new byte[0];
+        }
+
+        args = ArrayUtils.concatByteArrays(origin,
+                gb((short) (1000.0f * xPos / displayMetrics.widthPixels)), // normal value of X pos
+                gb((short) (1000.0f * yPos / displayMetrics.heightPixels)), // normal value of Y pos
+                new byte[]{-1});
+
         return args;
     }
 }

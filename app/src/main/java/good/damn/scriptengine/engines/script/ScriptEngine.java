@@ -11,6 +11,8 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
@@ -105,7 +107,7 @@ public class ScriptEngine {
                 break;
             // global commands
             case "gif": // 4
-                args = ScriptCommandsUtils.Gif(argv,context);
+                args = ScriptCommandsUtils.Gif(argv,context,scriptBuildResult);
                 break;
             case "action": // 5
                 switch (argv[1].toLowerCase()) {
@@ -179,12 +181,16 @@ public class ScriptEngine {
                         return;
                     }
 
+                    byte[] img = null;
                     if (mOnFileScriptListener != null) {
-                        mOnFileScriptListener.onResource(scriptImage.resID);
+                        img = mOnFileScriptListener.onResource(scriptImage.resID);
+                    }
+
+                    if (img == null) {
+                        return;
                     }
 
 
-                    /*
                     ImageView imageView = new ImageView(context);
                     imageView.setImageBitmap(BitmapFactory.decodeByteArray(img, 0, img.length));
                     FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -202,17 +208,22 @@ public class ScriptEngine {
                     imageView.animate().scaleY(1.0f).scaleX(1.0f).withEndAction(() ->
                                     imageView.animate().scaleX(.0f).scaleY(.0f).setStartDelay(1250).withEndAction(() ->
                                             mRoot.removeView(imageView)).start())
-                            .start();*/
+                            .start();
                     break;
                 case 4: // gif
                     ScriptGraphicsFile gifScript = ScriptDefinerUtils.Gif(chunk,currentOffset);
 
+                    byte[] gif = null;
                     if (mOnFileScriptListener != null) {
-                        mOnFileScriptListener.onResource(gifScript.resID);
+                        gif = mOnFileScriptListener.onResource(gifScript.resID);
                     }
 
-                    /*GifView gifView = new GifView(context);
-                    gifView.setSource(gifScript.file);
+                    if (gif == null) {
+                        return;
+                    }
+
+                    GifView gifView = new GifView(context);
+                    gifView.setSource(gif);
 
                     FrameLayout.LayoutParams par =
                             new FrameLayout.LayoutParams(gifView.width(), gifView.height());
@@ -227,7 +238,7 @@ public class ScriptEngine {
                             .setStartDelay(5500)
                             .alpha(0.0f)
                             .withEndAction(()-> mRoot.removeView(gifView)).start();
-*/
+
                     break;
                 default:
                     Utilities.showMessage("Invalid command index: " + commandIndex, mContext);

@@ -184,6 +184,11 @@ public class ScriptDefinerUtils {
 
         byte resID = chunk[currentOffset];
 
+        if (resID <= -1) {
+            Log.d(TAG, "read: ERROR pre-exception: InvalidResourceReference: RES_ID: " + resID);
+            return null;
+        }
+
         ScriptGraphicsFile scriptGif = new ScriptGraphicsFile();
         scriptGif.x = xPos;
         scriptGif.y = yPos;

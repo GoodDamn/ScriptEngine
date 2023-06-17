@@ -100,7 +100,7 @@ public class ScriptEditorFragment extends Fragment {
                     if (t == null)
                         continue;
                     Log.d(TAG, "onClick: SCRIPT: " + Arrays.toString(t));
-                    if (t[1] == 3) { // if it's an image
+                    if (t[1] == 3 || t[1] == 4) { // if it's an image, gif
                         if (resPositions == null) {
                             resPositions = new LinkedList<>();
                         }

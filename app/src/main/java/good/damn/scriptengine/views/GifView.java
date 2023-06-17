@@ -51,18 +51,18 @@ public class GifView extends View {
     }
 
     public int width() {
-        Log.d(TAG, "width: GIVING A WIDTH: " + mMovieGif.width());
         if (mMovieGif == null) {
             return -1;
         }
+        Log.d(TAG, "width: GIVING A WIDTH: " + mMovieGif.width());
         return mMovieGif.width();
     }
 
     public int height() {
-        Log.d(TAG, "width: GIVING A HEIGHT: " + mMovieGif.height());
         if (mMovieGif == null) {
             return -1;
         }
+        Log.d(TAG, "width: GIVING A HEIGHT: " + mMovieGif.height());
         return mMovieGif.height();
     }
 
