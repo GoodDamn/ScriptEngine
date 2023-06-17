@@ -2,6 +2,7 @@ package good.damn.scriptengine.engines.script;
 
 import android.content.Context;
 import android.graphics.BitmapFactory;
+import android.media.MediaPlayer;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -10,18 +11,19 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Random;
 
 import good.damn.scriptengine.engines.script.interfaces.OnConfigureViewListener;
 import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
+import good.damn.scriptengine.engines.script.models.ScriptResourceFile;
 import good.damn.scriptengine.engines.script.utils.ScriptCommandsUtils;
 import good.damn.scriptengine.engines.script.utils.ScriptDefinerUtils;
 import good.damn.scriptengine.interfaces.OnFileScriptListener;
-import good.damn.scriptengine.models.ScriptBuildResult;
+import good.damn.scriptengine.engines.script.models.ScriptBuildResult;
 import good.damn.scriptengine.utils.Utilities;
 import good.damn.scriptengine.views.GifView;
 import good.damn.scriptengine.views.TextViewPhrase;
@@ -109,15 +111,8 @@ public class ScriptEngine {
             case "gif": // 4
                 args = ScriptCommandsUtils.Gif(argv,context,scriptBuildResult);
                 break;
-            case "action": // 5
-                switch (argv[1].toLowerCase()) {
-                    case "lp": // long press
-                        break;
-                    case "ck": // click
-                        break;
-                    case "sp": // swipe
-                        break;
-                }
+            case "sfx":
+                args = ScriptCommandsUtils.SFX(argv,scriptBuildResult);
                 break;
             default:
                 Utilities.showMessage("Invalid command: " + argv[0], context);
@@ -239,6 +234,50 @@ public class ScriptEngine {
                             .alpha(0.0f)
                             .withEndAction(()-> mRoot.removeView(gifView)).start();
 
+                    break;
+                case 5: // SFX
+                    ScriptResourceFile srf = ScriptDefinerUtils.SFX(chunk,currentOffset);
+
+                    byte[] sfx = null;
+                    if (mOnFileScriptListener != null) {
+                        sfx = mOnFileScriptListener.onResource(srf.resID);
+                    }
+
+                    if (sfx == null) {
+                        return;
+                    }
+
+                    MediaPlayer mediaPlayer = new MediaPlayer();
+
+                    try {
+                        File tempSFX = File.createTempFile(String.valueOf(System.currentTimeMillis()),".mp3",context.getCacheDir());
+
+                        FileOutputStream fos = new FileOutputStream(tempSFX);
+                        fos.write(sfx);
+                        fos.close();
+
+                        FileInputStream fis = new FileInputStream(tempSFX);
+
+                        mediaPlayer.setDataSource(fis.getFD());
+                        mediaPlayer.prepare();
+
+                        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                            @Override
+                            public void onCompletion(MediaPlayer mediaPlayer) {
+                                Log.d(TAG, "onCompletion: MEDIA_PLAYER_SFX: " + tempSFX.getName());
+                                mediaPlayer.stop();
+                                mediaPlayer.release();
+                                if (tempSFX.delete()) {
+                                    Log.d(TAG, "onCompletion: FILE HAS BEEN DELETED!");
+                                }
+                            }
+                        });
+
+                        mediaPlayer.start();
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 default:
                     Utilities.showMessage("Invalid command index: " + commandIndex, mContext);

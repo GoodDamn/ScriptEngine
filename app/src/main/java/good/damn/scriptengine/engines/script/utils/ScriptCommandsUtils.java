@@ -18,10 +18,9 @@ import android.util.Log;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.io.IOException;
 import java.util.Arrays;
 
-import good.damn.scriptengine.models.ScriptBuildResult;
+import good.damn.scriptengine.engines.script.models.ScriptBuildResult;
 import good.damn.scriptengine.utils.ArrayUtils;
 import good.damn.scriptengine.utils.Utilities;
 
@@ -306,5 +305,15 @@ public class ScriptCommandsUtils {
                 new byte[]{-1});
 
         return args;
+    }
+
+    // 5
+    public static byte[] SFX(String[] argv,ScriptBuildResult buildResult) {
+        buildResult.setResName(argv[1]);
+
+        return new byte[]{
+                3, // arg size
+                5, // command index
+                -1}; // res mark
     }
 }

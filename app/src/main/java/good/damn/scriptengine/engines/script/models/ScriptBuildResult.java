@@ -1,4 +1,4 @@
-package good.damn.scriptengine.models;
+package good.damn.scriptengine.engines.script.models;
 
 public class ScriptBuildResult {
 

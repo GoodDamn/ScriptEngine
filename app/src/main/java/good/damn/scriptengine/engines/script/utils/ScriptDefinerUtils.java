@@ -15,6 +15,7 @@ import android.util.Log;
 import android.widget.TextView;
 
 import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
+import good.damn.scriptengine.engines.script.models.ScriptResourceFile;
 import good.damn.scriptengine.utils.Utilities;
 
 public class ScriptDefinerUtils {
@@ -185,7 +186,7 @@ public class ScriptDefinerUtils {
         byte resID = chunk[currentOffset];
 
         if (resID <= -1) {
-            Log.d(TAG, "read: ERROR pre-exception: InvalidResourceReference: RES_ID: " + resID);
+            Log.d(TAG, "read: ERROR pre-exception: InvalidResourceReference: (GIF) RES_ID: " + resID);
             return null;
         }
 
@@ -194,5 +195,20 @@ public class ScriptDefinerUtils {
         scriptGif.y = yPos;
         scriptGif.resID = resID;
         return scriptGif;
+    }
+
+    public static ScriptResourceFile SFX(byte[] chunk, int currentOffset) {
+        currentOffset++;
+        Log.d(TAG, "SFX: CHUNK(current): " + chunk[currentOffset]);
+        byte resID = chunk[currentOffset];
+        if (resID <= -1) {
+            Log.d(TAG, "read: ERROR pre-exception: InvalidResourceReference: (SFX) RES_ID: " + resID);
+            return null;
+        }
+
+        ScriptResourceFile srf = new ScriptResourceFile();
+        srf.resID = resID;
+
+        return srf;
     }
 }

@@ -71,7 +71,8 @@ public class AddFilesAdapter extends FilesAdapter {
     private void copyFile(File sourceFile) {
         Utilities.showMessage("COPYING FILE...", mActivity);
 
-        File resFile = new File(mActivity.getCacheDir()+ FileUtils.RES_DIR+"/"+sourceFile.getName());
+        File resFile = new File(mActivity.getCacheDir()+ FileUtils.RES_DIR+"/"+sourceFile
+                .getName().replace(" ","-"));
 
         FileInputStream fis;
         FileOutputStream fos;
@@ -95,6 +96,7 @@ public class AddFilesAdapter extends FilesAdapter {
             fis.close();
             fos.close();
 
+            Utilities.showMessage(sourceFile.getName() + " HAS BEEN COPIED!", mActivity);
             notifyDataSet();
         } catch (IOException e) {
             e.printStackTrace();

@@ -19,7 +19,6 @@ import androidx.fragment.app.Fragment;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Random;
@@ -30,7 +29,7 @@ import good.damn.scriptengine.engines.script.ScriptEngine;
 import good.damn.scriptengine.engines.script.interfaces.OnConfigureViewListener;
 import good.damn.scriptengine.models.Piece;
 import good.damn.scriptengine.models.ResourceReference;
-import good.damn.scriptengine.models.ScriptBuildResult;
+import good.damn.scriptengine.engines.script.models.ScriptBuildResult;
 import good.damn.scriptengine.utils.ArrayUtils;
 import good.damn.scriptengine.utils.FileUtils;
 import good.damn.scriptengine.utils.ToolsUtilities;
@@ -100,7 +99,7 @@ public class ScriptEditorFragment extends Fragment {
                     if (t == null)
                         continue;
                     Log.d(TAG, "onClick: SCRIPT: " + Arrays.toString(t));
-                    if (t[1] == 3 || t[1] == 4) { // if it's an image, gif
+                    if (t[1] >= 3 && t[1] <= 5) { // if it's an image, gif or SFX
                         if (resPositions == null) {
                             resPositions = new LinkedList<>();
                         }
@@ -184,7 +183,7 @@ public class ScriptEditorFragment extends Fragment {
                     @Override public void onClickedFolder(String prevFolder, String currentFolder) { }
                     @Override
                     public void onAudioFile(File file) {
-
+                        onImageFile(file);
                     }
 
                     @SuppressLint("SetTextI18n")
