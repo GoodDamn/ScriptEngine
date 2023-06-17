@@ -22,6 +22,7 @@ public class ScriptReader {
     private FileInputStream mChunkStream;
 
     private int mChunkLength;
+    private int mFileLength;
 
     private final byte[] mBuffer = new byte[2048];
 
@@ -36,36 +37,47 @@ public class ScriptReader {
 
                     Log.d(TAG, "onResource: SKIP: " +mChunkStream.skip(mChunkLength-savedPos)); // move to resource section
 
-                    Log.d(TAG, "onResource: RESOURCE POSITION: " + fileChannel.position());
+                    Log.d(TAG, "onResource: RESOURCE POSITION: " + fileChannel.position() + " RES_ID: " + resID);
 
-                    byte[] currentResID = new byte[1];
+                    byte[] resourceCount = new byte[1];
 
-                    byte[] fileSize = new byte[4];
+                    mChunkStream.read(resourceCount);
+                    Log.d(TAG, "onResource: RESOURCE_COUNT: " + resourceCount[0]);
 
-                    for (int p = 0; p <= resID;p++ ) {
-                        mChunkStream.read(currentResID);
-                        Log.d(TAG, "onResource: RESOURCE_ID: " + currentResID[0]);
+                    byte[] bfilePosition = new byte[4];
 
-                        mChunkStream.read(fileSize);
+                    int nextFilePosition;
 
-                        int fileLength = Utilities.gn(fileSize,0);
+                    int sk;
 
-                        Log.d(TAG, "onResource: FILE_SIZE: " + Arrays.toString(fileSize) + " DECODED_LENGTH: " + fileLength);
-
-                        if (currentResID[0] == resID) {
-                            byte[] img = new byte[fileLength];
-                            mChunkStream.read(img);
-
-                            mChunkStream.skip(-fileChannel.position()+savedPos);// return to chunk position
-
-                            Log.d(TAG, "onResource: RETURN TO POSITION: " + fileChannel.position());
-
-                            break;
-                        }
-
-
-                        mChunkStream.skip(fileLength);
+                    if (resID != resourceCount[0]) {
+                        nextFilePosition = mFileLength;
+                    } else {
+                        sk = (resID+1)*4;
+                        mChunkStream.skip(sk);
+                        mChunkStream.read(bfilePosition);
+                        nextFilePosition = Utilities.gn(bfilePosition,0);
+                        mChunkStream.skip(-sk-4); // return to begin of res-section
+                        Log.d(TAG, "onResource: NEXT_FILE_POS: " + nextFilePosition + " POSITION: " + fileChannel.position());
                     }
+
+                    sk = resID* 4;
+                    mChunkStream.skip(sk);
+                    mChunkStream.read(bfilePosition);
+                    int filePosition = Utilities.gn(bfilePosition,0);
+                    int fileDLength = nextFilePosition-filePosition;
+
+                    Log.d(TAG, "onResource: FILE_POSITION: " + Arrays.toString(bfilePosition) + " DECODED_LENGTH: " + fileDLength);
+
+                    byte[] file = new byte[fileDLength];
+
+                    mChunkStream.skip(-sk-4 + resourceCount[0]*4 + filePosition); // move to begin position of files
+                    mChunkStream.read(file);
+                    Log.d(TAG, "onResource: FILE_TITLE: " + file[0] + " " + file[1] + " " + file[2]);
+
+                    mChunkStream.skip(-fileChannel.position()+savedPos);// return to chunk position
+                    Log.d(TAG, "onResource: RETURN TO POSITION: " + fileChannel.position());
+
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -76,7 +88,8 @@ public class ScriptReader {
         try {
             mChunkStream = new FileInputStream(file);
             mChunkStream.read(mBuffer, 0, 4); // dismiss resource length
-            mChunkLength = (int) (file.length() - Utilities.gn(mBuffer,0));
+            mFileLength = (int) file.length();
+            mChunkLength = (int) (mFileLength - Utilities.gn(mBuffer,0));
 
             Log.d(TAG, "ScriptReader: LENGTH: FILE: " + file.length() + " CHUNK LENGTH: " + mChunkLength);
 

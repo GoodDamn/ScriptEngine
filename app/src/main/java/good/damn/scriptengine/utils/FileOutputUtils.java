@@ -42,13 +42,20 @@ public class FileOutputUtils {
 
         String[] fileNames = new String[resDir.length];
 
+        fos.write(resDir.length);
+
+        // O(2n)
+        // write file's begin positions
+        int currentPosition = 0;
+        for (byte i = 0; i < resDir.length; i++) {
+            fos.write(Utilities.gbInt(currentPosition));
+            currentPosition += resDir[i].length();
+        }
+
+        //write each file's content
         for (byte i = 0; i < resDir.length; i++) {
 
             fis = new FileInputStream(resDir[i]);
-
-            fos.write(i); // write resID
-            // write resource length
-            fos.write(Utilities.gbInt((int) resDir[i].length()));
 
             while ((n = fis.read(buffer)) != -1) {
                 fos.write(buffer,0,n);
