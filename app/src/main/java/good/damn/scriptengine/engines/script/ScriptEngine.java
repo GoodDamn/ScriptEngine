@@ -107,14 +107,15 @@ public class ScriptEngine {
             case "img": // put image on the screen 3
                 args = ScriptCommandsUtils.Image(argv,context,scriptBuildResult);
                 break;
-            case "vect": // set of vectors 4
-                break;
             // global commands
             case "gif": // 4
                 args = ScriptCommandsUtils.Gif(argv,context,scriptBuildResult);
                 break;
-            case "sfx":
+            case "sfx": // 5
                 args = ScriptCommandsUtils.SFX(argv,scriptBuildResult);
+                break;
+            case "amb":
+                args = ScriptCommandsUtils.Ambient(argv,scriptBuildResult);
                 break;
             default:
                 Utilities.showMessage("Invalid command: " + argv[0], context);
@@ -274,6 +275,17 @@ public class ScriptEngine {
 
                     } catch (IOException e) {
                         e.printStackTrace();
+                    }
+                    break;
+                case 6: // Ambient
+                    ScriptResourceFile sResFile = ScriptDefinerUtils.Ambient(chunk,currentOffset);
+                    byte[] ambientMusic = null;
+                    if (mOnFileScriptListener != null) {
+                        ambientMusic = mOnFileScriptListener.onResource(sResFile.resID);
+                    }
+
+                    if (ambientMusic == null) {
+                        return;
                     }
                     break;
                 default:

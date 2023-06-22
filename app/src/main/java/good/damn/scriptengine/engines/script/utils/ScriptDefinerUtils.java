@@ -197,6 +197,7 @@ public class ScriptDefinerUtils {
         return scriptGif;
     }
 
+    // 5
     public static ScriptResourceFile SFX(byte[] chunk, int currentOffset) {
         currentOffset++;
         Log.d(TAG, "SFX: CHUNK(current): " + chunk[currentOffset]);
@@ -211,4 +212,21 @@ public class ScriptDefinerUtils {
 
         return srf;
     }
+
+    // 6
+    public static ScriptResourceFile Ambient(byte[] chunk, int currentOffset) {
+        currentOffset++;
+        Log.d(TAG, "Ambient: CHUNK(current): " + chunk[currentOffset]);
+        byte resID = chunk[currentOffset];
+        if (resID <= -1) {
+            Log.d(TAG, "read: ERROR pre-exception: InvalidResourceReference: (Ambient) RES_ID: " + resID);
+            return null;
+        }
+
+        ScriptResourceFile srf = new ScriptResourceFile();
+        srf.resID = resID;
+
+        return srf;
+    }
+
 }

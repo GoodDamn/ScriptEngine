@@ -316,4 +316,14 @@ public class ScriptCommandsUtils {
                 5, // command index
                 -1}; // res mark
     }
+
+    // 5
+    public static byte[] Ambient(String[] argv,ScriptBuildResult buildResult) {
+        buildResult.setResName(argv[1]);
+
+        return new byte[]{
+                3, // arg size
+                6, // command index
+                -1}; // res mark
+    }
 }
