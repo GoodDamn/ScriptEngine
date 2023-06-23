@@ -87,7 +87,7 @@ public class ScriptEditorFragment extends Fragment {
                     if (t == null)
                         continue;
                     Log.d(TAG, "onClick: SCRIPT: " + Arrays.toString(t));
-                    if (t[1] >= 3 && t[1] <= 5) { // if it's an image, gif or SFX
+                    if (t[1] >= 3 && t[1] <= 6) { // if it's an image, gif or SFX
                         if (resPositions == null) {
                             resPositions = new LinkedList<>();
                         }

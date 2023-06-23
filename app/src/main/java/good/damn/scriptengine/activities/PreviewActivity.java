@@ -10,6 +10,7 @@ import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Layout;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -176,7 +177,7 @@ public class PreviewActivity extends AppCompatActivity {
             }
         });
 
-        Typeface defTypeface = Typeface.createFromAsset(getAssets(), "m_plus_rounded1c_thin");
+        Typeface defTypeface = Typeface.createFromAsset(getAssets(), "mplus_rounded1c_thin.ttf");
 
         scriptEngine.setOnCreateViewListener(new OnCreateScriptTextViewListener() {
             @Override
@@ -186,6 +187,11 @@ public class PreviewActivity extends AppCompatActivity {
                 phrase.config(textConfig.spannableString,
                         textConfig.textSize,
                         defTypeface);
+
+
+                root_FrameLayout.addView(phrase,
+                        FrameLayout.LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.MATCH_PARENT);
 
                 phrase.fadeIn();
 
