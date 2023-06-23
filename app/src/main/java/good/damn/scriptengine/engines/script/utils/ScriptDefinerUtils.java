@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
 import good.damn.scriptengine.engines.script.models.ScriptResourceFile;
+import good.damn.scriptengine.engines.script.models.ScriptTextConfig;
 import good.damn.scriptengine.utils.Utilities;
 
 public class ScriptDefinerUtils {
@@ -23,17 +24,17 @@ public class ScriptDefinerUtils {
     private static final String TAG = "ScriptDefinerUtils";
 
     // 0
-    public static void TextSize(byte[] chunk, int offset, int argSize, TextView target) {
+    public static void TextSize(byte[] chunk, int offset, int argSize, ScriptTextConfig textConfig) {
         short textSize = (short) (gn(chunk[offset+1], chunk[offset+2]) / 1000);
         Log.d(TAG, "read: textSize: " + textSize);
         offset += 3;
 
         SpannableString spannableString = null;
 
-        CharSequence text = target.getText();
+        CharSequence text = textConfig.spannableString.toString();
 
         if (argSize == 4) { // 1 arg
-            target.setTextSize(textSize);
+            textConfig.textSize = textSize;
             return;
         }
 
@@ -50,12 +51,12 @@ public class ScriptDefinerUtils {
         }
 
         if (spannableString != null){
-            target.setText(spannableString);
+            textConfig.spannableString = spannableString;
         }
     }
 
     // 1
-    public static void Font(byte[] chunk, int currentOffset, int argSize, TextView target) {
+    public static void Font(byte[] chunk, int currentOffset, int argSize, ScriptTextConfig textConfig) {
         byte style = chunk[currentOffset+1];
 
         Log.d(TAG, "read: font " + style + " " + argSize);
@@ -100,7 +101,7 @@ public class ScriptDefinerUtils {
 
         SpannableString spannableString = null;
 
-        CharSequence text = target.getText();
+        CharSequence text = textConfig.spannableString.toString();
 
         if (argSize == 3) { // 2 args
             spannableString = makeSpannable(0,text.length(), span,text);
@@ -119,7 +120,7 @@ public class ScriptDefinerUtils {
         }
 
         if (spannableString != null){
-            target.setText(spannableString);
+            textConfig.spannableString = spannableString;
         }
 
     }

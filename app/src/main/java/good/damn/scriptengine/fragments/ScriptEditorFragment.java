@@ -26,7 +26,7 @@ import java.util.Random;
 import good.damn.scriptengine.R;
 import good.damn.scriptengine.adapters.FilesAdapter;
 import good.damn.scriptengine.engines.script.ScriptEngine;
-import good.damn.scriptengine.engines.script.interfaces.OnConfigureViewListener;
+import good.damn.scriptengine.engines.script.interfaces.OnCreateScriptTextViewListener;
 import good.damn.scriptengine.models.Piece;
 import good.damn.scriptengine.models.ResourceReference;
 import good.damn.scriptengine.engines.script.models.ScriptBuildResult;
@@ -72,7 +72,7 @@ public class ScriptEditorFragment extends Fragment {
         ScriptEngine scriptEngine = new ScriptEngine(context);
         scriptEngine.setRootViewGroup(root);
         scriptEngine.setSourceEditText(et_phrase);
-        scriptEngine.setOnConfigureView(new OnConfigureViewListener() {
+        scriptEngine.setOnCreateViewListener(new OnCreateScriptTextViewListener() {
             @Override
             public void onConfigured(TextViewPhrase textViewPhrase) {
                 textViewPhrase.animate()

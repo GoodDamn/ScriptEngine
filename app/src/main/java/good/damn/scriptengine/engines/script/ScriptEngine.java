@@ -1,83 +1,55 @@
 package good.damn.scriptengine.engines.script;
 
 import android.content.Context;
-import android.graphics.BitmapFactory;
-import android.media.MediaPlayer;
-import android.media.SoundPool;
-import android.net.Uri;
-import android.util.DisplayMetrics;
+import android.text.SpannableString;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import good.damn.scriptengine.engines.script.interfaces.OnConfigureViewListener;
+import good.damn.scriptengine.engines.script.interfaces.OnCreateScriptTextViewListener;
+import good.damn.scriptengine.engines.script.interfaces.OnReadCommandListener;
 import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
 import good.damn.scriptengine.engines.script.models.ScriptResourceFile;
+import good.damn.scriptengine.engines.script.models.ScriptTextConfig;
 import good.damn.scriptengine.engines.script.utils.ScriptCommandsUtils;
 import good.damn.scriptengine.engines.script.utils.ScriptDefinerUtils;
 import good.damn.scriptengine.interfaces.OnFileScriptListener;
 import good.damn.scriptengine.engines.script.models.ScriptBuildResult;
 import good.damn.scriptengine.utils.Utilities;
-import good.damn.scriptengine.views.GifView;
-import good.damn.scriptengine.views.TextViewPhrase;
 
 public class ScriptEngine {
 
     private static final String TAG = "ScriptEngine";
 
-    private final Context mContext;
-    private final DisplayMetrics metrics;
-
-    private ViewGroup mRoot;
+    public static final int READ_BACKGROUND = 2;
+    public static final int READ_IMAGE = 3;
+    public static final int READ_GIF = 4;
+    public static final int READ_SFX = 5;
+    public static final int READ_AMBIENT = 6;
 
     private EditText et_target;
 
-    private OnConfigureViewListener mOnConfigureViewListener;
+    private OnCreateScriptTextViewListener mOnCreateScriptTextViewListener;
 
     private OnFileScriptListener mOnFileScriptListener;
 
-    private void createPhrase(TextViewPhrase target) {
-        target.setGravity(Gravity.CENTER);
-        target.setAlpha(0.0f);
-
-        mRoot.addView(target, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        if (mOnConfigureViewListener != null) {
-            mOnConfigureViewListener.onConfigured(target);
-        }
-    }
-
-    public ScriptEngine(Context context){
-        mContext = context;
-        metrics = context.getResources().getDisplayMetrics();
-    }
+    private OnReadCommandListener mOnReadCommandListener;
 
     public void setSourceEditText(EditText et_target) {
         this.et_target = et_target;
     }
 
-    public void setOnConfigureView(OnConfigureViewListener configureViewListener) {
-        mOnConfigureViewListener = configureViewListener;
+    public void setOnCreateViewListener(OnCreateScriptTextViewListener configureViewListener) {
+        mOnCreateScriptTextViewListener = configureViewListener;
     }
 
-    public void setFileScriptListener(OnFileScriptListener mOnFileScriptListener) {
-        this.mOnFileScriptListener = mOnFileScriptListener;
+    public void setFileScriptListener(OnFileScriptListener onFileScriptListener) {
+        mOnFileScriptListener = onFileScriptListener;
     }
 
-    public void setRootViewGroup(ViewGroup root) {
-        mRoot = root;
-    }
-
-    public Context getContext() {
-        return mContext;
+    public void setReadCommandListener(OnReadCommandListener onReadCommandListener) {
+        mOnReadCommandListener = onReadCommandListener;
     }
 
     public ScriptBuildResult compile(String line) {
@@ -126,9 +98,7 @@ public class ScriptEngine {
         return scriptBuildResult;
     }
 
-    public void read(byte[] chunk, TextViewPhrase target) {
-
-        Context context = mRoot.getContext();
+    public void read(byte[] chunk) {
 
         int offset = 0;
 
@@ -142,13 +112,16 @@ public class ScriptEngine {
         System.arraycopy(chunk, offset,textBytes,0,textLength);
 
         String text = new String(textBytes, StandardCharsets.UTF_8).trim();
-        target.setText(text);
+
+        ScriptTextConfig textConfig = new ScriptTextConfig();
+        textConfig.spannableString = new SpannableString(text);
+
         Log.d(TAG, "read: TEXT_BYTES_LENGTH: " + textBytes.length + " TEXT_LENGTH: " + textLength + " TEXT:" + text);
 
         int i = textLength;
 
         if (chunk.length == i+offset) { // No script to miss this one
-            createPhrase(target);
+            mOnCreateScriptTextViewListener.onCreate(textConfig);
             return;
         }
 
@@ -160,20 +133,25 @@ public class ScriptEngine {
             int argSize = chunk[currentOffset] & 0xFF;
             currentOffset++;
             byte commandIndex = chunk[currentOffset];
+
+
             Log.d(TAG, "read: J: "+ j + " SCRIPT_SIZE:" +scriptSize + " OFFSET:" + currentOffset + " ARG_SIZE: " + argSize + " COMMAND_INDEX: " + commandIndex);
             switch (commandIndex) {
                 case 0: // textSize
-                    ScriptDefinerUtils.TextSize(chunk,currentOffset,argSize,target);
+                    ScriptDefinerUtils.TextSize(chunk,currentOffset,argSize,textConfig);
                     break;
                 case 1: // font
-                    ScriptDefinerUtils.Font(chunk,currentOffset,argSize,target);
+                    ScriptDefinerUtils.Font(chunk,currentOffset,argSize,textConfig);
                     break;
-                case 2: // bg
+                case READ_BACKGROUND: // bg
                     int color = ScriptDefinerUtils.Background(chunk,currentOffset);
                     Log.d(TAG, "read: BACKGROUND COLOR: " + color);
-                    mRoot.setBackgroundColor(color);
+
+                    if (mOnReadCommandListener != null)
+                        mOnReadCommandListener.onBackground(color);
+
                     break;
-                case 3: // img
+                case READ_IMAGE: // img
                     ScriptGraphicsFile scriptImage = ScriptDefinerUtils.Image(chunk,currentOffset);
                     if (scriptImage == null) {
                         return;
@@ -188,27 +166,11 @@ public class ScriptEngine {
                         return;
                     }
 
+                    if (mOnReadCommandListener != null)
+                        mOnReadCommandListener.onImage(img,scriptImage);
 
-                    ImageView imageView = new ImageView(context);
-                    imageView.setImageBitmap(BitmapFactory.decodeByteArray(img, 0, img.length));
-                    FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                    params.width = (int) (metrics.density * scriptImage.width);
-                    params.height = (int) (metrics.density * scriptImage.height);
-                    params.gravity = Gravity.START | Gravity.TOP;
-                    imageView.setScaleX(.0f);
-                    imageView.setScaleY(.0f);
-                    imageView.setScaleType(ImageView.ScaleType.FIT_XY);
-                    mRoot.addView(imageView,params);
-
-                    imageView.setX(scriptImage.x * metrics.widthPixels);
-                    imageView.setY(scriptImage.y * metrics.heightPixels);
-
-                    imageView.animate().scaleY(1.0f).scaleX(1.0f).withEndAction(() ->
-                                    imageView.animate().scaleX(.0f).scaleY(.0f).setStartDelay(1250).withEndAction(() ->
-                                            mRoot.removeView(imageView)).start())
-                            .start();
                     break;
-                case 4: // gif
+                case READ_GIF: // gif
                     ScriptGraphicsFile gifScript = ScriptDefinerUtils.Gif(chunk,currentOffset);
 
                     byte[] gif = null;
@@ -220,25 +182,10 @@ public class ScriptEngine {
                         return;
                     }
 
-                    GifView gifView = new GifView(context);
-                    gifView.setSource(gif);
-
-                    FrameLayout.LayoutParams par =
-                            new FrameLayout.LayoutParams(gifView.width(), gifView.height());
-
-                    par.leftMargin = (int) (gifScript.x * metrics.widthPixels);
-                    par.topMargin = (int) (gifScript.y * metrics.heightPixels);
-
-                    mRoot.addView(gifView, par);
-                    gifView.play();
-
-                    gifView.animate()
-                            .setStartDelay(5500)
-                            .alpha(0.0f)
-                            .withEndAction(()-> mRoot.removeView(gifView)).start();
-
+                    if (mOnReadCommandListener != null)
+                        mOnReadCommandListener.onGif(gif, gifScript);
                     break;
-                case 5: // SFX
+                case READ_SFX: // SFX
                     ScriptResourceFile srf = ScriptDefinerUtils.SFX(chunk,currentOffset);
 
                     byte[] sfx = null;
@@ -250,34 +197,11 @@ public class ScriptEngine {
                         return;
                     }
 
-                    try {
-                        File tempSFX = File.createTempFile(String.valueOf(System.currentTimeMillis()),".mp3",context.getCacheDir());
+                    if (mOnReadCommandListener != null)
+                        mOnReadCommandListener.onSFX(sfx);
 
-                        FileOutputStream fos = new FileOutputStream(tempSFX);
-                        fos.write(sfx);
-                        fos.close();
-
-                        MediaPlayer mediaPlayer = MediaPlayer.create(context,Uri.fromFile(tempSFX));
-
-                        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                            @Override
-                            public void onCompletion(MediaPlayer mediaPlayer) {
-                                Log.d(TAG, "onCompletion: MEDIA_PLAYER_SFX: " + tempSFX.getName());
-                                mediaPlayer.stop();
-                                mediaPlayer.release();
-                                if (tempSFX.delete()) {
-                                    Log.d(TAG, "onCompletion: FILE HAS BEEN DELETED!");
-                                }
-                            }
-                        });
-
-                        mediaPlayer.start();
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                     break;
-                case 6: // Ambient
+                case READ_AMBIENT: // Ambient
                     ScriptResourceFile sResFile = ScriptDefinerUtils.Ambient(chunk,currentOffset);
                     byte[] ambientMusic = null;
                     if (mOnFileScriptListener != null) {
@@ -287,13 +211,17 @@ public class ScriptEngine {
                     if (ambientMusic == null) {
                         return;
                     }
+
+                    if (mOnReadCommandListener != null)
+                        mOnReadCommandListener.onAmbient(ambientMusic);
+
                     break;
                 default:
-                    Utilities.showMessage("Invalid command index: " + commandIndex, mContext);
+                    mOnReadCommandListener.onError("Invalid command index: " + commandIndex);
                     break;
             }
             j += argSize;
         }
-        createPhrase(target);
+        mOnCreateScriptTextViewListener.onCreate(textConfig);
     }
 }
