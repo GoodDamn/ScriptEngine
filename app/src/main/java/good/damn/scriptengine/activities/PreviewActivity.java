@@ -2,8 +2,13 @@ package good.damn.scriptengine.activities;
 
 import android.content.Context;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -12,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,6 +44,8 @@ public class PreviewActivity extends AppCompatActivity {
 
     private TextViewPhrase mCurrentViewPhrase;
 
+    private MediaPlayer mAmbientPlayer;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,6 +64,26 @@ public class PreviewActivity extends AppCompatActivity {
 
         Log.d(TAG, "onCreate: PATH TO CONTENT: " + path);
 
+
+
+
+        SoundPool mSFXPool;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .build();
+
+            mSFXPool = new SoundPool.Builder()
+                    .setMaxStreams(10)
+                    .setAudioAttributes(audioAttributes)
+                    .build();
+        } else {
+            mSFXPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
+        }
+
         DisplayMetrics metrics = getResources().getDisplayMetrics();
 
         ScriptEngine scriptEngine = new ScriptEngine();
@@ -67,7 +95,7 @@ public class PreviewActivity extends AppCompatActivity {
 
             @Override
             public void onBackground(int color) {
-
+                root_FrameLayout.setBackgroundColor(color);
             }
 
             @Override
@@ -114,37 +142,32 @@ public class PreviewActivity extends AppCompatActivity {
 
             @Override
             public void onSFX(byte[] sfx) {
-                try {
-                    File tempSFX = File.createTempFile(String.valueOf(System.currentTimeMillis()),".mp3",context.getCacheDir());
 
-                    FileOutputStream fos = new FileOutputStream(tempSFX);
-                    fos.write(sfx);
-                    fos.close();
-
-                    MediaPlayer mediaPlayer = MediaPlayer.create(context, Uri.fromFile(tempSFX));
-
-                    mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                        @Override
-                        public void onCompletion(MediaPlayer mediaPlayer) {
-                            Log.d(TAG, "onCompletion: MEDIA_PLAYER_SFX: " + tempSFX.getName());
-                            mediaPlayer.stop();
-                            mediaPlayer.release();
-                            if (tempSFX.delete()) {
-                                Log.d(TAG, "onCompletion: FILE HAS BEEN DELETED!");
-                            }
-                        }
-                    });
-
-                    mediaPlayer.start();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
 
             @Override
             public void onAmbient(byte[] ambientMusic) {
+                try {
+                    File tempAmbient = File.createTempFile(String.valueOf(System.currentTimeMillis()),
+                            ".mp3",context.getCacheDir());
 
+                    FileOutputStream fos = new FileOutputStream(tempAmbient);
+                    fos.write(ambientMusic);
+                    fos.close();
+
+                    tempAmbient.deleteOnExit();
+
+                    if (mAmbientPlayer == null) { // First start
+                        mAmbientPlayer = MediaPlayer.create(context, Uri.fromFile(tempAmbient));
+                        mAmbientPlayer.setLooping(true);
+                    } else {
+
+                    }
+
+                    mAmbientPlayer.start();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override
@@ -153,20 +176,22 @@ public class PreviewActivity extends AppCompatActivity {
             }
         });
 
+        Typeface defTypeface = Typeface.createFromAsset(getAssets(), "m_plus_rounded1c_thin");
+
         scriptEngine.setOnCreateViewListener(new OnCreateScriptTextViewListener() {
             @Override
             public void onCreate(ScriptTextConfig textConfig) {
+                TextViewPhrase phrase = new TextViewPhrase(context);
 
+                phrase.config(textConfig.spannableString,
+                        textConfig.textSize,
+                        defTypeface);
 
-                /*textViewPhrase.animate()
-                        .alpha(1.0f)
-                        .setDuration(1500)
-                        .start();
-                mCurrentViewPhrase = textViewPhrase;*/
+                phrase.fadeIn();
+
+                mCurrentViewPhrase = phrase;
             }
         });
-
-        setContentView(root_FrameLayout);
 
 
         root_FrameLayout.setOnClickListener(new View.OnClickListener() {
@@ -178,6 +203,10 @@ public class PreviewActivity extends AppCompatActivity {
                 scriptReader.next();
             }
         });
+
+
+        // Show view after configured options for activity
+        setContentView(root_FrameLayout);
 
         scriptReader.next();
     }

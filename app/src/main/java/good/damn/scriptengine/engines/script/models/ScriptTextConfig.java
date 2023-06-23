@@ -5,5 +5,5 @@ import android.text.SpannableString;
 
 public class ScriptTextConfig {
     public SpannableString spannableString;
-    public float textSize;
+    public float textSize = 18.0f;
 }
