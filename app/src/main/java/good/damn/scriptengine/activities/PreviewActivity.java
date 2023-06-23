@@ -58,12 +58,13 @@ public class PreviewActivity extends AppCompatActivity {
 
         DisplayMetrics metrics = getResources().getDisplayMetrics();
 
-        ScriptEngine scriptEngine = new ScriptEngine(this);
+        ScriptEngine scriptEngine = new ScriptEngine();
         ScriptReader scriptReader = new ScriptReader(scriptEngine, new File(path));
 
         FrameLayout root_FrameLayout = new FrameLayout(this);
 
         scriptEngine.setReadCommandListener(new OnReadCommandListener() {
+
             @Override
             public void onBackground(int color) {
 
@@ -144,6 +145,11 @@ public class PreviewActivity extends AppCompatActivity {
             @Override
             public void onAmbient(byte[] ambientMusic) {
 
+            }
+
+            @Override
+            public void onError(String errorMsg) {
+                Utilities.showMessage(errorMsg, context);
             }
         });
 

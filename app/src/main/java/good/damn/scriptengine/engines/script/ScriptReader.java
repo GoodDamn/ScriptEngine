@@ -107,8 +107,6 @@ public class ScriptReader {
             return;
         }
 
-        TextViewPhrase textViewPhrase = new TextViewPhrase(mScriptEngine.getContext());
-
         byte[] chunkLengthBytes = new byte[4];
 
         try {
@@ -121,7 +119,7 @@ public class ScriptReader {
             mChunkStream.read(mBuffer,0,chunkLength+2);
 
             Log.d(TAG, "next: BUFFER: " + Arrays.toString(mBuffer));
-            mScriptEngine.read(mBuffer,textViewPhrase);
+            mScriptEngine.read(mBuffer);
 
         } catch (IOException e) {
             e.printStackTrace();
