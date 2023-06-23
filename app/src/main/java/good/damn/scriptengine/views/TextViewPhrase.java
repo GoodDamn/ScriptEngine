@@ -16,10 +16,10 @@ public class TextViewPhrase extends AppCompatTextView {
         super(context);
     }
 
-    public void config(SpannableString text, float textSize, Typeface typeface){
-        setText(text);
-        setTextSize(textSize);
+    public void config(SpannableString text, float textSize, Typeface typeface) {
         setTypeface(typeface);
+        setTextSize(textSize);
+        setText(text);
         setGravity(Gravity.CENTER);
         setAlpha(0.0f);
     }

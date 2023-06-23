@@ -31,7 +31,7 @@ public class ScriptDefinerUtils {
 
         SpannableString spannableString = null;
 
-        CharSequence text = textConfig.spannableString.toString();
+        CharSequence text = textConfig.spannableString;
 
         if (argSize == 4) { // 1 arg
             textConfig.textSize = textSize;
@@ -62,7 +62,7 @@ public class ScriptDefinerUtils {
         Log.d(TAG, "read: font " + style + " " + argSize);
         CharacterStyle span = null;
         currentOffset+=2;
-        switch (style){
+        switch (style) {
             case 0:
                 span = new UnderlineSpan();
                 break;
@@ -101,7 +101,7 @@ public class ScriptDefinerUtils {
 
         SpannableString spannableString = null;
 
-        CharSequence text = textConfig.spannableString.toString();
+        CharSequence text = textConfig.spannableString;
 
         if (argSize == 3) { // 2 args
             spannableString = makeSpannable(0,text.length(), span,text);
@@ -119,7 +119,7 @@ public class ScriptDefinerUtils {
                     span,text);
         }
 
-        if (spannableString != null){
+        if (spannableString != null) {
             textConfig.spannableString = spannableString;
         }
 

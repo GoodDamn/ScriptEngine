@@ -74,7 +74,7 @@ public class FileOutputUtils {
     public static String mkSKCFile(ArrayList<Piece> arrayList, Context context) {
 
         FileOutputStream fosSKC;
-        FileInputStream fisRes;
+        FileInputStream fisRes = null;
 
         String path = context.getCacheDir()
                 + FileUtils.DUMB_DIR;
@@ -106,10 +106,13 @@ public class FileOutputUtils {
             // Compile resource section
             ResourceBuildResult result = mkSKResFile(context);
 
-            String[] compiledRes = result.getCompiledResources();
+            String[] compiledRes = null;
+            int resSectionLength = 0;
 
-            int resSectionLength = (int) result.getOutFile().length();
-
+            if (result != null) {
+                compiledRes = result.getCompiledResources();
+                resSectionLength = (int) result.getOutFile().length();
+            }
             fosSKC.write(Utilities.gbInt(resSectionLength));
 
             for (Piece piece : arrayList) {
@@ -134,13 +137,14 @@ public class FileOutputUtils {
             }
 
             // Write resources to .skc file
+            if (result != null) {
+                fisRes = new FileInputStream(result.getOutFile());
+                byte[] buffer = new byte[8192];
 
-            fisRes = new FileInputStream(result.getOutFile());
-            byte[] buffer = new byte[8192];
-
-            int n;
-            while ((n = fisRes.read(buffer)) != -1) {
-                fosSKC.write(buffer,0,n);
+                int n;
+                while ((n = fisRes.read(buffer)) != -1) {
+                    fosSKC.write(buffer, 0, n);
+                }
             }
 
         } catch (IOException exception) {
@@ -150,7 +154,9 @@ public class FileOutputUtils {
 
         try {
             fosSKC.close();
-            fisRes.close();
+            if (fisRes != null) {
+                fisRes.close();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
