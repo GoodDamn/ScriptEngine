@@ -31,11 +31,18 @@ import good.damn.scriptengine.utils.Utilities;
 public class PiecesListFragment extends Fragment {
 
     private OnClickTextPiece mOnClickTextPiece;
+    private View.OnClickListener mOnResFolderClickListener;
 
     private ArrayList<Piece> pieces = null;
 
-    public void setOnClickTextPiece(OnClickTextPiece mOnClickTextPiece) {
+    public void setOnClickTextPieceListener(OnClickTextPiece mOnClickTextPiece) {
         this.mOnClickTextPiece = mOnClickTextPiece;
+    }
+
+    // Need to put with view directly, because it passes once
+    // inside onCreateView() method
+    public void setOnClickResFolderListener(View.OnClickListener clickListener) {
+        mOnResFolderClickListener = clickListener;
     }
 
     @Nullable
@@ -80,12 +87,7 @@ public class PiecesListFragment extends Fragment {
         });
 
         v.findViewById(R.id.f_pieces_list_resources_page)
-                .setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-
-                    }
-                });
+                .setOnClickListener(mOnResFolderClickListener);
 
         InputStream inputStream = context.getResources().openRawResource(R.raw.text);
 

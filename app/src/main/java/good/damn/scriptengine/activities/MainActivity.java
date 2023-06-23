@@ -5,9 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.viewpager.widget.ViewPager;
 
 import android.os.Bundle;
+import android.view.View;
 
 import good.damn.scriptengine.fragments.PiecesListFragment;
 import good.damn.scriptengine.fragments.ResourcesFragment;
@@ -36,7 +36,14 @@ public class MainActivity extends AppCompatActivity {
 
         ResourcesFragment resourcesFragment = new ResourcesFragment();
 
-        piecesListFragment.setOnClickTextPiece(new OnClickTextPiece() {
+        piecesListFragment.setOnClickResFolderListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mViewPager.setCurrentItem(2);
+            }
+        });
+
+        piecesListFragment.setOnClickTextPieceListener(new OnClickTextPiece() {
             @Override
             public void onClick(Piece piece, int position) {
                 scriptEditorFragment.startScript(piece);
