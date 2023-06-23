@@ -67,22 +67,8 @@ public class ScriptEditorFragment extends Fragment {
         et_phrase = v.findViewById(R.id.personalEditor_editText_phrase);
         et_script = v.findViewById(R.id.personalEditor_editText_script);
 
-        ViewGroup root = (ViewGroup) et_script.getParent().getParent();
-
-        ScriptEngine scriptEngine = new ScriptEngine(context);
-        scriptEngine.setRootViewGroup(root);
+        ScriptEngine scriptEngine = new ScriptEngine();
         scriptEngine.setSourceEditText(et_phrase);
-        scriptEngine.setOnCreateViewListener(new OnCreateScriptTextViewListener() {
-            @Override
-            public void onConfigured(TextViewPhrase textViewPhrase) {
-                textViewPhrase.animate()
-                        .alpha(1.0f)
-                        .setDuration(750)
-                        .withEndAction(()-> {
-                            textViewPhrase.fadeOutTransition(sRandom,2.1f); // FIX DENSITY VALUE
-                        }).start();
-            }
-        });
 
         v.findViewById(R.id.personalEditor_button_start).setOnClickListener(new View.OnClickListener() {
             @Override
