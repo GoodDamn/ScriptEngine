@@ -47,6 +47,8 @@ public class PreviewActivity extends AppCompatActivity {
 
     private MediaPlayer mAmbientPlayer;
 
+    private SoundPool mSFXPool;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,10 +68,6 @@ public class PreviewActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate: PATH TO CONTENT: " + path);
 
 
-
-
-        SoundPool mSFXPool;
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 
             AudioAttributes audioAttributes = new AudioAttributes.Builder()
@@ -84,6 +82,19 @@ public class PreviewActivity extends AppCompatActivity {
         } else {
             mSFXPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
         }
+
+        mSFXPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+            @Override
+            public void onLoadComplete(SoundPool soundPool, int soundID, int status) {
+                Log.d(TAG, "onLoadComplete: SOUND_ID: " + soundID + " STATUS: " + status);
+                mSFXPool.play(soundID,
+                        1.0f,
+                        1.0f,
+                        1,
+                        0,
+                        1.0f);
+            }
+        });
 
         DisplayMetrics metrics = getResources().getDisplayMetrics();
 
@@ -143,20 +154,28 @@ public class PreviewActivity extends AppCompatActivity {
 
             @Override
             public void onSFX(byte[] sfx) {
+                try {
+                    File tempSFX = ScriptEngine.createTempFile(
+                            sfx,
+                            ".mp3",
+                            context.getCacheDir()
+                    );
 
+                    mSFXPool.load(tempSFX.getPath(), 1);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override
             public void onAmbient(byte[] ambientMusic) {
                 try {
-                    File tempAmbient = File.createTempFile(String.valueOf(System.currentTimeMillis()),
-                            ".mp3",context.getCacheDir());
 
-                    FileOutputStream fos = new FileOutputStream(tempAmbient);
-                    fos.write(ambientMusic);
-                    fos.close();
-
-                    tempAmbient.deleteOnExit();
+                    File tempAmbient = ScriptEngine.createTempFile(
+                            ambientMusic,
+                            ".mp3",
+                            context.getCacheDir());
 
                     if (mAmbientPlayer == null) { // First start
                         mAmbientPlayer = MediaPlayer.create(context, Uri.fromFile(tempAmbient));
@@ -215,5 +234,17 @@ public class PreviewActivity extends AppCompatActivity {
         setContentView(root_FrameLayout);
 
         scriptReader.next();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (mAmbientPlayer != null) {
+            mAmbientPlayer.stop();
+            mAmbientPlayer.release();
+        }
+
+        mSFXPool.autoPause();
+        mSFXPool.release();
     }
 }

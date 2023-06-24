@@ -5,6 +5,9 @@ import android.text.SpannableString;
 import android.util.Log;
 import android.widget.EditText;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import good.damn.scriptengine.engines.script.interfaces.OnCreateScriptTextViewListener;
@@ -223,5 +226,21 @@ public class ScriptEngine {
             j += argSize;
         }
         mOnCreateScriptTextViewListener.onCreate(textConfig);
+    }
+
+
+    public static File createTempFile(byte[] file,String extension,File dir) throws IOException {
+        File tempAmbient = File.createTempFile(
+                String.valueOf(System.currentTimeMillis()),
+                extension,
+                dir);
+
+        FileOutputStream fos = new FileOutputStream(tempAmbient);
+        fos.write(file);
+        fos.close();
+
+        tempAmbient.deleteOnExit();
+
+        return tempAmbient;
     }
 }
