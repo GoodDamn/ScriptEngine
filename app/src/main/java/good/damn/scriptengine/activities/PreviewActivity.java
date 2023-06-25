@@ -1,5 +1,6 @@
 package good.damn.scriptengine.activities;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
@@ -10,7 +11,6 @@ import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.Layout;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -18,14 +18,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Random;
 
 import good.damn.scriptengine.engines.script.ScriptEngine;
@@ -48,6 +48,18 @@ public class PreviewActivity extends AppCompatActivity {
     private MediaPlayer mAmbientPlayer;
 
     private SoundPool mSFXPool;
+
+    private final short[] mToARGB = new short[4];
+    private final short[] mFromARGB = new short[4];
+
+    private int mCurrentBackColor = 0;
+
+    private void toARGB(int input, short[] result) {
+        result[0] = (short) ((input >> 24) & 0xff);
+        result[1] = (short) ((input >> 16) & 0xff);
+        result[2] = (short) ((input >> 8) & 0xff);
+        result[3] = (short) (input & 0xff);
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -103,11 +115,36 @@ public class PreviewActivity extends AppCompatActivity {
 
         FrameLayout root_FrameLayout = new FrameLayout(this);
 
+        ValueAnimator mAnimatorColor = new ValueAnimator();
+        mAnimatorColor.setIntValues(0,1);
+        mAnimatorColor.setDuration(1550);
+
+        mAnimatorColor.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(@NonNull ValueAnimator valueAnimator) {
+                float frac = valueAnimator.getAnimatedFraction();
+
+                int color =
+                        (((int)(mFromARGB[0] + (mToARGB[0] - mFromARGB[0]) * frac) & 0xff) << 24) |
+                        (((int)(mFromARGB[1] + (mToARGB[1] - mFromARGB[1]) * frac) & 0xff) << 16) |
+                        (((int)(mFromARGB[2] + (mToARGB[2] - mFromARGB[2]) * frac) & 0xff) << 8 )|
+                        ((int)(mFromARGB[3] + (mToARGB[3] - mFromARGB[3]) * frac) & 0xff);
+
+                Log.d(TAG, "onAnimationUpdate: BACK_COLOR: " + color);
+                root_FrameLayout.setBackgroundColor(color);
+            }
+        });
+
         scriptEngine.setReadCommandListener(new OnReadCommandListener() {
 
             @Override
             public void onBackground(int color) {
-                root_FrameLayout.setBackgroundColor(color);
+                toARGB(color, mToARGB);
+                toARGB(mCurrentBackColor, mFromARGB);
+                mCurrentBackColor = color;
+                Log.d(TAG, "onBackground: CURRENT_BACK_COLOR: " + mCurrentBackColor + " FROM: "
+                        + Arrays.toString(mFromARGB) + " TO: " + Arrays.toString(mToARGB));
+                mAnimatorColor.start();
             }
 
             @Override
