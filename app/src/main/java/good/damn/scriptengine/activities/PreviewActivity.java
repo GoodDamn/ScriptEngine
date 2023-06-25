@@ -35,6 +35,7 @@ import good.damn.scriptengine.engines.script.interfaces.OnReadCommandListener;
 import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
 import good.damn.scriptengine.engines.script.models.ScriptTextConfig;
 import good.damn.scriptengine.utils.Utilities;
+import good.damn.scriptengine.views.ColorRevealView;
 import good.damn.scriptengine.views.GifView;
 import good.damn.scriptengine.views.TextViewPhrase;
 
@@ -115,7 +116,9 @@ public class PreviewActivity extends AppCompatActivity {
 
         FrameLayout root_FrameLayout = new FrameLayout(this);
 
-        ValueAnimator mAnimatorColor = new ValueAnimator();
+        ColorRevealView mColorRevealView = new ColorRevealView(this);
+
+        /*ValueAnimator mAnimatorColor = new ValueAnimator();
         mAnimatorColor.setIntValues(0,1);
         mAnimatorColor.setDuration(1550);
 
@@ -124,27 +127,27 @@ public class PreviewActivity extends AppCompatActivity {
             public void onAnimationUpdate(@NonNull ValueAnimator valueAnimator) {
                 float frac = valueAnimator.getAnimatedFraction();
 
-                int color =
+                mCurrentBackColor =
                         (((int)(mFromARGB[0] + (mToARGB[0] - mFromARGB[0]) * frac) & 0xff) << 24) |
                         (((int)(mFromARGB[1] + (mToARGB[1] - mFromARGB[1]) * frac) & 0xff) << 16) |
                         (((int)(mFromARGB[2] + (mToARGB[2] - mFromARGB[2]) * frac) & 0xff) << 8 )|
-                        ((int)(mFromARGB[3] + (mToARGB[3] - mFromARGB[3]) * frac) & 0xff);
+                        ((int)( mFromARGB[3] + (mToARGB[3] - mFromARGB[3]) * frac) & 0xff);
 
-                Log.d(TAG, "onAnimationUpdate: BACK_COLOR: " + color);
-                root_FrameLayout.setBackgroundColor(color);
+                Log.d(TAG, "onAnimationUpdate: BACK_COLOR: " + mCurrentBackColor);
+                root_FrameLayout.setBackgroundColor(mCurrentBackColor);
             }
-        });
+        });*/
 
         scriptEngine.setReadCommandListener(new OnReadCommandListener() {
 
             @Override
             public void onBackground(int color) {
-                toARGB(color, mToARGB);
+                /*toARGB(color, mToARGB);
                 toARGB(mCurrentBackColor, mFromARGB);
-                mCurrentBackColor = color;
                 Log.d(TAG, "onBackground: CURRENT_BACK_COLOR: " + mCurrentBackColor + " FROM: "
                         + Arrays.toString(mFromARGB) + " TO: " + Arrays.toString(mToARGB));
-                mAnimatorColor.start();
+                mAnimatorColor.start();*/
+                mColorRevealView.start(color);
             }
 
             @Override
@@ -266,6 +269,9 @@ public class PreviewActivity extends AppCompatActivity {
             }
         });
 
+        root_FrameLayout.addView(mColorRevealView,
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT);
 
         // Show view after configured options for activity
         setContentView(root_FrameLayout);
