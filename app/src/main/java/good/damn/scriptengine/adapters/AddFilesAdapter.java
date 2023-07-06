@@ -105,7 +105,6 @@ public class AddFilesAdapter extends FilesAdapter {
     }
 
     class AddFileItem extends FileItem {
-
         public AddFileItem(@NonNull View itemView) {
             super(itemView);
             mTextView.setText("Add file");
@@ -114,9 +113,6 @@ public class AddFilesAdapter extends FilesAdapter {
                 @Override
                 public void onClick(View view) {
                     ToolsUtilities.startFileManager(mActivity, new OnFileClickListener() {
-                        @Override
-                        public void onClickedFolder(String prevFolder, String currentFolder) {}
-
                         @Override
                         public void onAudioFile(File file) {
                             Log.d(TAG, "onAudioFile: FILE: " + file);

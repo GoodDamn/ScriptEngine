@@ -185,7 +185,11 @@ public class ScriptEditorFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 ToolsUtilities.startFileManager(getActivity(), new FilesAdapter.OnFileClickListener() {
-                    @Override public void onClickedFolder(String prevFolder, String currentFolder) { }
+                    @Override
+                    public void onVectorFile(File file) {
+                        onImageFile(file);
+                    }
+
                     @Override
                     public void onAudioFile(File file) {
                         onImageFile(file);

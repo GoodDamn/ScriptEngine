@@ -39,22 +39,8 @@ public class ResourcesFragment extends Fragment {
             Log.d(TAG, "onCreateView: RESOURCES FOLDER HAS BEEN CREATED");
         }
 
-        AddFilesAdapter addFilesAdapter = new AddFilesAdapter(new FilesAdapter.OnFileClickListener() {
-            @Override
-            public void onClickedFolder(String prevFolder, String currentFolder) {
-
-            }
-
-            @Override
-            public void onAudioFile(File file) {
-
-            }
-
-            @Override
-            public void onImageFile(File file) {
-
-            }
-        }, dirResources.getAbsolutePath(), getActivity());
+        AddFilesAdapter addFilesAdapter = new AddFilesAdapter(new FilesAdapter.OnFileClickListener(),
+                dirResources.getAbsolutePath(), getActivity());
 
         RecyclerView recyclerView = new RecyclerView(context);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));

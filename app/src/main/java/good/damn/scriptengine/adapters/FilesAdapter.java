@@ -36,10 +36,11 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
 
     private final MimeTypeMap mimeTypeMap;
 
-    public interface OnFileClickListener {
-        void onClickedFolder(String prevFolder, String currentFolder);
-        void onAudioFile(File file);
-        void onImageFile(File file);
+    public static class OnFileClickListener {
+        public void onClickedFolder(String prevFolder, String currentFolder){};
+        public void onAudioFile(File file){};
+        public void onImageFile(File file){};
+        public void onVectorFile(File file){};
     }
 
     private String getFileExtension(File file) {
@@ -192,6 +193,12 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
                         onFileClickListener.onAudioFile(mFiles[getAdapterPosition()]);
                         return;
                     }
+
+                    if (isVectorFile) {
+                        onFileClickListener.onVectorFile(mFiles[getAdapterPosition()]);
+                        return;
+                    }
+
                     updatePath();
                 }
             });
