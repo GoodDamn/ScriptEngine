@@ -18,4 +18,6 @@ public interface OnReadCommandListener {
     void onAmbient(byte[] ambientMusic);
 
     void onError(String errorMsg);
+
+    void onVector(byte[] vect);
 }

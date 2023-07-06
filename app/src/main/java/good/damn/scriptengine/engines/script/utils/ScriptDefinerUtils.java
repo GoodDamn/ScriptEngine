@@ -230,4 +230,20 @@ public class ScriptDefinerUtils {
         return srf;
     }
 
+    // 7
+    public static ScriptResourceFile Vector(byte[] chunk, int currentOffset) {
+        currentOffset++;
+        Log.d(TAG, "Vector: CHUNK(current): " + chunk[currentOffset]);
+
+        byte resID = chunk[currentOffset];
+        if (resID <= -1) {
+            Log.d(TAG, "read: ERROR pre-exception: InvalidResourceReference: (Vector) RES_ID: " + resID);
+            return null;
+        }
+
+        ScriptResourceFile srf = new ScriptResourceFile();
+        srf.resID = resID;
+
+        return srf;
+    }
 }

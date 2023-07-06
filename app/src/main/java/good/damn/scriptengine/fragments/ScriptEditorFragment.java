@@ -89,7 +89,7 @@ public class ScriptEditorFragment extends Fragment {
                     if (t == null)
                         continue;
                     Log.d(TAG, "onClick: SCRIPT: " + Arrays.toString(t));
-                    if (t[1] >= 3 && t[1] <= 6) { // if it's an image, gif or SFX
+                    if (result.hasResource()) {
                         if (resPositions == null) {
                             resPositions = new LinkedList<>();
                         }
@@ -176,7 +176,7 @@ public class ScriptEditorFragment extends Fragment {
                 if (t.length() < n) {
                     n = (byte) t.length();
                 }
-                intent.putExtra("fileName", mAdapterPosition+"_"+t.substring(0,n)+".svc");
+                intent.putExtra("fileName", mAdapterPosition+"_"+t.substring(0,n).replace(" ","_")+".svc");
                 startActivity(intent);
             }
         });

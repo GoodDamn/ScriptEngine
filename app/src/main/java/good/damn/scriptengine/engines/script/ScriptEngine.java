@@ -25,11 +25,12 @@ public class ScriptEngine {
 
     private static final String TAG = "ScriptEngine";
 
-    public static final int READ_BACKGROUND = 2;
-    public static final int READ_IMAGE = 3;
-    public static final int READ_GIF = 4;
-    public static final int READ_SFX = 5;
-    public static final int READ_AMBIENT = 6;
+    public static final byte READ_BACKGROUND = 2;
+    public static final byte READ_IMAGE = 3;
+    public static final byte READ_GIF = 4;
+    public static final byte READ_SFX = 5;
+    public static final byte READ_AMBIENT = 6;
+    public static final byte READ_VECTOR = 7;
 
     private EditText et_target;
 
@@ -89,8 +90,11 @@ public class ScriptEngine {
             case "sfx": // 5
                 args = ScriptCommandsUtils.SFX(argv,scriptBuildResult);
                 break;
-            case "amb":
+            case "amb": // 6
                 args = ScriptCommandsUtils.Ambient(argv,scriptBuildResult);
+                break;
+            case "vect": // 7
+                args = ScriptCommandsUtils.Vector(argv,scriptBuildResult);
                 break;
             default:
                 Utilities.showMessage("Invalid command: " + argv[0], context);
@@ -131,7 +135,11 @@ public class ScriptEngine {
         short scriptSize = (short) (chunk[i+offset] & 0xFF);
         i++;
         Log.d(TAG, "read: SCRIPT_SIZE: "+ scriptSize);
+
         for (int j = 0; j < scriptSize;) {
+
+            ScriptResourceFile sResFile = null;
+
             int currentOffset = i+j+offset;
             int argSize = chunk[currentOffset] & 0xFF;
             currentOffset++;
@@ -155,7 +163,7 @@ public class ScriptEngine {
                         mOnReadCommandListener.onBackground(color);
 
                     break;
-                case READ_IMAGE: // img
+                case READ_IMAGE:
                     ScriptGraphicsFile scriptImage = ScriptDefinerUtils.Image(chunk,currentOffset);
                     if (scriptImage == null) {
                         return;
@@ -174,7 +182,7 @@ public class ScriptEngine {
                         mOnReadCommandListener.onImage(img,scriptImage);
 
                     break;
-                case READ_GIF: // gif
+                case READ_GIF:
                     ScriptGraphicsFile gifScript = ScriptDefinerUtils.Gif(chunk,currentOffset);
 
                     byte[] gif = null;
@@ -189,12 +197,12 @@ public class ScriptEngine {
                     if (mOnReadCommandListener != null)
                         mOnReadCommandListener.onGif(gif, gifScript);
                     break;
-                case READ_SFX: // SFX
-                    ScriptResourceFile srf = ScriptDefinerUtils.SFX(chunk,currentOffset);
+                case READ_SFX:
+                    sResFile = ScriptDefinerUtils.SFX(chunk,currentOffset);
 
                     byte[] sfx = null;
                     if (mOnFileScriptListener != null) {
-                        sfx = mOnFileScriptListener.onResource(srf.resID);
+                        sfx = mOnFileScriptListener.onResource(sResFile.resID);
                     }
 
                     if (sfx == null) {
@@ -205,8 +213,8 @@ public class ScriptEngine {
                         mOnReadCommandListener.onSFX(sfx);
 
                     break;
-                case READ_AMBIENT: // Ambient
-                    ScriptResourceFile sResFile = ScriptDefinerUtils.Ambient(chunk,currentOffset);
+                case READ_AMBIENT:
+                    sResFile = ScriptDefinerUtils.Ambient(chunk,currentOffset);
                     byte[] ambientMusic = null;
                     if (mOnFileScriptListener != null) {
                         ambientMusic = mOnFileScriptListener.onResource(sResFile.resID);
@@ -218,6 +226,22 @@ public class ScriptEngine {
 
                     if (mOnReadCommandListener != null)
                         mOnReadCommandListener.onAmbient(ambientMusic);
+
+                    break;
+                case READ_VECTOR:
+                    sResFile = ScriptDefinerUtils.Vector(chunk,currentOffset);
+                    byte[] vect = null;
+                    if (mOnFileScriptListener != null) {
+                        vect = mOnFileScriptListener.onResource(sResFile.resID);
+                    }
+
+                    if (vect == null) {
+                        return;
+                    }
+
+                    if (mOnReadCommandListener != null) {
+                        mOnReadCommandListener.onVector(vect);
+                    }
 
                     break;
                 default:

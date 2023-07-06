@@ -20,7 +20,7 @@ public class PreviewFragment extends Fragment {
     private TraceView mTraceView;
 
     public void startPreview(String path) {
-        mTraceView.setVectorsSource(FileUtils.retrieveSVCFile(getContext(),path));
+        mTraceView.setVectorsSource(FileUtils.retrieveSVCFile(path,getContext()));
     }
 
     @Nullable

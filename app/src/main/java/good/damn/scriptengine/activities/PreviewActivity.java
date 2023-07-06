@@ -25,6 +25,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -40,6 +41,10 @@ import good.damn.scriptengine.utils.Utilities;
 import good.damn.scriptengine.views.ColorRevealView;
 import good.damn.scriptengine.views.GifView;
 import good.damn.scriptengine.views.TextViewPhrase;
+import good.damn.traceview.interfaces.OnTraceFinishListener;
+import good.damn.traceview.utils.FileUtils;
+import good.damn.traceview.utils.models.EntityConfig;
+import good.damn.traceview.views.TraceView;
 
 public class PreviewActivity extends AppCompatActivity {
 
@@ -197,6 +202,36 @@ public class PreviewActivity extends AppCompatActivity {
             }
 
             @Override
+            public void onVector(byte[] vect) {
+                root_FrameLayout.setEnabled(false);
+
+                TraceView traceView = new TraceView(root_FrameLayout.getContext());
+                traceView.setBackgroundColor(0);
+                traceView.setVectorsSource(FileUtils.retrieveSVCFile(vect, PreviewActivity.this));
+                traceView.setOnTraceFinishListener(new OnTraceFinishListener() {
+                    @Override
+                    public void onFinish() {
+
+                        scriptReader.next();
+
+                        if (mCurrentViewPhrase != null) {
+                            mCurrentViewPhrase.fadeOutTransition(sRandom, 2.1f);
+                        }
+
+                        traceView.animate()
+                                .alpha(0.0f)
+                                .withEndAction(()-> root_FrameLayout.removeView(traceView))
+                                .start();
+                        root_FrameLayout.setEnabled(true);
+                    }
+                });
+
+                root_FrameLayout.addView(traceView,
+                        FrameLayout.LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.MATCH_PARENT);
+            }
+
+            @Override
             public void onError(String errorMsg) {
                 Utilities.showMessage(errorMsg, context);
             }
@@ -231,10 +266,10 @@ public class PreviewActivity extends AppCompatActivity {
                     case MotionEvent.ACTION_UP:
                         mColorRevealView.setCenterPoint(motionEvent.getX(),
                                 motionEvent.getY());
+                        scriptReader.next();
                         if (mCurrentViewPhrase != null) {
                             mCurrentViewPhrase.fadeOutTransition(sRandom, 2.1f);
                         }
-                        scriptReader.next();
                         break;
                 }
 

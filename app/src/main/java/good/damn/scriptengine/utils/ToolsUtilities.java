@@ -53,6 +53,12 @@ public class ToolsUtilities {
                     onFileClickListener.onImageFile(file);
                     dialog.dismiss();
                 }
+
+                @Override
+                public void onVectorFile(File file) {
+                    onFileClickListener.onVectorFile(file);
+                    dialog.dismiss();
+                }
             }, path);
 
             tv_back.setOnClickListener(new View.OnClickListener() {

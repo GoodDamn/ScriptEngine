@@ -244,6 +244,7 @@ public class ScriptCommandsUtils {
         Log.d(TAG, "execute: IMAGE COMMAND: " + argv[1]);
 
         buildResult.setResName(argv[1]);
+        buildResult.withResource();
 
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
 
@@ -280,6 +281,7 @@ public class ScriptCommandsUtils {
 
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         buildResult.setResName(argv[1]);
+        buildResult.withResource();
 
         byte[] origin = new byte[5];
         origin[0] = 7; // argSize (2 args * 2 bytes) + 4 next args
@@ -310,6 +312,7 @@ public class ScriptCommandsUtils {
     // 5
     public static byte[] SFX(String[] argv,ScriptBuildResult buildResult) {
         buildResult.setResName(argv[1]);
+        buildResult.withResource();
 
         return new byte[]{
                 3, // arg size
@@ -317,13 +320,25 @@ public class ScriptCommandsUtils {
                 -1}; // res mark
     }
 
-    // 5
+    // 6
     public static byte[] Ambient(String[] argv,ScriptBuildResult buildResult) {
         buildResult.setResName(argv[1]);
+        buildResult.withResource();
 
         return new byte[]{
                 3, // arg size
                 6, // command index
+                -1}; // res mark
+    }
+
+    // 7
+    public static byte[] Vector(String[] argv, ScriptBuildResult buildResult) {
+        buildResult.setResName(argv[1]);
+        buildResult.withResource();
+
+        return new byte[]{
+                3, // arg size
+                7, // command index
                 -1}; // res mark
     }
 }
