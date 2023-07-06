@@ -137,7 +137,9 @@ public class ScriptEngine {
             currentOffset++;
             byte commandIndex = chunk[currentOffset];
 
-            Log.d(TAG, "read: J: "+ j + " SCRIPT_SIZE:" +scriptSize + " OFFSET:" + currentOffset + " ARG_SIZE: " + argSize + " COMMAND_INDEX: " + commandIndex);
+            Log.d(TAG, "read: J: "+ j + " SCRIPT_SIZE:" +scriptSize +
+                    " OFFSET:" + currentOffset + " ARG_SIZE: " + argSize +
+                    " COMMAND_INDEX: " + commandIndex);
             switch (commandIndex) {
                 case 0: // textSize
                     ScriptDefinerUtils.TextSize(chunk,currentOffset,argSize,textConfig);

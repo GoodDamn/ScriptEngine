@@ -10,18 +10,18 @@
         android:rowCount="2"
         android:columnCount="1">
         <EditText
-            android:id="@+id/personalEditor_editText_phrase"
+            android:id="@+id/scriptEditor_editText_phrase"
             android:layout_gravity="fill"
             android:layout_rowWeight="0.5"
             android:layout_columnWeight="1"
             android:text="Some text"
             android:gravity="center"/>
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/personalEditor_button_start"
+            android:id="@+id/scriptEditor_button_start"
             android:layout_gravity="fill"
             android:text="Start"/>
         <EditText
-            android:id="@+id/personalEditor_editText_script"
+            android:id="@+id/scriptEditor_editText_script"
             android:layout_rowWeight="1"
             android:layout_gravity="fill"
             android:layout_columnWeight="1"
@@ -33,19 +33,20 @@
             android:background="#00000000"/>
     </GridLayout>
     <View
-        android:id="@+id/view_back"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:scaleY="0.5"
-        android:scaleX="0.5"
-        android:rotation="180"
-        android:background="#00FF0000"/>
-    <View
-        android:id="@+id/personalEditor_selectFile"
+        android:id="@+id/scriptEditor_selectFile"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:background="@drawable/ic_folder"
         android:scaleX="0.5"
         android:scaleY="0.5"
+        android:layout_gravity="end"/>
+    <View
+        android:id="@+id/scriptEditor_vectorEditor"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/ic_vector_editor"
+        android:scaleX="0.75"
+        android:scaleY="0.75"
+        android:layout_marginEnd="50dp"
         android:layout_gravity="end"/>
 </FrameLayout>

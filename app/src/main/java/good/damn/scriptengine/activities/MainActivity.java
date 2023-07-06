@@ -14,7 +14,7 @@ import good.damn.scriptengine.fragments.ResourcesFragment;
 import good.damn.scriptengine.fragments.ScriptEditorFragment;
 import good.damn.scriptengine.interfaces.OnClickTextPiece;
 import good.damn.scriptengine.models.Piece;
-import good.damn.scriptengine.views.BlockedViewPager;
+import good.damn.traceview.views.BlockedViewPager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         piecesListFragment.setOnClickTextPieceListener(new OnClickTextPiece() {
             @Override
             public void onClick(Piece piece, int position) {
-                scriptEditorFragment.startScript(piece);
+                scriptEditorFragment.startScript(piece,position);
                 mViewPager.setCurrentItem(1);
             }
         });

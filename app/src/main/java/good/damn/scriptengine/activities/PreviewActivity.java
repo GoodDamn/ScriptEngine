@@ -1,6 +1,7 @@
 package good.damn.scriptengine.activities;
 
 import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
@@ -14,6 +15,7 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -50,18 +52,7 @@ public class PreviewActivity extends AppCompatActivity {
 
     private SoundPool mSFXPool;
 
-    private final short[] mToARGB = new short[4];
-    private final short[] mFromARGB = new short[4];
-
-    private int mCurrentBackColor = 0;
-
-    private void toARGB(int input, short[] result) {
-        result[0] = (short) ((input >> 24) & 0xff);
-        result[1] = (short) ((input >> 16) & 0xff);
-        result[2] = (short) ((input >> 8) & 0xff);
-        result[3] = (short) (input & 0xff);
-    }
-
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,35 +109,9 @@ public class PreviewActivity extends AppCompatActivity {
 
         ColorRevealView mColorRevealView = new ColorRevealView(this);
 
-        /*ValueAnimator mAnimatorColor = new ValueAnimator();
-        mAnimatorColor.setIntValues(0,1);
-        mAnimatorColor.setDuration(1550);
-
-        mAnimatorColor.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(@NonNull ValueAnimator valueAnimator) {
-                float frac = valueAnimator.getAnimatedFraction();
-
-                mCurrentBackColor =
-                        (((int)(mFromARGB[0] + (mToARGB[0] - mFromARGB[0]) * frac) & 0xff) << 24) |
-                        (((int)(mFromARGB[1] + (mToARGB[1] - mFromARGB[1]) * frac) & 0xff) << 16) |
-                        (((int)(mFromARGB[2] + (mToARGB[2] - mFromARGB[2]) * frac) & 0xff) << 8 )|
-                        ((int)( mFromARGB[3] + (mToARGB[3] - mFromARGB[3]) * frac) & 0xff);
-
-                Log.d(TAG, "onAnimationUpdate: BACK_COLOR: " + mCurrentBackColor);
-                root_FrameLayout.setBackgroundColor(mCurrentBackColor);
-            }
-        });*/
-
         scriptEngine.setReadCommandListener(new OnReadCommandListener() {
-
             @Override
             public void onBackground(int color) {
-                /*toARGB(color, mToARGB);
-                toARGB(mCurrentBackColor, mFromARGB);
-                Log.d(TAG, "onBackground: CURRENT_BACK_COLOR: " + mCurrentBackColor + " FROM: "
-                        + Arrays.toString(mFromARGB) + " TO: " + Arrays.toString(mToARGB));
-                mAnimatorColor.start();*/
                 mColorRevealView.start(color);
             }
 
@@ -189,7 +154,8 @@ public class PreviewActivity extends AppCompatActivity {
                 gifView.animate()
                         .setStartDelay(5500)
                         .alpha(0.0f)
-                        .withEndAction(()-> root_FrameLayout.removeView(gifView)).start();
+                        .withEndAction(()-> root_FrameLayout.removeView(gifView))
+                        .start();
             }
 
             @Override
@@ -258,14 +224,21 @@ public class PreviewActivity extends AppCompatActivity {
             }
         });
 
-
-        root_FrameLayout.setOnClickListener(new View.OnClickListener() {
+        root_FrameLayout.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View view) {
-                if (mCurrentViewPhrase != null) {
-                    mCurrentViewPhrase.fadeOutTransition(sRandom, 2.1f);
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                switch (motionEvent.getAction()) {
+                    case MotionEvent.ACTION_UP:
+                        mColorRevealView.setCenterPoint(motionEvent.getX(),
+                                motionEvent.getY());
+                        if (mCurrentViewPhrase != null) {
+                            mCurrentViewPhrase.fadeOutTransition(sRandom, 2.1f);
+                        }
+                        scriptReader.next();
+                        break;
                 }
-                scriptReader.next();
+
+                return true;
             }
         });
 

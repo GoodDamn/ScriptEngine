@@ -57,6 +57,11 @@ public class ColorRevealView extends View {
         init();
     }
 
+    public void setCenterPoint(float cx, float cy) {
+        mCenterX = cx;
+        mCenterY = cy;
+    }
+
     public void start(int withColor) {
         setBackgroundColor(mPaint.getColor());
         mPaint.setColor(withColor);

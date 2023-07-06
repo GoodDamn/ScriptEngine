@@ -34,14 +34,22 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
 
     private final OnFileClickListener onFileClickListener;
 
+    private final MimeTypeMap mimeTypeMap;
+
     public interface OnFileClickListener {
         void onClickedFolder(String prevFolder, String currentFolder);
         void onAudioFile(File file);
         void onImageFile(File file);
     }
 
-    private String getMimeType(File file){
-        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(Uri.parse(Uri.fromFile(file).toString()).getEncodedSchemeSpecificPart()));
+    private String getFileExtension(File file) {
+        String uriString = Uri.fromFile(file).toString();
+        String uriScheme = Uri.parse(uriString).getEncodedSchemeSpecificPart();
+        return MimeTypeMap.getFileExtensionFromUrl(uriScheme);
+    }
+
+    private String getMimeType(File file) {
+        return mimeTypeMap.getMimeTypeFromExtension(getFileExtension(file));
     }
 
     private String getCurrentPath(){
@@ -81,6 +89,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
         Log.d(TAG, "FilesAdapter: PATH: " + mPath + " FILES:" + mFiles.length);
         mPages = new ArrayList<>();
         this.onFileClickListener = onFileClickListener;
+        mimeTypeMap = MimeTypeMap.getSingleton();
     }
 
     public FilesAdapter(OnFileClickListener onFileClickListener, String path) {
@@ -90,6 +99,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
         Log.d(TAG, "FilesAdapter: FILES: " + mFiles.length);
         mPages = new ArrayList<>();
         this.onFileClickListener = onFileClickListener;
+        mimeTypeMap = MimeTypeMap.getSingleton();
     }
 
     @NonNull
@@ -106,7 +116,10 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
         Log.d(TAG, "onBindViewHolder: " + f.isDirectory() + " " + f.getName());
         String mimeType = getMimeType(f);
         Log.d(TAG, "onBindViewHolder: " + mimeType);
-        if (mimeType != null) {
+        if (mimeType == null) {
+            String extension = getFileExtension(f);
+            holder.isVectorFile = extension.equals("svc");
+        } else {
             holder.isImageFile = mimeType.contains("image");
             holder.isAudioFile = mimeType.contains("audio/mpeg");
         }
@@ -138,6 +151,10 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
         if (holder.isAudioFile){
             holder.mPreview.setBackgroundResource(R.drawable.ic_music_note);
         }
+
+        if (holder.isVectorFile) {
+            holder.mPreview.setBackgroundResource(R.drawable.ic_vector_editor);
+        }
     }
 
     @Override
@@ -149,7 +166,8 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
 
     public class FileItem extends RecyclerView.ViewHolder{
         boolean isImageFile = false,
-            isAudioFile = false;
+            isAudioFile = false,
+            isVectorFile = false;
         TextView mTextView;
         ImageView mPreview;
 

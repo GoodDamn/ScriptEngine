@@ -2,6 +2,7 @@ package good.damn.scriptengine.fragments;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.Spannable;
@@ -26,7 +27,6 @@ import java.util.Random;
 import good.damn.scriptengine.R;
 import good.damn.scriptengine.adapters.FilesAdapter;
 import good.damn.scriptengine.engines.script.ScriptEngine;
-import good.damn.scriptengine.engines.script.interfaces.OnCreateScriptTextViewListener;
 import good.damn.scriptengine.models.Piece;
 import good.damn.scriptengine.models.ResourceReference;
 import good.damn.scriptengine.engines.script.models.ScriptBuildResult;
@@ -34,7 +34,7 @@ import good.damn.scriptengine.utils.ArrayUtils;
 import good.damn.scriptengine.utils.FileUtils;
 import good.damn.scriptengine.utils.ToolsUtilities;
 import good.damn.scriptengine.utils.Utilities;
-import good.damn.scriptengine.views.TextViewPhrase;
+import good.damn.traceview.activities.VectorActivity;
 
 public class ScriptEditorFragment extends Fragment {
 
@@ -42,16 +42,18 @@ public class ScriptEditorFragment extends Fragment {
     private static final Random sRandom = new Random();
 
     private boolean isEdited = false;
+    private int mAdapterPosition;
 
     private EditText et_phrase;
     private EditText et_script;
 
     private Piece mPiece;
 
-    public void startScript(Piece piece) {
+    public void startScript(Piece piece, int adapterPosition) {
         mPiece = piece;
         et_phrase.setText(piece.getString());
         et_script.setText(piece.getSourceCode());
+        mAdapterPosition = adapterPosition;
     }
 
     @Nullable
@@ -64,13 +66,13 @@ public class ScriptEditorFragment extends Fragment {
         assert context != null;
 
         Log.d(TAG, "onCreateView: CREATING THE VIEW...");
-        et_phrase = v.findViewById(R.id.personalEditor_editText_phrase);
-        et_script = v.findViewById(R.id.personalEditor_editText_script);
+        et_phrase = v.findViewById(R.id.scriptEditor_editText_phrase);
+        et_script = v.findViewById(R.id.scriptEditor_editText_script);
 
         ScriptEngine scriptEngine = new ScriptEngine();
         scriptEngine.setSourceEditText(et_phrase);
 
-        v.findViewById(R.id.personalEditor_button_start).setOnClickListener(new View.OnClickListener() {
+        v.findViewById(R.id.scriptEditor_button_start).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Spannable spannable = et_phrase.getText();
@@ -165,7 +167,21 @@ public class ScriptEditorFragment extends Fragment {
             }
         });
 
-        v.findViewById(R.id.personalEditor_selectFile).setOnClickListener(new View.OnClickListener() {
+        v.findViewById(R.id.scriptEditor_vectorEditor).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(context, VectorActivity.class);
+                String t = et_phrase.getText().toString();
+                byte n = 15;
+                if (t.length() < n) {
+                    n = (byte) t.length();
+                }
+                intent.putExtra("fileName", mAdapterPosition+"_"+t.substring(0,n)+".svc");
+                startActivity(intent);
+            }
+        });
+
+        v.findViewById(R.id.scriptEditor_selectFile).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ToolsUtilities.startFileManager(getActivity(), new FilesAdapter.OnFileClickListener() {
