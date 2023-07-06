@@ -211,12 +211,12 @@ public class PreviewActivity extends AppCompatActivity {
                 traceView.setOnTraceFinishListener(new OnTraceFinishListener() {
                     @Override
                     public void onFinish() {
-
-                        scriptReader.next();
-
                         if (mCurrentViewPhrase != null) {
                             mCurrentViewPhrase.fadeOutTransition(sRandom, 2.1f);
                         }
+
+                        scriptReader.next();
+
 
                         traceView.animate()
                                 .alpha(0.0f)
@@ -266,10 +266,10 @@ public class PreviewActivity extends AppCompatActivity {
                     case MotionEvent.ACTION_UP:
                         mColorRevealView.setCenterPoint(motionEvent.getX(),
                                 motionEvent.getY());
-                        scriptReader.next();
                         if (mCurrentViewPhrase != null) {
                             mCurrentViewPhrase.fadeOutTransition(sRandom, 2.1f);
                         }
+                        scriptReader.next();
                         break;
                 }
 
