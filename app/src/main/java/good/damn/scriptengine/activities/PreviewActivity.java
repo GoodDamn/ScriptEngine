@@ -226,9 +226,15 @@ public class PreviewActivity extends AppCompatActivity {
                     }
                 });
 
+                traceView.setAlpha(0);
+
                 root_FrameLayout.addView(traceView,
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT);
+
+                traceView.animate()
+                        .alpha(1.0f)
+                        .start();
             }
 
             @Override
