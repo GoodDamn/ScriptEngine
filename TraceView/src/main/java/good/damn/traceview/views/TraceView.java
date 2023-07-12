@@ -9,25 +9,34 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import good.damn.traceview.animators.EntityAnimator;
+import good.damn.traceview.animators.ParallelAnimator;
 import good.damn.traceview.graphics.Entity;
 import good.damn.traceview.graphics.Line;
+import good.damn.traceview.interfaces.OnDrawTracesListener;
 import good.damn.traceview.interfaces.OnTraceFinishListener;
-import good.damn.traceview.utils.models.EditorConfig;
-import good.damn.traceview.utils.models.EntityConfig;
+import good.damn.traceview.models.FileSVC;
 
 public class TraceView extends View implements View.OnTouchListener {
 
     private static final String TAG = "MarqueeView";
 
-    protected final float COMPLETE_PROGRESS_TRIGGER = 0.97f;
+    protected final float COMPLETE_PROGRESS_TRIGGER = 0.95f;
+
+    private Entity[] mEntities;
+    private final OnDrawTracesListener INTERACTIVE_DRAW = canvas -> {
+        for (Entity c : mEntities) {
+            c.onDraw(canvas);
+        }
+    };
 
     private OnTraceFinishListener mOnTraceFinishListener;
-
-    private boolean mIsFinished = false;
-
-    private EntityConfig[] mEntityConfigs;
+    private OnDrawTracesListener mOnDrawTracesListener;
 
     private Entity mCurrentEntityTouch;
+    private EntityAnimator mEntityAnimator;
+
+    private boolean mIsFinished = false;
 
     private void calculate() {
 
@@ -35,14 +44,13 @@ public class TraceView extends View implements View.OnTouchListener {
             return;
         }
 
-        for (EntityConfig c : mEntityConfigs) {
-            c.entity.onLayout(getWidth(), getHeight(),
-                    c.fromX, c.fromY, c.toX, c.toY);
+        for (Entity e : mEntities) {
+            e.onLayout(getWidth(), getHeight());
         }
     }
 
     private void init() {
-        setOnTouchListener(this);
+        mOnDrawTracesListener = INTERACTIVE_DRAW;
     }
 
     public TraceView(Context context) {
@@ -61,49 +69,77 @@ public class TraceView extends View implements View.OnTouchListener {
     }
 
     public void restart() {
-        if (mEntityConfigs == null) {
+        if (mEntities == null) {
             throw new IllegalStateException("ARRAY OF LINES IS NULL");
         }
 
-        for (EntityConfig c: mEntityConfigs) {
-            c.entity.reset();
+        for (Entity e: mEntities) {
+            e.reset();
         }
         mIsFinished = false;
         invalidate();
     }
 
-    public void setVectorsSource(EntityConfig[] entityConfigs) {
+    public void setVectorsSource(FileSVC fileSVC) {
+
         setOnTouchListener(null);
-        mEntityConfigs = entityConfigs;
+        mEntities = fileSVC.entities;
+
+        if (fileSVC.isInteractive) {
+            mOnDrawTracesListener = INTERACTIVE_DRAW;
+            setOnTouchListener(this);
+
+            calculate();
+            invalidate();
+            return;
+        }
+
+        if (fileSVC.animator == null) {
+            fileSVC.animator = new ParallelAnimator();
+        }
+
+        mEntityAnimator = fileSVC.animator;
+        mEntityAnimator.setTraceView(this);
+        mEntityAnimator.setEntities(mEntities);
+        mEntityAnimator.setOnTraceFinishListener(mOnTraceFinishListener);
+        mOnDrawTracesListener = canvas -> mEntityAnimator.onUpdateDrawing(canvas);
 
         calculate();
 
-        setOnTouchListener(this);
-        invalidate();
     }
 
     public void setOnTraceFinishListener(OnTraceFinishListener finishListener) {
         mOnTraceFinishListener = finishListener;
+        if (mEntityAnimator != null) {
+            mEntityAnimator.setOnTraceFinishListener(mOnTraceFinishListener);
+        }
+    }
+
+    public void startAnimation() {
+        if (mEntityAnimator == null) {
+            Log.d(TAG, "startAnimation: ENTITY_ANIMATOR == NULL");
+            return;
+        }
+        
+        mEntityAnimator.start();
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        if (mEntityConfigs == null) {
+        if (mEntities == null) {
             return;
         }
 
-        for (EntityConfig c : mEntityConfigs) {
-            c.entity.onDraw(canvas);
-        }
+        mOnDrawTracesListener.onDraw(canvas);
     }
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
 
-        if (mEntityConfigs == null) {
+        if (mEntities == null) {
             return;
         }
 
@@ -122,9 +158,15 @@ public class TraceView extends View implements View.OnTouchListener {
 
                 mCurrentEntityTouch = null;
 
-                for (EntityConfig c : mEntityConfigs) {
-                    if (c.entity.checkCollide(x,y)) {
-                        mCurrentEntityTouch = c.entity;
+                for (Entity entity : mEntities) {
+
+                    if (!entity.hasPivot()) {
+                        entity.onSetupPivotPoint(x,y);
+                        invalidate();
+                    }
+
+                    if (entity.checkCollide(x,y)) {
+                        mCurrentEntityTouch = entity;
                         break;
                     }
                 }
@@ -147,6 +189,8 @@ public class TraceView extends View implements View.OnTouchListener {
                 break;
             case MotionEvent.ACTION_UP:
 
+                mCurrentEntityTouch.onTouchUp();
+
                 Log.d(TAG, "onTouch: ACTION_UP: IS_FINISHED: " + mIsFinished);
 
                 if (mIsFinished) {
@@ -155,9 +199,9 @@ public class TraceView extends View implements View.OnTouchListener {
 
                 // Check progress to finish
 
-                for (EntityConfig c : mEntityConfigs) {
-                    Log.d(TAG, "onTouch: MARQUEE_PROGRESS: " + c.entity.getProgress());
-                    if (c.entity.getProgress() < COMPLETE_PROGRESS_TRIGGER)
+                for (Entity entity : mEntities) {
+                    Log.d(TAG, "onTouch: MARQUEE_PROGRESS: " + entity.getProgress());
+                    if (entity.getProgress() < COMPLETE_PROGRESS_TRIGGER)
                         return false;
                 }
 

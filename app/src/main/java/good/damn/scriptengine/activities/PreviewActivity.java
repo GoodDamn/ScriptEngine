@@ -42,8 +42,8 @@ import good.damn.scriptengine.views.ColorRevealView;
 import good.damn.scriptengine.views.GifView;
 import good.damn.scriptengine.views.TextViewPhrase;
 import good.damn.traceview.interfaces.OnTraceFinishListener;
+import good.damn.traceview.models.FileSVC;
 import good.damn.traceview.utils.FileUtils;
-import good.damn.traceview.utils.models.EntityConfig;
 import good.damn.traceview.views.TraceView;
 
 public class PreviewActivity extends AppCompatActivity {
@@ -207,16 +207,20 @@ public class PreviewActivity extends AppCompatActivity {
 
                 TraceView traceView = new TraceView(root_FrameLayout.getContext());
                 traceView.setBackgroundColor(0);
-                traceView.setVectorsSource(FileUtils.retrieveSVCFile(vect, PreviewActivity.this));
+
+                FileSVC fileSVC = FileUtils.retrieveSVCFile(vect);
+
+                traceView.setVectorsSource(fileSVC);
                 traceView.setOnTraceFinishListener(new OnTraceFinishListener() {
                     @Override
                     public void onFinish() {
-                        if (mCurrentViewPhrase != null) {
-                            mCurrentViewPhrase.fadeOutTransition(sRandom, 2.1f);
+                        if (fileSVC.isInteractive) {
+                            if (mCurrentViewPhrase != null) {
+                                mCurrentViewPhrase.fadeOutTransition(sRandom, 2.1f);
+                            }
+
+                            scriptReader.next();
                         }
-
-                        scriptReader.next();
-
 
                         traceView.animate()
                                 .alpha(0.0f)
@@ -232,11 +236,15 @@ public class PreviewActivity extends AppCompatActivity {
 
                 traceView.setAlpha(0);
 
-
                 traceView.animate()
                         .alpha(1.0f)
+                        .withEndAction(traceView::startAnimation)
                         .setDuration(1650)
                         .start();
+
+                if (!fileSVC.isInteractive) {
+                    root_FrameLayout.setEnabled(true);
+                }
             }
 
             @Override
@@ -272,7 +280,6 @@ public class PreviewActivity extends AppCompatActivity {
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 switch (motionEvent.getAction()) {
                     case MotionEvent.ACTION_UP:
-
                         mColorRevealView.setCenterPoint(motionEvent.getX(),
                                 motionEvent.getY());
                         if (mCurrentViewPhrase != null) {

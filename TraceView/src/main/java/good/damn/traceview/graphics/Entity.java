@@ -14,6 +14,11 @@ public abstract class Entity {
     public static final byte DRAW_FALSE = 1;
     public static final byte DRAW_TRUE = 2;
 
+    private float mStartNormalX;
+    private float mStartNormalY;
+    private float mEndNormalX;
+    private float mEndNormalY;
+
     protected final Random mRandom = new Random();
 
     protected final boolean RELEASE_MODE = true;
@@ -22,20 +27,27 @@ public abstract class Entity {
     protected final Paint mPaintBackground = new Paint();
     protected final Paint mPaintDebug = new Paint();
 
-    protected final int mStickBound = 50;
+    protected final int mStickBound = 25;
 
-    protected float mMarStartX = 0;
-    protected float mMarStartY = 0;
-    protected float mMarEndX = 1;
-    protected float mMarEndY = 0;
-
-    protected int mWidth = 1;
-    protected int mHeight = 1;
+    protected float mTraceStartX = 0;
+    protected float mTraceStartY = 0;
+    protected float mTraceEndX = 1;
+    protected float mTraceEndY = 0;
 
     protected float mStickX = 0;
     protected float mStickY = 0;
 
-    protected float mProgress = 0.01f;
+    protected float mProgress = 0f;
+
+    protected int mWidth = 1;
+    protected int mHeight = 1;
+
+    protected boolean mHasPivot = false;
+
+    protected boolean boxBound(float x, float y, float curX, float curY) {
+        return curX-mStickBound < x && x < curX+mStickBound &&
+                curY-mStickBound < y && y < curY+mStickBound;
+    }
 
     public Entity() {
         mPaintForeground.setColor(0xff00ff59);
@@ -60,44 +72,46 @@ public abstract class Entity {
     }
 
     public float getProgress() {
-        return mProgress;
+        return Math.abs(mProgress);
     }
 
     public void setStrokeWidth(byte width) {
         mPaintForeground.setStrokeWidth(width);
+        mPaintBackground.setStrokeWidth(width);
     }
 
-    public boolean checkCollide(float x, float y) {
-        Log.d(TAG, "checkCollide: STICK_X: " + mStickX +
-                " STICK_Y: " + mStickY +
-                " STICK_BOUND: " + mStickBound +
-                " X: " + x + " Y: " + y);
-        return mStickX-mStickBound < x && x < mStickX+mStickBound &&
-                mStickY-mStickBound < y && y < mStickY+mStickBound;
+    public void setStartNormalPoint(float startX, float startY) {
+        mStartNormalX = startX;
+        mStartNormalY = startY;
+    }
+
+    public void setEndNormalPoint(float endX, float endY) {
+        mEndNormalX = endX;
+        mEndNormalY = endY;
     }
 
     public void reset() {
-        mStickX = mMarStartX;
-        mStickY = mMarStartY;
+        mStickX = mTraceStartX;
+        mStickY = mTraceStartY;
 
-        mProgress = 0.01f;
+        mHasPivot = false;
+
+        mProgress = 0;
     }
 
-    public void onLayout(int width, int height,
-                           float startX, float startY,
-                           float endX, float endY) {
+    public void onLayout(int width, int height) {
         Log.d(TAG, "onLayout: Line::onLayout();");
         mWidth = width;
         mHeight = height;
 
-        mMarStartX = width * startX;
-        mMarStartY = height * startY;
+        mTraceStartX = width * mStartNormalX;
+        mTraceStartY = height * mStartNormalY;
 
-        mMarEndX = width * endX;
-        mMarEndY = height * endY;
+        mTraceEndX = width * mEndNormalX;
+        mTraceEndY = height * mEndNormalY;
 
-        mStickX = mMarStartX;
-        mStickY = mMarStartY;
+        mStickX = mTraceStartX;
+        mStickY = mTraceStartY;
     }
 
 
@@ -116,8 +130,7 @@ public abstract class Entity {
 
     public final byte onTouch(float x, float y) {
         Log.d(TAG, "onTouch: X: " + x + " " + y);
-        if (mStickX-mStickBound < x && x < mStickX+mStickBound &&
-                mStickY-mStickBound < y && y < mStickY+mStickBound) {
+        if (checkDeltaInBounds(x,y)) {
             onPlace(x,y);
             return DRAW_INVALIDATE_WITH_FALSE;
         }
@@ -125,5 +138,20 @@ public abstract class Entity {
         return DRAW_FALSE;
     }
 
+    public boolean hasPivot() {
+        return mHasPivot;
+    }
+
+
+    public void onSetupPivotPoint(float x, float y){}
+
+    public void onTouchUp(){}
+
+    public abstract boolean checkCollide(float x, float y);
+    public abstract void onAnimate(float progress);
+    public abstract void onPrepareAnimation();
+
     abstract void onPlace(float x, float y);
+    abstract boolean checkDeltaInBounds(float x, float y);
+
 }

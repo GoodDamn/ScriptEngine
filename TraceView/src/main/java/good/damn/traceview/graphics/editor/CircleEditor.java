@@ -6,12 +6,11 @@ import android.graphics.RectF;
 
 public class CircleEditor extends EntityEditor{
 
-    private final RectF mRectFArc;
+    private final RectF mRectFArc = new RectF();
 
     public CircleEditor(Paint fore, Paint back) {
         super(fore, back);
         mPaintBackground.setStyle(Paint.Style.STROKE);
-        mRectFArc = new RectF();
     }
 
     @Override
@@ -28,6 +27,7 @@ public class CircleEditor extends EntityEditor{
         mRectFArc.bottom = fromY+radius;
 
         canvas.drawArc(mRectFArc,0,360,false,mPaintBackground);
+
         canvas.drawCircle(fromX+radius,fromY,mPaintBackground.getStrokeWidth(),mPaintForeground);
     }
 }
