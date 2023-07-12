@@ -56,6 +56,14 @@ public class PiecesListFragment extends Fragment {
         piecesRecyclerView.setHasFixedSize(true);
         piecesRecyclerView.setLayoutManager(new LinearLayoutManager(context));
 
+        v.findViewById(R.id.f_pieces_list_save)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                    }
+                });
+
         v.findViewById(R.id.f_pieces_list_start_debug)
                 .setOnClickListener(new View.OnClickListener() {
             @Override
