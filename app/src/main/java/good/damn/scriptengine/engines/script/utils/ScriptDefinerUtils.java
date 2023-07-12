@@ -59,6 +59,9 @@ public class ScriptDefinerUtils {
     public static void Font(byte[] chunk, int currentOffset, int argSize, ScriptTextConfig textConfig) {
         byte style = chunk[currentOffset+1];
 
+        boolean isColorSpan = false;
+        int color = 0;
+
         Log.d(TAG, "read: font " + style + " " + argSize);
         CharacterStyle span = null;
         currentOffset+=2;
@@ -82,7 +85,7 @@ public class ScriptDefinerUtils {
                 int green = chunk[currentOffset+2] & 0xff;
                 int blue = chunk[currentOffset+3] & 0xff;
 
-                int color = alpha << 24 |
+                color = alpha << 24 |
                             red << 16  |
                             green << 8 |
                             blue;
@@ -93,6 +96,7 @@ public class ScriptDefinerUtils {
 
                 Log.d(TAG, "Font: COLOR SPAN: " + color);
                 span = new ForegroundColorSpan(color);
+                isColorSpan = true;
                 break;
         }
 
@@ -104,6 +108,10 @@ public class ScriptDefinerUtils {
         CharSequence text = textConfig.spannableString;
 
         if (argSize == 3) { // 2 args
+            if (isColorSpan) {
+                textConfig.textColor = color;
+                return;
+            }
             spannableString = makeSpannable(0,text.length(), span,text);
         }
 

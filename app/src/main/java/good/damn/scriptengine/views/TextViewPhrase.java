@@ -16,13 +16,6 @@ public class TextViewPhrase extends AppCompatTextView {
         super(context);
     }
 
-    public void config(SpannableString text, float textSize, Typeface typeface) {
-        setTypeface(typeface);
-        setTextSize(textSize);
-        setText(text);
-        setGravity(Gravity.CENTER);
-        setAlpha(0.0f);
-    }
 
     public void fadeOutTransition(Random random,float density) {
         animate().alpha(0.0f)

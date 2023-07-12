@@ -4,6 +4,7 @@ import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
@@ -12,6 +13,7 @@ import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.style.ForegroundColorSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -50,6 +52,8 @@ public class PreviewActivity extends AppCompatActivity {
 
     private static final String TAG = "PreviewActivity";
     private static final Random sRandom = new Random();
+
+    private int mCurrentTextColor = 0xffffffff;
 
     private TextViewPhrase mCurrentViewPhrase;
 
@@ -205,7 +209,7 @@ public class PreviewActivity extends AppCompatActivity {
             public void onVector(byte[] vect) {
                 root_FrameLayout.setEnabled(false);
 
-                TraceView traceView = new TraceView(root_FrameLayout.getContext());
+                TraceView traceView = new TraceView(PreviewActivity.this);
                 traceView.setBackgroundColor(0);
 
                 FileSVC fileSVC = FileUtils.retrieveSVCFile(vect);
@@ -260,10 +264,16 @@ public class PreviewActivity extends AppCompatActivity {
             public void onCreate(ScriptTextConfig textConfig) {
                 TextViewPhrase phrase = new TextViewPhrase(context);
 
-                phrase.config(textConfig.spannableString,
-                        textConfig.textSize,
-                        defTypeface);
+                if (textConfig.textColor != 0xff000000) {
+                    mCurrentTextColor = textConfig.textColor;
+                }
 
+                phrase.setTextColor(mCurrentTextColor);
+                phrase.setTypeface(defTypeface);
+                phrase.setTextSize(textConfig.textSize);
+                phrase.setText(textConfig.spannableString);
+                phrase.setGravity(Gravity.CENTER);
+                phrase.setAlpha(0.0f);
 
                 root_FrameLayout.addView(phrase,
                         FrameLayout.LayoutParams.MATCH_PARENT,
