@@ -78,7 +78,7 @@ public class ScriptCommandsUtils {
 
 
     // 0
-    public static byte[] TextSize(String[] argv, EditText et_target, Context context) {
+    public static byte[] TextSize(String[] argv, Context context) {
         float size;
         try {
             size = Float.parseFloat(argv[1]);
@@ -97,14 +97,14 @@ public class ScriptCommandsUtils {
         if (argv.length == 2){
             origin[0] = 4;
             args = ArrayUtils.concatByteArrays(origin,gb((short) (size * 1000)));
-            et_target.setTextSize(size);
+            //et_target.setTextSize(size);
             return args;
         }
 
         if (argv.length == 3) { // 2 arguments
             try {
                 int startPos = Integer.parseInt(argv[2]);
-                setSpan(startPos, et_target.getText().length(),new AbsoluteSizeSpan((int) size,true),et_target);
+                //setSpan(startPos, et_target.getText().length(),new AbsoluteSizeSpan((int) size,true),et_target);
                 origin[0] = 6;
                 args = ArrayUtils.concatByteArrays(origin,gb((short) (size * 1000)), gb((short) startPos));
             } catch (NumberFormatException exception){
@@ -118,7 +118,7 @@ public class ScriptCommandsUtils {
             try {
                 int startPos = Integer.parseInt(argv[2]);
                 int endPos = Integer.parseInt(argv[3]);
-                setSpan(startPos, endPos,new AbsoluteSizeSpan((int) size,true),et_target);
+                //setSpan(startPos, endPos,new AbsoluteSizeSpan((int) size,true),et_target);
                 origin[0] = 8;
                 args = ArrayUtils.concatByteArrays(origin,
                         gb((short) (size * 1000)),
@@ -137,7 +137,7 @@ public class ScriptCommandsUtils {
     }
 
     // 1
-    public static byte[] Font(String[] argv, EditText et_target, Context context) {
+    public static byte[] Font(String[] argv, Context context) {
 
         byte[] args = null;
 
@@ -175,7 +175,7 @@ public class ScriptCommandsUtils {
             origin[0] += 2;
             args = ArrayUtils.concatByteArrays(origin, style);
             Log.d(TAG, "Font: ARG_1: " + args.length + " " + origin[0]);
-            setSpan(0, et_target.getText().length(), span,et_target);
+            //setSpan(0, et_target.getText().length(), span,et_target);
             return args;
         }
 
@@ -185,7 +185,7 @@ public class ScriptCommandsUtils {
                 int startPos = Integer.parseInt(argv[2]);
                 args = ArrayUtils.concatByteArrays(origin, style, gb((short) startPos));
                 Log.d(TAG, "Font: ARG_2: " + args.length + " " + origin[0]);
-                setSpan(startPos, et_target.getText().length(),span,et_target);
+                //setSpan(startPos, et_target.getText().length(),span,et_target);
             } catch (NumberFormatException exception){
                 Utilities.showMessage("Invalid integer-argument format for (" + argv[0] + " " + argv[1] + " " + argv[2],
                         context);
@@ -203,7 +203,7 @@ public class ScriptCommandsUtils {
                         gb((short) startPos),
                         gb((short) endPos));
                 Log.d(TAG, "Font: ARG_3: " + args.length + " " + origin[0]);
-                setSpan(startPos, endPos,span,et_target);
+                //setSpan(startPos, endPos,span,et_target);
             } catch (NumberFormatException exception){
                 Utilities.showMessage("Invalid integer-argument format for (" + argv[0] + " " + argv[1] + " " + argv[2] + " " + argv[3],
                         context);

@@ -26,6 +26,7 @@ import java.util.Random;
 
 import good.damn.scriptengine.R;
 import good.damn.scriptengine.adapters.FilesAdapter;
+import good.damn.scriptengine.adapters.recycler_view.PiecesAdapter;
 import good.damn.scriptengine.engines.script.ScriptEngine;
 import good.damn.scriptengine.models.Piece;
 import good.damn.scriptengine.models.ResourceReference;
@@ -49,6 +50,66 @@ public class ScriptEditorFragment extends Fragment {
 
     private Piece mPiece;
 
+    public static void CompileScript(String textPiece,
+                                     String scriptString,
+                                     Piece piece,
+                                     ScriptEngine scriptEngine,
+                                     Context context) {
+        String[] arr = scriptString.split("\n");
+        byte[] script = new byte[0];
+        byte scriptLength = 0;
+
+        LinkedList<ResourceReference> resPositions = null;
+
+        for (byte i = 0; i < arr.length; i++) {
+            ScriptBuildResult result = scriptEngine.compile(arr[i],context);
+            byte[] t = result.getCompiledScript();
+            if (t == null)
+                continue;
+            Log.d(TAG, "onClick: SCRIPT: " + Arrays.toString(t));
+            if (result.hasResource()) {
+                if (resPositions == null) {
+                    resPositions = new LinkedList<>();
+                }
+
+                resPositions.add(new ResourceReference(result.getResName(),
+                        scriptLength+t[0]));
+            }
+            script = ArrayUtils.concatByteArrays(script,t);
+            scriptLength += t.length;
+            Log.d(TAG, "onClick: PARSED_INFO: FOR SCRIPT: " + arr[i] + " SCRIPT_BYTE_LENGTH: " + t.length + " TOTAL_LENGTH:" + script.length);
+        }
+
+        Log.d(TAG, "onClick: SCRIPTS: " + Arrays.toString(script));
+
+        Log.d(TAG, "onClick: RES_POSITIONS: " + resPositions);
+
+        String t = textPiece.trim();
+        byte[] text = ArrayUtils.concatByteArrays(t.getBytes(StandardCharsets.UTF_8),
+                new byte[]{0});
+
+        int length = text.length+1+script.length;
+
+        Log.d(TAG, "onClick: CHUNK_LENGTH: FACT: " + length);
+
+        byte[] chunkLength = Utilities.gbInt(length);
+        Log.d(TAG, "onClick: OWN: " + Arrays.toString(chunkLength));
+
+
+        byte[] total = ArrayUtils.concatByteArrays(
+                chunkLength,
+                Utilities.gb((short) text.length),
+                text,
+                new byte[]{scriptLength},
+                script);
+
+        piece.setString(textPiece);
+        piece.setChunk(total);
+        piece.setResRef(resPositions);
+        piece.setSourceCode(scriptString);
+
+    }
+
     public void startScript(Piece piece, int adapterPosition) {
         mPiece = piece;
         et_phrase.setText(piece.getString());
@@ -71,90 +132,23 @@ public class ScriptEditorFragment extends Fragment {
         et_script = v.findViewById(R.id.scriptEditor_editText_script);
 
         ScriptEngine scriptEngine = new ScriptEngine();
-        scriptEngine.setSourceEditText(et_phrase);
 
         v.findViewById(R.id.scriptEditor_button_start).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Spannable spannable = et_phrase.getText();
                 et_phrase.setText(spannable.toString());
-                String[] arr = et_script.getText().toString().split("\n");
-                byte[] script = new byte[0];
-                byte scriptLength = 0;
 
-                LinkedList<ResourceReference> resPositions = null;
+                CompileScript(
+                        et_phrase.getText().toString(),
+                        et_script.getText().toString(),
+                        mPiece,
+                        scriptEngine,
+                        v.getContext());
 
-                for (byte i = 0; i < arr.length; i++) {
-                    ScriptBuildResult result = scriptEngine.compile(arr[i]);
-                    byte[] t = result.getCompiledScript();
-                    if (t == null)
-                        continue;
-                    Log.d(TAG, "onClick: SCRIPT: " + Arrays.toString(t));
-                    if (result.hasResource()) {
-                        if (resPositions == null) {
-                            resPositions = new LinkedList<>();
-                        }
-
-                        resPositions.add(new ResourceReference(result.getResName(),
-                                scriptLength+t[0]));
-                    }
-                    script = ArrayUtils.concatByteArrays(script,t);
-                    scriptLength += t.length;
-                    Log.d(TAG, "onClick: PARSED_INFO: FOR SCRIPT: " + arr[i] + " SCRIPT_BYTE_LENGTH: " + t.length + " TOTAL_LENGTH:" + script.length);
-                }
-
-                Log.d(TAG, "onClick: SCRIPTS: " + Arrays.toString(script));
-
-                Log.d(TAG, "onClick: RES_POSITIONS: " + resPositions);
-
-                String t = et_phrase.getText().toString().trim();
-                byte[] text = ArrayUtils.concatByteArrays(t.getBytes(StandardCharsets.UTF_8),
-                        new byte[]{0});
-
-                int length = text.length+1+script.length;
-
-                Log.d(TAG, "onClick: CHUNK_LENGTH: FACT: " + length);
-
-                byte[] chunkLength = Utilities.gbInt(length);
-                Log.d(TAG, "onClick: OWN: " + Arrays.toString(chunkLength));
-
-
-                byte[] total = ArrayUtils.concatByteArrays(
-                        chunkLength,
-                        Utilities.gb((short) text.length),
-                        text,
-                        new byte[]{scriptLength},
-                        script);
-
-                mPiece.setString(et_phrase.getText());
-                mPiece.setChunk(total);
-                mPiece.setResRef(resPositions);
-                mPiece.setSourceCode(et_script.getText().toString());
-
-                /*TextViewPhrase textViewPhrase = new TextViewPhrase(context);
-                textViewPhrase.setTypeface(et_phrase.getTypeface());
-                Log.d(TAG, "onClick: Result: SCRIPT_LENGTH: " + scriptLength + " TEXT_LENGTH: " + text.length + " TEXT_SIZE_BYTES: "+ t.getBytes(StandardCharsets.UTF_8).length + " TOTAL_LENTGH: " + total.length);
-                scriptEngine.read(total, textViewPhrase);
-                Log.d(TAG, "onClick: isEdited: COMPLETED: " + isEdited);
-                isEdited = false;*/
             }
         });
         et_phrase.setText("Simple a piece of text");
-
-        /*findViewById(R.id.view_back).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "onClick: isEdited: " + isEdited);
-                if (isEdited) {
-                    Utilities.showMessage(this, "Click on START button");
-                    return;
-                }
-
-                mContainer.setVisibility(View.INVISIBLE);
-                textView.setText(et_phrase.getText());
-                textView.setTextSize(TypedValue.COMPLEX_UNIT_PX,et_phrase.getTextSize());
-            }
-        });*/
 
         et_phrase.addTextChangedListener(new TextWatcher() {
             @Override

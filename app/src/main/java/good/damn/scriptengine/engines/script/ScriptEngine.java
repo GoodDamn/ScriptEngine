@@ -32,17 +32,12 @@ public class ScriptEngine {
     public static final byte READ_AMBIENT = 6;
     public static final byte READ_VECTOR = 7;
 
-    private EditText et_target;
 
     private OnCreateScriptTextViewListener mOnCreateScriptTextViewListener;
 
     private OnFileScriptListener mOnFileScriptListener;
 
     private OnReadCommandListener mOnReadCommandListener;
-
-    public void setSourceEditText(EditText et_target) {
-        this.et_target = et_target;
-    }
 
     public void setOnCreateViewListener(OnCreateScriptTextViewListener configureViewListener) {
         mOnCreateScriptTextViewListener = configureViewListener;
@@ -56,14 +51,12 @@ public class ScriptEngine {
         mOnReadCommandListener = onReadCommandListener;
     }
 
-    public ScriptBuildResult compile(String line) {
+    public ScriptBuildResult compile(String line, Context context) {
         byte[] args = null;
 
         String[] argv = line.split("\\s+");
 
         ScriptBuildResult scriptBuildResult = new ScriptBuildResult();
-
-        Context context = et_target.getContext();
 
         argv[0] = argv[0].trim();
 
@@ -72,10 +65,10 @@ public class ScriptEngine {
 
         switch (argv[0].toLowerCase()){
             case "textsize": // 0
-                args = ScriptCommandsUtils.TextSize(argv,et_target,context);
+                args = ScriptCommandsUtils.TextSize(argv,context);
                 break;
             case "font": // 1
-                args = ScriptCommandsUtils.Font(argv,et_target,context);
+                args = ScriptCommandsUtils.Font(argv,context);
                 break;
             case "bg": // 2 background
                 args = ScriptCommandsUtils.Background(argv,context);

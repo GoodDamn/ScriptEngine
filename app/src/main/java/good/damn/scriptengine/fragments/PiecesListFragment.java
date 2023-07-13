@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -39,6 +40,7 @@ import good.damn.scriptengine.R;
 import good.damn.scriptengine.activities.PreviewActivity;
 import good.damn.scriptengine.adapters.FilesAdapter;
 import good.damn.scriptengine.adapters.recycler_view.PiecesAdapter;
+import good.damn.scriptengine.engines.script.ScriptEngine;
 import good.damn.scriptengine.interfaces.OnClickTextPiece;
 import good.damn.scriptengine.models.Piece;
 import good.damn.scriptengine.utils.FileOutputUtils;
@@ -126,6 +128,8 @@ public class PiecesListFragment extends Fragment {
 
                                             byte[] bufShort = new byte[2];
 
+                                            ScriptEngine scriptEngine = new ScriptEngine();
+
                                             for (short i = 0; i < size; i++) {
                                                 fis.read(bufShort); // read text size
 
@@ -146,7 +150,7 @@ public class PiecesListFragment extends Fragment {
                                                 Log.d(TAG, "onFile: "+s);
 
                                                 Piece piece = new Piece(FileReaderUtils.BlankChunk(text),t);
-                                                piece.setSourceCode(s);
+                                                ScriptEditorFragment.CompileScript(t,s,piece,scriptEngine,context);
                                                 mPieces.add(piece);
                                             }
 
@@ -218,8 +222,11 @@ public class PiecesListFragment extends Fragment {
                             }
 
                             fos.close();
+
+                            Utilities.showMessage("SAVED save.sse", context);
                         } catch (IOException e) {
                             e.printStackTrace();
+                            Utilities.showMessage("ERROR: " + e.getMessage(), context);
                         }
                     }
                 });
