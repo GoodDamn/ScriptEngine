@@ -1,12 +1,19 @@
 package good.damn.scriptengine.utils;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.os.Environment;
 import android.util.Log;
+
+import androidx.core.app.ActivityCompat;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -14,6 +21,7 @@ import java.util.LinkedList;
 import good.damn.scriptengine.models.Piece;
 import good.damn.scriptengine.models.ResourceBuildResult;
 import good.damn.scriptengine.models.ResourceReference;
+import good.damn.traceview.utils.ByteUtils;
 
 public class FileOutputUtils {
 
@@ -162,5 +170,63 @@ public class FileOutputUtils {
         }
 
         return path;
+    }
+
+    public static void mkSSEFile(String name, ArrayList<Piece> mPieces, Activity activity) {
+        if (ActivityCompat.checkSelfPermission(activity,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(activity,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    200);
+
+            return;
+        }
+
+        try {
+            File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/ScriptProjects");
+
+            Log.d(TAG, "onClick: DIR: " + dir);
+
+            if (dir.mkdirs()) {
+                Log.d(TAG, "onClick: ScriptProjects DIR IS CREATED!");
+            }
+
+            File file = new File(dir,name);
+
+            if (file.createNewFile()) {
+                Log.d(TAG, "onClick: "+name+" IS CREATED!");
+            }
+
+            FileOutputStream fos = new FileOutputStream(file);
+
+            fos.write(mPieces.size()); //0-255 pieces
+
+            for (Piece piece: mPieces) {
+                byte[] textPiece = piece.getString().toString()
+                        .getBytes(StandardCharsets.UTF_8);
+
+                String source = piece.getSourceCode();
+                byte[] sourceCode = new byte[0];
+                if (source != null) {
+                    sourceCode = source
+                            .getBytes(StandardCharsets.UTF_8);
+                }
+
+                fos.write(ByteUtils.Short((short) textPiece.length));
+                fos.write(ByteUtils.Short((short) sourceCode.length));
+
+                fos.write(textPiece);
+                fos.write(sourceCode);
+
+            }
+
+            fos.close();
+
+            Utilities.showMessage("SAVED " + name, activity);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Utilities.showMessage("ERROR: " + e.getMessage(), activity);
+        }
     }
 }

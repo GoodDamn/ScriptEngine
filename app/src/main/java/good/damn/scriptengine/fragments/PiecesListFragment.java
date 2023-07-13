@@ -1,6 +1,7 @@
 package good.damn.scriptengine.fragments;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
@@ -16,6 +17,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -61,6 +63,8 @@ public class PiecesListFragment extends Fragment {
 
     private byte mTouchesToPaste = 0;
     private long mCurrentTime = 0;
+
+    private String mFileNameSSE = null;
 
     public void setOnClickTextPieceListener(OnClickTextPiece mOnClickTextPiece) {
         this.mOnClickTextPiece = mOnClickTextPiece;
@@ -163,6 +167,8 @@ public class PiecesListFragment extends Fragment {
                                             piecesAdapter.setPieces(mPieces);
                                             piecesAdapter.notifyDataSetChanged();
 
+                                            mFileNameSSE = file.getName();
+
                                         } catch (IOException e) {
                                             e.printStackTrace();
                                         }
@@ -216,62 +222,32 @@ public class PiecesListFragment extends Fragment {
                 .setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        if (mFileNameSSE == null) {
+                            Dialog dialog = new Dialog(context);
+                            dialog.setCancelable(true);
+                            dialog.setContentView(R.layout.dialog_save_as);
 
-                        if (ActivityCompat.checkSelfPermission(getActivity(),
-                                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                            EditText et = dialog.findViewById(R.id.dialog_save_et_fileName);
 
-                            ActivityCompat.requestPermissions(getActivity(),
-                                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                    200);
+                            dialog.findViewById(R.id.dialog_save_btn_save)
+                                  .setOnClickListener(new View.OnClickListener() {
+                                      @Override
+                                      public void onClick(View view) {
+                                          String name = et.getText().toString().trim();
+                                          if (name.isEmpty()) {
+                                              return;
+                                          }
+                                          mFileNameSSE = name + ".sse";
+                                          dialog.dismiss();
+                                          FileOutputUtils.mkSSEFile(mFileNameSSE,mPieces,getActivity());
+                                      }
+                                  });
 
+                            dialog.show();
                             return;
                         }
 
-                        try {
-                            File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/ScriptProjects");
-
-                            Log.d(TAG, "onClick: DIR: " + dir);
-
-                            if (dir.mkdirs()) {
-                                Log.d(TAG, "onClick: ScriptProjects DIR IS CREATED!");
-                            }
-
-                            File file = new File(dir,"save.sse");
-
-                            if (file.createNewFile()) {
-                                Log.d(TAG, "onClick: save.sse IS CREATED!");
-                            }
-
-                            FileOutputStream fos = new FileOutputStream(file);
-
-                            fos.write(mPieces.size()); //0-255 pieces
-
-                            for (Piece piece: mPieces) {
-                                byte[] textPiece = piece.getString().toString()
-                                        .getBytes(StandardCharsets.UTF_8);
-
-                                String source = piece.getSourceCode();
-                                byte[] sourceCode = new byte[0];
-                                if (source != null) {
-                                    sourceCode = source
-                                            .getBytes(StandardCharsets.UTF_8);
-                                }
-
-                                fos.write(ByteUtils.Short((short) textPiece.length));
-                                fos.write(ByteUtils.Short((short) sourceCode.length));
-
-                                fos.write(textPiece);
-                                fos.write(sourceCode);
-
-                            }
-
-                            fos.close();
-
-                            Utilities.showMessage("SAVED save.sse", context);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            Utilities.showMessage("ERROR: " + e.getMessage(), context);
-                        }
+                        FileOutputUtils.mkSSEFile(mFileNameSSE,mPieces,getActivity());
                     }
                 });
 
