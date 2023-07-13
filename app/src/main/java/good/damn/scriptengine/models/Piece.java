@@ -12,7 +12,7 @@ public class Piece {
     private byte[] mChunk;
     private LinkedList<ResourceReference> mResPositions;
 
-    private Editable mSourceCode = null;
+    private String mSourceCode = null;
 
     public Piece(byte[] chunk, CharSequence spannableString) {
         mChunk = chunk;
@@ -31,7 +31,7 @@ public class Piece {
         this.mString = mString;
     }
 
-    public void setSourceCode(Editable mSourceCode) {
+    public void setSourceCode(String mSourceCode) {
         this.mSourceCode = mSourceCode;
     }
 
@@ -47,7 +47,7 @@ public class Piece {
         return mString;
     }
 
-    public Editable getSourceCode() {
+    public String getSourceCode() {
         return mSourceCode;
     }
 }

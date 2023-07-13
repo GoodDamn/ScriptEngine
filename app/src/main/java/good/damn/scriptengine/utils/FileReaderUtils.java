@@ -18,6 +18,14 @@ public class FileReaderUtils {
 
     private static final String TAG = "FileReaderUtils";
 
+    public static byte[] BlankChunk(byte[] text) {
+        return ArrayUtils.concatByteArrays(
+                Utilities.gbInt(text.length+1),
+                Utilities.gb((short) (text.length)),
+                text,
+                new byte[]{0});
+    }
+
     public static ArrayList<Piece> Txt(InputStream inputStream) throws IOException {
         ArrayList<Piece> arrayList = new ArrayList<>();
 
@@ -30,13 +38,7 @@ public class FileReaderUtils {
             byte[] textChunk = line.getBytes(StandardCharsets.UTF_8);
             int length = Utilities.gn(Utilities.gbInt(textChunk.length+1),0);
             Log.d(TAG, "Txt: FACT_LENGTH: " + (textChunk.length+1) + " READ LENGTH: " + length);
-            arrayList.add(new Piece(
-                    ArrayUtils.concatByteArrays(
-                            Utilities.gbInt(textChunk.length+1),
-                            Utilities.gb((short) (textChunk.length)),
-                            textChunk,
-                            new byte[]{0}),
-                    line)
+            arrayList.add(new Piece(BlankChunk(textChunk), line)
             );
         }
 

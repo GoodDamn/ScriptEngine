@@ -13,6 +13,23 @@
         android:orientation="horizontal">
 
         <ImageView
+            android:id="@+id/f_pieces_list_start_debug"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:scaleX="0.5"
+            android:scaleY="0.5"
+            app:srcCompat="@drawable/ic_play_arrow"/>
+
+        <ImageView
+            android:id="@+id/f_pieces_list_open_scripts"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="50dp"
+            android:scaleX="0.5"
+            android:scaleY="0.5"
+            app:srcCompat="@drawable/ic_file_open"/>
+
+        <ImageView
             android:id="@+id/f_pieces_list_save"
             android:layout_width="50dp"
             android:layout_height="50dp"
@@ -21,14 +38,6 @@
             android:scaleX="0.5"
             android:scaleY="0.5"
             app:srcCompat="@drawable/ic_save"/>
-
-        <ImageView
-            android:id="@+id/f_pieces_list_start_debug"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:scaleX="0.5"
-            android:scaleY="0.5"
-            app:srcCompat="@drawable/ic_play_arrow"/>
 
         <ImageView
             android:id="@+id/f_pieces_list_resources_page"

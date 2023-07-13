@@ -14,12 +14,13 @@ import java.util.ArrayList;
 
 import good.damn.scriptengine.interfaces.OnClickTextPiece;
 import good.damn.scriptengine.models.Piece;
+import good.damn.scriptengine.utils.ArrayUtils;
 
 public class PiecesAdapter extends RecyclerView.Adapter<PiecesAdapter.PiecesViewHolder> {
 
     private static final String TAG = "PiecesAdapter";
 
-    private final ArrayList<Piece> mPieces;
+    private ArrayList<Piece> mPieces;
 
     private final OnClickTextPiece mOnClickTextPiece;
 
@@ -27,6 +28,10 @@ public class PiecesAdapter extends RecyclerView.Adapter<PiecesAdapter.PiecesView
         Log.d(TAG, "PiecesAdapter: ADAPTER_SIZE:" + pieces.size());
         mPieces = pieces;
         mOnClickTextPiece = textPiece;
+    }
+
+    public void setPieces(ArrayList<Piece> pieces) {
+        mPieces = pieces;
     }
 
     @NonNull

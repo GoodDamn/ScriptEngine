@@ -1,11 +1,16 @@
 package good.damn.scriptengine.fragments;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.media.Image;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
+import android.text.SpannableString;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,25 +18,32 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
+import java.security.Policy;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import good.damn.scriptengine.R;
 import good.damn.scriptengine.activities.PreviewActivity;
+import good.damn.scriptengine.adapters.FilesAdapter;
 import good.damn.scriptengine.adapters.recycler_view.PiecesAdapter;
 import good.damn.scriptengine.interfaces.OnClickTextPiece;
 import good.damn.scriptengine.models.Piece;
 import good.damn.scriptengine.utils.FileOutputUtils;
 import good.damn.scriptengine.utils.FileReaderUtils;
+import good.damn.scriptengine.utils.ToolsUtilities;
 import good.damn.scriptengine.utils.Utilities;
 import good.damn.traceview.utils.ByteUtils;
 
@@ -62,15 +74,121 @@ public class PiecesListFragment extends Fragment {
         Context context = getContext();
 
         RecyclerView piecesRecyclerView = v.findViewById(R.id.f_pieces_list_recyclerView);
-        piecesRecyclerView.setHasFixedSize(true);
+        piecesRecyclerView.setHasFixedSize(false);
         piecesRecyclerView.setLayoutManager(new LinearLayoutManager(context));
+
+        v.findViewById(R.id.f_pieces_list_resources_page)
+                .setOnClickListener(mOnResFolderClickListener);
+
+        InputStream inputStream = context.getResources().openRawResource(R.raw.text);
+
+        try {
+            mPieces = FileReaderUtils.Txt(inputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (inputStream != null) {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (mPieces == null)
+            return v;
+
+        PiecesAdapter piecesAdapter = new PiecesAdapter(mPieces, mOnClickTextPiece);
+
+        piecesRecyclerView.setAdapter(piecesAdapter);
+
+        v.findViewById(R.id.f_pieces_list_open_scripts)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        ToolsUtilities.startFileManager(getActivity(),
+                                new FilesAdapter.OnFileClickListener() {
+                                    @Override
+                                    public void onFile(File file, String extension) {
+                                        Log.d(TAG, "onFile: EXTENSION: " + extension);
+
+                                        if (!extension.equals("sse")) {
+                                            Utilities.showMessage("INCORRECT FILE (NEED .sse FILE)",context);
+                                            return;
+                                        }
+
+                                        try {
+                                            FileInputStream fis = new FileInputStream(file);
+                                            short size = (short) (fis.read() & 0xff);
+
+                                            mPieces = new ArrayList<>();
+
+                                            byte[] bufShort = new byte[2];
+
+                                            for (short i = 0; i < size; i++) {
+                                                fis.read(bufShort); // read text size
+
+                                                byte[] text = new byte[ByteUtils.Short(bufShort,0)];
+
+                                                fis.read(bufShort); // read script size
+
+                                                byte[] script = new byte[ByteUtils.Short(bufShort,0)];
+
+                                                fis.read(text);
+                                                fis.read(script);
+
+                                                String t = new String(text, StandardCharsets.UTF_8);
+                                                String s = new String(script, StandardCharsets.UTF_8);
+
+                                                Log.d(TAG, "onFile: INDEX " + i + "||||||||||||||||||||||");
+                                                Log.d(TAG, "onFile: " + t);
+                                                Log.d(TAG, "onFile: "+s);
+
+                                                Piece piece = new Piece(FileReaderUtils.BlankChunk(text),t);
+                                                piece.setSourceCode(s);
+                                                mPieces.add(piece);
+                                            }
+
+                                            fis.close();
+
+                                            piecesAdapter.setPieces(mPieces);
+                                            piecesAdapter.notifyDataSetChanged();
+
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+
+                                    }
+                                }, Environment.getExternalStorageDirectory().getAbsolutePath()+"/ScriptProjects");
+                    }
+                });
 
         v.findViewById(R.id.f_pieces_list_save)
                 .setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+
+                        if (ActivityCompat.checkSelfPermission(getActivity(),
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+                            ActivityCompat.requestPermissions(getActivity(),
+                                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                    200);
+
+                            return;
+                        }
+
                         try {
-                            File file = new File(context.getCacheDir()+"/save.sse");
+                            File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/ScriptProjects");
+
+                            Log.d(TAG, "onClick: DIR: " + dir);
+
+                            if (dir.mkdirs()) {
+                                Log.d(TAG, "onClick: ScriptProjects DIR IS CREATED!");
+                            }
+
+                            File file = new File(dir,"save.sse");
 
                             if (file.createNewFile()) {
                                 Log.d(TAG, "onClick: save.sse IS CREATED!");
@@ -80,42 +198,23 @@ public class PiecesListFragment extends Fragment {
 
                             fos.write(mPieces.size()); //0-255 pieces
 
-                            byte[] temp = new byte[4];
-                            short i = 0;
-                            for (;i< mPieces.size();i++) { // write position temp
-                                fos.write(temp);
-                            }
-
-                            int currentPos = 0;
-                            i = 0;
-                            FileChannel channel = fos.getChannel();
-
                             for (Piece piece: mPieces) {
                                 byte[] textPiece = piece.getString().toString()
                                         .getBytes(StandardCharsets.UTF_8);
 
-                                Editable source = piece.getSourceCode();
+                                String source = piece.getSourceCode();
                                 byte[] sourceCode = new byte[0];
                                 if (source != null) {
-                                    sourceCode = source.toString()
+                                    sourceCode = source
                                             .getBytes(StandardCharsets.UTF_8);
                                 }
 
                                 fos.write(ByteUtils.Short((short) textPiece.length));
                                 fos.write(ByteUtils.Short((short) sourceCode.length));
 
-                                currentPos += textPiece.length+sourceCode.length;
-
                                 fos.write(textPiece);
                                 fos.write(sourceCode);
 
-                                channel = channel.position(1+4*i);
-
-                                fos.write(ByteUtils.integer(currentPos));
-
-                                channel = channel.position(1+4L*mPieces.size()+(i+1)*4+currentPos);
-
-                                i++;
                             }
 
                             fos.close();
@@ -153,30 +252,6 @@ public class PiecesListFragment extends Fragment {
                 }).start();
             }
         });
-
-        v.findViewById(R.id.f_pieces_list_resources_page)
-                .setOnClickListener(mOnResFolderClickListener);
-
-        InputStream inputStream = context.getResources().openRawResource(R.raw.text);
-
-        try {
-            mPieces = FileReaderUtils.Txt(inputStream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        if (inputStream != null) {
-            try {
-                inputStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (mPieces == null)
-            return v;
-
-        piecesRecyclerView.setAdapter(new PiecesAdapter(mPieces, mOnClickTextPiece));
 
         return v;
     }

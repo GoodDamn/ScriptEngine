@@ -41,6 +41,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
         public void onAudioFile(File file){};
         public void onImageFile(File file){};
         public void onVectorFile(File file){};
+        public void onFile(File file, String extension){};
     }
 
     private String getFileExtension(File file) {
@@ -112,6 +113,12 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
     @SuppressLint({"UseCompatLoadingForDrawables", "SetTextI18n"})
     @Override
     public void onBindViewHolder(@NonNull FileItem holder, int position) {
+
+        holder.isVectorFile = false;
+        holder.isAudioFile = false;
+        holder.isFile = false;
+        holder.isImageFile = false;
+
         File f = mFiles[position];
         holder.mTextView.setText(f.getName());
         Log.d(TAG, "onBindViewHolder: " + f.isDirectory() + " " + f.getName());
@@ -129,6 +136,8 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
 
         if (f.isDirectory()){
             holder.mPreview.setBackgroundResource(R.drawable.ic_folder);
+        } else {
+            holder.isFile = true;
         }
 
         if (holder.isImageFile){
@@ -168,7 +177,9 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
     public class FileItem extends RecyclerView.ViewHolder{
         boolean isImageFile = false,
             isAudioFile = false,
-            isVectorFile = false;
+            isVectorFile = false,
+            isFile = false;
+
         TextView mTextView;
         ImageView mPreview;
 
@@ -184,7 +195,6 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mPages.add(mTextView.getText().toString());
                     if (isImageFile){
                         onFileClickListener.onImageFile(mFiles[getAdapterPosition()]);
                         return;
@@ -199,6 +209,13 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
                         return;
                     }
 
+                    if (isFile) {
+                        File f = mFiles[getAdapterPosition()];
+                        onFileClickListener.onFile(f, getFileExtension(f));
+                        return;
+                    }
+
+                    mPages.add(mTextView.getText().toString());
                     updatePath();
                 }
             });

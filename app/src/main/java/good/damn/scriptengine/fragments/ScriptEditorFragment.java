@@ -52,6 +52,7 @@ public class ScriptEditorFragment extends Fragment {
     public void startScript(Piece piece, int adapterPosition) {
         mPiece = piece;
         et_phrase.setText(piece.getString());
+        Log.d(TAG, "startScript: CODE: " + piece.getSourceCode());
         et_script.setText(piece.getSourceCode());
         mAdapterPosition = adapterPosition;
     }
@@ -128,7 +129,7 @@ public class ScriptEditorFragment extends Fragment {
                 mPiece.setString(et_phrase.getText());
                 mPiece.setChunk(total);
                 mPiece.setResRef(resPositions);
-                mPiece.setSourceCode(et_script.getText());
+                mPiece.setSourceCode(et_script.getText().toString());
 
                 /*TextViewPhrase textViewPhrase = new TextViewPhrase(context);
                 textViewPhrase.setTypeface(et_phrase.getTypeface());
