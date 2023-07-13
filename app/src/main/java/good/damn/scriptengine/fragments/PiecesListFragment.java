@@ -197,8 +197,17 @@ public class PiecesListFragment extends Fragment {
                                 .getText()
                                 .toString();
 
+                        mPieces = new ArrayList<>();
 
+                        String[] arr = data.split("\\n+");
+                        for (String t: arr) {
+                            mPieces.add(new Piece(
+                                    FileReaderUtils.BlankChunk(t.getBytes(StandardCharsets.UTF_8)),
+                                    t));
+                        }
 
+                        piecesAdapter.setPieces(mPieces);
+                        piecesAdapter.notifyDataSetChanged();
                         mTouchesToPaste = 0;
                     }
                 });
