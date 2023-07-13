@@ -12,7 +12,7 @@ public class Piece {
     private byte[] mChunk;
     private LinkedList<ResourceReference> mResPositions;
 
-    private Editable mSourceCode;
+    private Editable mSourceCode = null;
 
     public Piece(byte[] chunk, CharSequence spannableString) {
         mChunk = chunk;

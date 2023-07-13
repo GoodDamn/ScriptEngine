@@ -37,4 +37,11 @@ public class ByteUtils {
                 (in[2] & 0xff) << 8 |
                 in[3] & 0xff;
     }
+
+    public static byte[] Short(short val) {
+        return new byte[] {
+                (byte) ((val >> 8) & 0xff),
+                (byte) (val & 0xff)
+        };
+    }
 }
