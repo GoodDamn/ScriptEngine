@@ -30,6 +30,15 @@
             app:srcCompat="@drawable/ic_file_open"/>
 
         <ImageView
+            android:id="@+id/f_pieces_list_paste_text"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="100dp"
+            android:scaleX="0.5"
+            android:scaleY="0.5"
+            app:srcCompat="@drawable/ic_paste"/>
+
+        <ImageView
             android:id="@+id/f_pieces_list_save"
             android:layout_width="50dp"
             android:layout_height="50dp"

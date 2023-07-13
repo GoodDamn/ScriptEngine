@@ -32,7 +32,6 @@ public class ScriptEngine {
     public static final byte READ_AMBIENT = 6;
     public static final byte READ_VECTOR = 7;
 
-
     private OnCreateScriptTextViewListener mOnCreateScriptTextViewListener;
 
     private OnFileScriptListener mOnFileScriptListener;

@@ -1,6 +1,7 @@
 package good.damn.scriptengine.fragments;
 
 import android.Manifest;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -57,6 +58,9 @@ public class PiecesListFragment extends Fragment {
     private View.OnClickListener mOnResFolderClickListener;
 
     private ArrayList<Piece> mPieces = null;
+
+    private byte mTouchesToPaste = 0;
+    private long mCurrentTime = 0;
 
     public void setOnClickTextPieceListener(OnClickTextPiece mOnClickTextPiece) {
         this.mOnClickTextPiece = mOnClickTextPiece;
@@ -165,6 +169,37 @@ public class PiecesListFragment extends Fragment {
 
                                     }
                                 }, Environment.getExternalStorageDirectory().getAbsolutePath()+"/ScriptProjects");
+                    }
+                });
+
+        ClipboardManager clipboardManager = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+
+        v.findViewById(R.id.f_pieces_list_paste_text)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        if (mCurrentTime + 1500 < System.currentTimeMillis()) {
+                            mTouchesToPaste = 0;
+                            mCurrentTime = System.currentTimeMillis();
+                        }
+
+                        if (mTouchesToPaste < 2) {
+                            mTouchesToPaste++;
+                            Utilities.showMessage("TOUCHES TO PASTE: " + (3-mTouchesToPaste), context);
+                            return;
+                        }
+
+                        Utilities.showMessage("PASTED", context);
+                        String data = clipboardManager
+                                .getPrimaryClip()
+                                .getItemAt(0)
+                                .getText()
+                                .toString();
+
+
+
+                        mTouchesToPaste = 0;
                     }
                 });
 
