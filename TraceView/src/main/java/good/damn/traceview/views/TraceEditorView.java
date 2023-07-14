@@ -2,6 +2,7 @@ package good.damn.traceview.views;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -44,7 +45,7 @@ public class TraceEditorView extends View implements View.OnTouchListener {
 
     private void init() {
 
-        mPaintBackground.setColor(0x55ffffff);
+        mPaintBackground.setColor(Color.GRAY);
         mPaintBackground.setStrokeWidth(15.0f);
         mPaintBackground.setStrokeCap(Paint.Cap.ROUND);
 
