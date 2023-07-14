@@ -20,8 +20,10 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewPropertyAnimator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ViewAnimator;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -54,10 +56,12 @@ public class PreviewActivity extends AppCompatActivity {
     private static final String TAG = "PreviewActivity";
     private static final Random sRandom = new Random();
 
+    private int mHorizontalPadding = -1;
+    private int mTextYWithTraceView = 50;
     private int mCurrentTextColor = 0xffffffff;
+    private boolean mHasTraceView = false;
 
     private TextViewPhrase mCurrentViewPhrase;
-    private int mHorizontalPadding = -1;
 
     private MediaPlayer mAmbientPlayer;
 
@@ -215,6 +219,8 @@ public class PreviewActivity extends AppCompatActivity {
             public void onVector(byte[] vect) {
                 root_FrameLayout.setEnabled(false);
 
+                mHasTraceView = true;
+
                 TraceView traceView = new TraceView(PreviewActivity.this);
                 traceView.setId(ViewCompat.generateViewId());
                 traceView.setBackgroundColor(0);
@@ -251,6 +257,8 @@ public class PreviewActivity extends AppCompatActivity {
                         .withEndAction(traceView::startAnimation)
                         .setDuration(1650)
                         .start();
+
+
             }
 
             @Override
@@ -265,7 +273,10 @@ public class PreviewActivity extends AppCompatActivity {
                 TextViewPhrase phrase = new TextViewPhrase(context);
 
                 if (mHorizontalPadding == -1) {
-                    phrase.post(() -> mHorizontalPadding = (int) (phrase.getWidth() * 0.1f));
+                    phrase.post(() -> {
+                        mTextYWithTraceView = (int) (phrase.getHeight() * 0.35f);
+                        mHorizontalPadding = (int) (phrase.getWidth() * 0.1f);
+                    });
                 }
 
                 if (textConfig.textColor != 0xff000000) {
@@ -284,8 +295,18 @@ public class PreviewActivity extends AppCompatActivity {
                         FrameLayout.LayoutParams.MATCH_PARENT);
 
                 phrase.setPadding(mHorizontalPadding,0,mHorizontalPadding,0);
-                phrase.fadeIn();
 
+                ViewPropertyAnimator animator =
+                        phrase.animate()
+                                .alpha(1.0f)
+                                .setDuration(1500);
+
+                if (mHasTraceView) {
+                    animator = animator.y(mTextYWithTraceView);
+                    mHasTraceView = false;
+                }
+
+                animator.start();
                 mCurrentViewPhrase = phrase;
             }
         });

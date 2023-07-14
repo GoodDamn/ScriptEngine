@@ -16,18 +16,10 @@ public class TextViewPhrase extends AppCompatTextView {
         super(context);
     }
 
-
     public void fadeOutTransition(Random random,float density) {
         animate().alpha(0.0f)
                 .translationY((215 + random.nextInt(100))*density)
                 .setDuration(1500+getText().length()*15)
                 .withEndAction(() -> ((ViewManager) getParent()).removeView(this)).start();
-    }
-
-    public void fadeIn() {
-        animate()
-           .alpha(1.0f)
-           .setDuration(1500)
-           .start();
     }
 }
