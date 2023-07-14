@@ -3,12 +3,12 @@ package good.damn.scriptengine.engines.script;
 import android.content.Context;
 import android.text.SpannableString;
 import android.util.Log;
-import android.widget.EditText;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import good.damn.scriptengine.engines.script.interfaces.OnCreateScriptTextViewListener;
 import good.damn.scriptengine.engines.script.interfaces.OnReadCommandListener;
@@ -37,6 +37,7 @@ public class ScriptEngine {
     private OnFileScriptListener mOnFileScriptListener;
 
     private OnReadCommandListener mOnReadCommandListener;
+
 
     public void setOnCreateViewListener(OnCreateScriptTextViewListener configureViewListener) {
         mOnCreateScriptTextViewListener = configureViewListener;
@@ -100,6 +101,8 @@ public class ScriptEngine {
     public void read(byte[] chunk) {
 
         int offset = 0;
+
+        Log.d(TAG, "read: CHUNK: " + Arrays.toString(chunk));
 
         Log.d(TAG, "read: CHUNK_LENGTH: " + " CHUNK[0]:" + chunk[offset]);
 

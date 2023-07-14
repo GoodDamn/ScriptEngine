@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,8 +27,9 @@ import java.util.Random;
 
 import good.damn.scriptengine.R;
 import good.damn.scriptengine.adapters.FilesAdapter;
-import good.damn.scriptengine.adapters.recycler_view.PiecesAdapter;
 import good.damn.scriptengine.engines.script.ScriptEngine;
+import good.damn.scriptengine.engines.script.interfaces.OnCreateScriptTextViewListener;
+import good.damn.scriptengine.engines.script.models.ScriptTextConfig;
 import good.damn.scriptengine.models.Piece;
 import good.damn.scriptengine.models.ResourceReference;
 import good.damn.scriptengine.engines.script.models.ScriptBuildResult;
@@ -95,7 +97,6 @@ public class ScriptEditorFragment extends Fragment {
         byte[] chunkLength = Utilities.gbInt(length);
         Log.d(TAG, "onClick: OWN: " + Arrays.toString(chunkLength));
 
-
         byte[] total = ArrayUtils.concatByteArrays(
                 chunkLength,
                 Utilities.gb((short) text.length),
@@ -107,7 +108,6 @@ public class ScriptEditorFragment extends Fragment {
         piece.setChunk(total);
         piece.setResRef(resPositions);
         piece.setSourceCode(scriptString);
-
     }
 
     public void startScript(Piece piece, int adapterPosition) {
@@ -131,7 +131,22 @@ public class ScriptEditorFragment extends Fragment {
         et_phrase = v.findViewById(R.id.scriptEditor_editText_phrase);
         et_script = v.findViewById(R.id.scriptEditor_editText_script);
 
+        TextView textViewHelper = v.findViewById(R.id.script_editor_tv_helper);
+
         ScriptEngine scriptEngine = new ScriptEngine();
+
+        scriptEngine.setOnCreateViewListener(new OnCreateScriptTextViewListener() {
+            @Override
+            public void onCreate(ScriptTextConfig config) {
+                Log.d(TAG, "onCreate: ScriptTextConfig: " + config.textColor + " " + config.spannableString.toString());
+                if (config.textColor == 0xff000000) {
+                    config.textColor = 0xffffffff;
+                }
+                et_phrase.setTextColor(config.textColor);
+                et_phrase.setTextSize(config.textSize);
+                et_phrase.setText(config.spannableString);
+            }
+        });
 
         v.findViewById(R.id.scriptEditor_button_start).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -146,15 +161,28 @@ public class ScriptEditorFragment extends Fragment {
                         scriptEngine,
                         v.getContext());
 
+                int length = Utilities.gn(mPiece.getChunk(),0);
+                byte[] chunk = new byte[length+2];
+                System.arraycopy(mPiece.getChunk(),4, chunk,0,chunk.length);
+                scriptEngine.read(chunk);
             }
         });
         et_phrase.setText("Simple a piece of text");
 
+        et_phrase.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                textViewHelper.setText(et_phrase.getSelectionStart() + ";" + et_phrase.getText().length());
+            }
+        });
+
         et_phrase.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                textViewHelper.setText(start + " " + et_phrase.getText().length());
+            }
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) { }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
             @Override
             public void afterTextChanged(Editable s) {
                 Log.d(TAG, "afterTextChanged: isEdited: " + isEdited);
