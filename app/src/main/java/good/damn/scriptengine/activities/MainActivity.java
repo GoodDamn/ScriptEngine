@@ -16,6 +16,7 @@ import good.damn.scriptengine.fragments.ResourcesFragment;
 import good.damn.scriptengine.fragments.ScriptEditorFragment;
 import good.damn.scriptengine.interfaces.OnClickTextPiece;
 import good.damn.scriptengine.models.Piece;
+import good.damn.scriptengine.utils.Utilities;
 import good.damn.traceview.views.BlockedViewPager;
 
 public class MainActivity extends AppCompatActivity {
@@ -23,6 +24,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     private BlockedViewPager mViewPager;
+
+    private long mCurrentTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +80,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         if (mViewPager.getCurrentItem() == 0) {
-            super.onBackPressed();
+
+            if (mCurrentTime + 1200 > System.currentTimeMillis()) {
+                super.onBackPressed();
+                return;
+            }
+            mCurrentTime = System.currentTimeMillis();
+            Utilities.showMessage("Press again to exit", this);
             return;
         }
         mViewPager.setCurrentItem(0);
