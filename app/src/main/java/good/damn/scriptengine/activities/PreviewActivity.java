@@ -154,6 +154,14 @@ public class PreviewActivity extends AppCompatActivity {
             public void onGif(byte[] gif, ScriptGraphicsFile gifScript) {
                 GifView gifView = new GifView(context);
                 gifView.setSource(gif);
+                gifView.setId(ViewCompat.generateViewId());
+
+                gifView.setGifListener(new GifView.GifListener() {
+                    @Override
+                    public void onFinish() {
+                        root_FrameLayout.removeView(gifView);
+                    }
+                });
 
                 FrameLayout.LayoutParams par =
                         new FrameLayout.LayoutParams(gifView.width(), gifView.height());
@@ -163,12 +171,6 @@ public class PreviewActivity extends AppCompatActivity {
 
                 root_FrameLayout.addView(gifView, par);
                 gifView.play();
-
-                gifView.animate()
-                        .setStartDelay(5500)
-                        .alpha(0.0f)
-                        .withEndAction(()-> root_FrameLayout.removeView(gifView))
-                        .start();
             }
 
             @Override

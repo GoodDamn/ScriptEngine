@@ -16,6 +16,7 @@ public class GifView extends View {
 
     private static final String TAG = "GifView";
 
+    private GifListener mGifListener;
     private Movie mMovieGif;
 
     private int mStartTime = 0;
@@ -30,6 +31,10 @@ public class GifView extends View {
 
     public GifView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+    }
+
+    public void setGifListener(GifListener listener) {
+        mGifListener = listener;
     }
 
     public void setSource(byte[] byteArray) {
@@ -73,10 +78,17 @@ public class GifView extends View {
             return;
         int currentTime = (int) (System.currentTimeMillis() - mStartTime);
         if (currentTime >= mMovieGif.duration()) {
-            mStartTime = (int) System.currentTimeMillis();
+            if (mGifListener != null) {
+                mGifListener.onFinish();
+            }
+            return;
         }
         mMovieGif.setTime(currentTime);
         mMovieGif.draw(canvas,0,0);
         invalidate();
+    }
+
+    public interface GifListener {
+        void onFinish();
     }
 }
