@@ -170,6 +170,7 @@ public class PreviewActivity extends AppCompatActivity {
                 FrameLayout.LayoutParams par =
                         new FrameLayout.LayoutParams(gifView.width(), gifView.height());
 
+                par.gravity = Gravity.START | Gravity.TOP;
                 par.leftMargin = (int) (gifScript.x * metrics.widthPixels);
                 par.topMargin = (int) (gifScript.y * metrics.heightPixels);
 

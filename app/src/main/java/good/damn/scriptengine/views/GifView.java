@@ -79,7 +79,7 @@ public class GifView extends View {
         int currentTime = (int) (System.currentTimeMillis() - mStartTime);
         if (currentTime >= mMovieGif.duration()) {
             if (mGifListener != null) {
-                mGifListener.onFinish();
+                post(()-> mGifListener.onFinish());
             }
             return;
         }

@@ -283,7 +283,7 @@ public class ScriptCommandsUtils {
         buildResult.setResName(argv[1]);
         buildResult.withResource();
 
-        byte[] origin = new byte[5];
+        byte[] origin = new byte[2];
         origin[0] = 7; // argSize (2 args * 2 bytes) + 4 next args
         origin[1] = 4; // commandIndex
         short xPos = Short.parseShort(argv[2]);
