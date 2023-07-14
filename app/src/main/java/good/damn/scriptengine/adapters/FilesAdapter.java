@@ -55,7 +55,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
     }
 
     private String getCurrentPath(){
-        String st = new String(mPath);
+        String st = mPath;
         for (String p: mPages){
             st += ("/"+p);
         }
@@ -80,7 +80,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
     }
 
     public void notifyDataSet() {
-        mFiles = new File(mPath).listFiles();
+        mFiles = new File(getCurrentPath()).listFiles();
         notifyDataSetChanged();
     }
 

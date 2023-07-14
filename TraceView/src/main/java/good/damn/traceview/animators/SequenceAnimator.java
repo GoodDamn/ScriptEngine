@@ -53,6 +53,9 @@ public class SequenceAnimator extends EntityAnimator{
             entity.onDraw(canvas);
         }
 
+        if (mCurrentEntity == null)
+            return;
+
         mCurrentEntity.onAnimate(mProgress);
         mCurrentEntity.onDraw(canvas);
     }

@@ -26,6 +26,7 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -56,6 +57,7 @@ public class PreviewActivity extends AppCompatActivity {
     private int mCurrentTextColor = 0xffffffff;
 
     private TextViewPhrase mCurrentViewPhrase;
+    private int mHorizontalPadding = -1;
 
     private MediaPlayer mAmbientPlayer;
 
@@ -117,6 +119,8 @@ public class PreviewActivity extends AppCompatActivity {
         FrameLayout root_FrameLayout = new FrameLayout(this);
 
         ColorRevealView mColorRevealView = new ColorRevealView(this);
+
+        Typeface defTypeface = Typeface.createFromAsset(getAssets(), "mplus_rounded1c_thin.ttf");
 
         scriptEngine.setReadCommandListener(new OnReadCommandListener() {
             @Override
@@ -210,6 +214,7 @@ public class PreviewActivity extends AppCompatActivity {
                 root_FrameLayout.setEnabled(false);
 
                 TraceView traceView = new TraceView(PreviewActivity.this);
+                traceView.setId(ViewCompat.generateViewId());
                 traceView.setBackgroundColor(0);
 
                 FileSVC fileSVC = FileUtils.retrieveSVCFile(vect);
@@ -218,19 +223,18 @@ public class PreviewActivity extends AppCompatActivity {
                 traceView.setOnTraceFinishListener(new OnTraceFinishListener() {
                     @Override
                     public void onFinish() {
-                        if (fileSVC.isInteractive) {
-                            if (mCurrentViewPhrase != null) {
-                                mCurrentViewPhrase.fadeOutTransition(sRandom, 2.1f);
-                            }
+                        root_FrameLayout.setEnabled(true);
 
-                            scriptReader.next();
+                        if (mCurrentViewPhrase != null) {
+                            mCurrentViewPhrase.fadeOutTransition(sRandom, 2.1f);
                         }
+
+                        scriptReader.next();
 
                         traceView.animate()
                                 .alpha(0.0f)
                                 .withEndAction(()-> root_FrameLayout.removeView(traceView))
                                 .start();
-                        root_FrameLayout.setEnabled(true);
                     }
                 });
 
@@ -245,10 +249,6 @@ public class PreviewActivity extends AppCompatActivity {
                         .withEndAction(traceView::startAnimation)
                         .setDuration(1650)
                         .start();
-
-                if (!fileSVC.isInteractive) {
-                    root_FrameLayout.setEnabled(true);
-                }
             }
 
             @Override
@@ -257,12 +257,14 @@ public class PreviewActivity extends AppCompatActivity {
             }
         });
 
-        Typeface defTypeface = Typeface.createFromAsset(getAssets(), "mplus_rounded1c_thin.ttf");
-
         scriptEngine.setOnCreateViewListener(new OnCreateScriptTextViewListener() {
             @Override
             public void onCreate(ScriptTextConfig textConfig) {
                 TextViewPhrase phrase = new TextViewPhrase(context);
+
+                if (mHorizontalPadding == -1) {
+                    phrase.post(() -> mHorizontalPadding = (int) (phrase.getWidth() * 0.1f));
+                }
 
                 if (textConfig.textColor != 0xff000000) {
                     mCurrentTextColor = textConfig.textColor;
@@ -279,6 +281,7 @@ public class PreviewActivity extends AppCompatActivity {
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT);
 
+                phrase.setPadding(mHorizontalPadding,0,mHorizontalPadding,0);
                 phrase.fadeIn();
 
                 mCurrentViewPhrase = phrase;

@@ -80,7 +80,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         if (mViewPager.getCurrentItem() == 0) {
-
             if (mCurrentTime + 1200 > System.currentTimeMillis()) {
                 super.onBackPressed();
                 return;
