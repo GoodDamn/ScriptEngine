@@ -1,9 +1,11 @@
 package good.damn.traceview.views;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -14,6 +16,7 @@ import androidx.annotation.Nullable;
 
 import java.util.LinkedList;
 
+import good.damn.traceview.R;
 import good.damn.traceview.graphics.editor.CircleEditor;
 import good.damn.traceview.graphics.editor.EntityEditor;
 import good.damn.traceview.graphics.editor.LineEditor;
@@ -44,6 +47,9 @@ public class TraceEditorView extends View implements View.OnTouchListener {
 
     private boolean mDoesStrokeEdit = false;
 
+    private Drawable mDrawStencil;
+
+    @SuppressLint("UseCompatLoadingForDrawables")
     private void init() {
 
         mPaintBackground.setColor(Color.GRAY);
@@ -53,6 +59,8 @@ public class TraceEditorView extends View implements View.OnTouchListener {
         mPaintForeground.setColor(0xff00ff59);
 
         mEntity = new LineEditor(mPaintForeground, mPaintBackground);
+
+        mDrawStencil = getResources().getDrawable(R.drawable.sun);
 
         setOnTouchListener(this);
     }
@@ -87,11 +95,18 @@ public class TraceEditorView extends View implements View.OnTouchListener {
         int mid = getHeight() >> 1;
         mMinStrokeWidthY = mid - 200;
         mMaxStrokeWidthY = 200 + mid;
+
+        int x = (int) (getWidth() * 0.5f - 370);
+        int y = (int) (getHeight() * 0.5f - 370);
+
+        mDrawStencil.setBounds(x,y,x+740,y+740);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
+        mDrawStencil.draw(canvas);
 
         canvas.drawLine(0,mMinStrokeWidthY, 50, mMaxStrokeWidthY, mPaintForeground);
         canvas.drawLine(50,mMaxStrokeWidthY, 0, mMaxStrokeWidthY, mPaintForeground);
