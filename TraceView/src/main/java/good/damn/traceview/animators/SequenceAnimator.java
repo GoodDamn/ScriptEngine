@@ -2,6 +2,7 @@ package good.damn.traceview.animators;
 
 import android.animation.Animator;
 import android.graphics.Canvas;
+import android.util.Log;
 import android.view.animation.LinearInterpolator;
 
 import androidx.annotation.NonNull;
@@ -10,10 +11,13 @@ import good.damn.traceview.graphics.Entity;
 
 public class SequenceAnimator extends EntityAnimator{
 
+    private static final String TAG = "SequenceAnimator";
+    
     private byte mCurrentEntityIndex;
     private Entity mCurrentEntity;
 
     public SequenceAnimator() {
+
         setInterpolator(new LinearInterpolator());
 
         addListener(new Animator.AnimatorListener() {

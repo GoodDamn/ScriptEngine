@@ -43,6 +43,9 @@ public class TraceEditorView extends View implements View.OnTouchListener {
     private float mToX;
     private float mToY;
 
+    private float midWidth;
+    private float midHeight;
+
     private float mMinStrokeWidthY = 1;
     private float mMaxStrokeWidthY = 127;
     private float mCurrentStrokeWidthY = 0;
@@ -156,14 +159,18 @@ public class TraceEditorView extends View implements View.OnTouchListener {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
-        int mid = getHeight() >> 1;
-        mMinStrokeWidthY = mid - 200;
-        mMaxStrokeWidthY = 200 + mid;
+        midHeight = getHeight() >> 1;
+        midWidth = getWidth() >> 1;
+        mMinStrokeWidthY = midHeight - 200;
+        mMaxStrokeWidthY = 200 + midHeight;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
+        canvas.drawLine(midWidth,0, midWidth,getHeight(), mPaintForeground); // top-bottom
+        canvas.drawLine(0,midHeight,getWidth(),midHeight,mPaintForeground); // left-right
 
         canvas.drawLine(0,mMinStrokeWidthY, 50, mMaxStrokeWidthY, mPaintForeground);
         canvas.drawLine(50,mMaxStrokeWidthY, 0, mMaxStrokeWidthY, mPaintForeground);

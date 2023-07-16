@@ -98,18 +98,21 @@ public class TraceView extends View implements View.OnTouchListener {
             fileSVC.animator = new ParallelAnimator();
         }
 
+        Log.d(TAG, "setVectorsSource: TRACE_FINISH_LISTENER: " + mOnTraceFinishListener);
         mEntityAnimator = fileSVC.animator;
         mEntityAnimator.setTraceView(this);
         mEntityAnimator.setEntities(mEntities);
         mEntityAnimator.setOnTraceFinishListener(mOnTraceFinishListener);
-        mOnDrawTracesListener = canvas -> mEntityAnimator.onUpdateDrawing(canvas);
 
         calculate();
-
     }
 
     public void setOnTraceFinishListener(OnTraceFinishListener finishListener) {
         mOnTraceFinishListener = finishListener;
+        if (mEntityAnimator == null) {
+            return;
+        }
+        mEntityAnimator.setOnTraceFinishListener(finishListener);
     }
 
     public void startAnimation() {
@@ -117,7 +120,8 @@ public class TraceView extends View implements View.OnTouchListener {
             Log.d(TAG, "startAnimation: ENTITY_ANIMATOR == NULL");
             return;
         }
-        
+        mOnDrawTracesListener = canvas -> mEntityAnimator.onUpdateDrawing(canvas);
+
         mEntityAnimator.start();
     }
 
