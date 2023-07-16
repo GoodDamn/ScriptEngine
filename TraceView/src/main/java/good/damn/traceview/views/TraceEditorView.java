@@ -1,15 +1,15 @@
 package good.damn.traceview.views;
 
-import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
@@ -31,6 +31,8 @@ public class TraceEditorView extends View implements View.OnTouchListener {
 
     private final LinkedList<EntityEditor> mEntities = new LinkedList<>();
 
+    private Dialog mDialogDuration;
+
     private EntityEditor mEntity;
 
     private OnClickIconListener mOnStartClickListener;
@@ -46,13 +48,56 @@ public class TraceEditorView extends View implements View.OnTouchListener {
     private float mCurrentStrokeWidthY = 0;
 
     private boolean mDoesStrokeEdit = false;
+    private boolean mIsDurationMode = false;
 
-    private Drawable mDrawStencil;
+    private void addEntity(String[] durations) {
+        if (mEntity instanceof RectEditor) {
+            RectEditor rect = (RectEditor) mEntity;
+            byte countPoints = (byte) rect.getPoints().length;
+            for (byte i = 0; i < countPoints; i++) {
+                float[] p = rect.getPoints()[i];
+                LineEditor line = new LineEditor(mPaintForeground,mPaintBackground);
+                line.setStartNormalPoint(
+                        p[0] / getWidth(),
+                        p[1] / getHeight());
 
-    @SuppressLint("UseCompatLoadingForDrawables")
+                line.setEndNormalPoint(
+                        p[2] / getWidth(),
+                        p[3] / getHeight()
+                );
+
+                if (durations != null && i < durations.length) {
+                    line.setDuration(Integer.parseInt(durations[i]));
+                }
+
+                mEntities.add(line);
+            }
+
+            Log.d(TAG, "onTouch: COUNT OF LINE POS: "+ mEntities.size());
+            return;
+        }
+
+        EntityEditor entityNew = mEntity.copy();
+
+        entityNew.setStartNormalPoint(
+                mFromX / getWidth(),
+                mFromY / getHeight());
+
+        entityNew.setEndNormalPoint(
+                mToX / getWidth(),
+                mToY / getHeight());
+
+        if (durations != null) {
+            entityNew.setDuration(Integer.parseInt(durations[0]));
+        }
+
+        mEntities.add(entityNew);
+        Log.d(TAG, "onTouch: COUNT OF LINE POS: "+ mEntities.size());
+    }
+
     private void init() {
 
-        mPaintBackground.setColor(Color.GRAY);
+        mPaintBackground.setColor(0x55ffffff);
         mPaintBackground.setStrokeWidth(15.0f);
         mPaintBackground.setStrokeCap(Paint.Cap.ROUND);
 
@@ -60,7 +105,26 @@ public class TraceEditorView extends View implements View.OnTouchListener {
 
         mEntity = new LineEditor(mPaintForeground, mPaintBackground);
 
-        mDrawStencil = getResources().getDrawable(R.drawable.sun);
+        mDialogDuration = new Dialog(getContext());
+        mDialogDuration.setContentView(R.layout.dialog_save_as);
+        mDialogDuration.setCancelable(false);
+
+        EditText editText = mDialogDuration.findViewById(R.id.dialog_save_et_fileName);
+        editText.setHint("Duration(-s)");
+
+        mDialogDuration.findViewById(R.id.dialog_save_btn_save)
+               .setOnClickListener(new OnClickListener() {
+                   @Override
+                   public void onClick(View view) {
+                       String t = editText.getText().toString().trim();
+                       if (t.isEmpty()) {
+                           return;
+                       }
+                       String[] durs = t.split("\\s+");
+                       addEntity(durs);
+                       mDialogDuration.dismiss();
+                   }
+               });
 
         setOnTouchListener(this);
     }
@@ -95,18 +159,11 @@ public class TraceEditorView extends View implements View.OnTouchListener {
         int mid = getHeight() >> 1;
         mMinStrokeWidthY = mid - 200;
         mMaxStrokeWidthY = 200 + mid;
-
-        int x = (int) (getWidth() * 0.5f - 370);
-        int y = (int) (getHeight() * 0.5f - 370);
-
-        mDrawStencil.setBounds(x,y,x+740,y+740);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
-        mDrawStencil.draw(canvas);
 
         canvas.drawLine(0,mMinStrokeWidthY, 50, mMaxStrokeWidthY, mPaintForeground);
         canvas.drawLine(50,mMaxStrokeWidthY, 0, mMaxStrokeWidthY, mPaintForeground);
@@ -139,6 +196,9 @@ public class TraceEditorView extends View implements View.OnTouchListener {
 
         // Rectangle
         canvas.drawRect(300,25,350,75,mPaintForeground);
+
+        // Duration mode
+        canvas.drawLine(25,150,75,150, mPaintBackground);
     }
 
     @Override
@@ -180,6 +240,13 @@ public class TraceEditorView extends View implements View.OnTouchListener {
                     return false;
                 }
 
+                if (event.getX() < 100 && event.getY() > 100
+                        && event.getY() < 200) { // duration mode
+                    mIsDurationMode = !mIsDurationMode;
+                    Toast.makeText(getContext(),"DURATION MODE: " + mIsDurationMode, Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+
                 if (event.getX() < 50
                     && event.getY() > mMinStrokeWidthY
                     && event.getY() < mMaxStrokeWidthY) {
@@ -210,40 +277,11 @@ public class TraceEditorView extends View implements View.OnTouchListener {
                     break;
                 }
 
-                if (mEntity instanceof RectEditor) {
-                    RectEditor rect = (RectEditor) mEntity;
-                    byte countPoints = (byte) rect.getPoints().length;
-                    for (byte i = 0; i < countPoints; i++) {
-                        float[] p = rect.getPoints()[i];
-                        LineEditor line = new LineEditor(mPaintForeground,mPaintBackground);
-                        line.setStartNormalPoint(
-                                p[0] / getWidth(),
-                                p[1] / getHeight());
-
-                        line.setEndNormalPoint(
-                                p[2] / getWidth(),
-                                p[3] / getHeight()
-                        );
-
-                        mEntities.add(line);
-                    }
-
-                    Log.d(TAG, "onTouch: COUNT OF LINE POS: "+ mEntities.size());
+                if (mIsDurationMode) {
+                    mDialogDuration.show();
                     break;
                 }
-
-                EntityEditor entityNew = mEntity.copy();
-
-                entityNew.setStartNormalPoint(
-                        mFromX / getWidth(),
-                        mFromY / getHeight());
-
-                entityNew.setEndNormalPoint(
-                        mToX / getWidth(),
-                        mToY / getHeight());
-
-                mEntities.add(entityNew);
-                Log.d(TAG, "onTouch: COUNT OF LINE POS: "+ mEntities.size());
+                addEntity(null);
                 break;
         }
 

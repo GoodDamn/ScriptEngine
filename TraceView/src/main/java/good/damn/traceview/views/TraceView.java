@@ -110,9 +110,6 @@ public class TraceView extends View implements View.OnTouchListener {
 
     public void setOnTraceFinishListener(OnTraceFinishListener finishListener) {
         mOnTraceFinishListener = finishListener;
-        if (mEntityAnimator != null) {
-            mEntityAnimator.setOnTraceFinishListener(mOnTraceFinishListener);
-        }
     }
 
     public void startAnimation() {

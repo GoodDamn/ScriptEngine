@@ -47,6 +47,6 @@ public class ByteUtils {
 
     public static short Short(byte[] in, int offset) {
         return (short) ((in[offset] & 0xff) << 8 |
-                        in[offset+1] & 0xff);
+                in[offset+1] & 0xff);
     }
 }

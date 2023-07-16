@@ -1,7 +1,6 @@
 package good.damn.traceview.graphics;
 
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.Log;
 
@@ -19,6 +18,8 @@ public abstract class Entity {
     private float mStartNormalY;
     private float mEndNormalX;
     private float mEndNormalY;
+
+    private short mAnimDuration;
 
     protected final Random mRandom = new Random();
 
@@ -59,9 +60,17 @@ public abstract class Entity {
         mPaintDebug.setStyle(Paint.Style.STROKE);
         mPaintDebug.setTextSize(15.0f);
 
-        mPaintBackground.setColor(Color.GRAY);
+        mPaintBackground.setColor(0x55ffffff);
         mPaintBackground.setStrokeWidth(10);
         mPaintBackground.setStrokeCap(Paint.Cap.ROUND);
+    }
+
+    public void setDuration(short duration) {
+        mAnimDuration = duration;
+    }
+
+    public short getDuration() {
+        return mAnimDuration;
     }
 
     public void setColor(int color) {

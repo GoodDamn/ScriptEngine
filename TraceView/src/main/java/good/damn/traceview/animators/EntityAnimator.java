@@ -21,6 +21,7 @@ public abstract class EntityAnimator {
     protected OnTraceFinishListener mOnTraceFinishListener;
 
     protected Entity[] mEntities;
+
     protected float mProgress;
 
     public EntityAnimator() {
