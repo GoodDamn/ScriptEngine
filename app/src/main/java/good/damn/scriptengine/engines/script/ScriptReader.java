@@ -10,12 +10,15 @@ import java.nio.channels.FileChannel;
 import java.util.Arrays;
 
 import good.damn.scriptengine.interfaces.OnFileScriptListener;
+import good.damn.scriptengine.interfaces.ScriptReaderListener;
 import good.damn.scriptengine.utils.Utilities;
 import good.damn.scriptengine.views.TextViewPhrase;
 
 public class ScriptReader {
 
     private static final String TAG = "ScriptReader";
+
+    private ScriptReaderListener mScriptReaderListener;
 
     private final ScriptEngine mScriptEngine;
 
@@ -92,13 +95,17 @@ public class ScriptReader {
             mChunkStream = new FileInputStream(file);
             mChunkStream.read(mBuffer, 0, 4); // dismiss resource length
             mFileLength = (int) file.length();
-            mChunkLength = (int) (mFileLength - Utilities.gn(mBuffer,0));
+            mChunkLength = mFileLength - Utilities.gn(mBuffer,0);
 
             Log.d(TAG, "ScriptReader: LENGTH: FILE: " + file.length() + " CHUNK LENGTH: " + mChunkLength);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void setScriptReaderListener(ScriptReaderListener listener) {
+        mScriptReaderListener = listener;
     }
 
     public void next() {
@@ -111,11 +118,21 @@ public class ScriptReader {
 
         try {
 
+            if (mChunkStream.getChannel().position() >= mChunkLength) { // eof
+                Log.d(TAG, "next: END OF SCRIPTS");
+
+                if (mScriptReaderListener != null) {
+                    mScriptReaderListener.onReadFinish();
+                }
+
+                return;
+            }
+            
             mChunkStream.read(chunkLengthBytes);
 
             int chunkLength = Utilities.gn(chunkLengthBytes,0);
             Log.d(TAG, "next: CHUNK_LENGTH: " + chunkLength + " BYTES:" + Arrays.toString(chunkLengthBytes));
-
+            
             mChunkStream.read(mBuffer,0,chunkLength+2);
 
             Log.d(TAG, "next: BUFFER: " + Arrays.toString(mBuffer));

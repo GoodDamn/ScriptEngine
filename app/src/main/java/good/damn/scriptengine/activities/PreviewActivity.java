@@ -13,6 +13,7 @@ import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.style.ForegroundColorSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -42,6 +43,7 @@ import good.damn.scriptengine.engines.script.interfaces.OnCreateScriptTextViewLi
 import good.damn.scriptengine.engines.script.interfaces.OnReadCommandListener;
 import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
 import good.damn.scriptengine.engines.script.models.ScriptTextConfig;
+import good.damn.scriptengine.interfaces.ScriptReaderListener;
 import good.damn.scriptengine.utils.Utilities;
 import good.damn.scriptengine.views.ColorRevealView;
 import good.damn.scriptengine.views.GifView;
@@ -66,6 +68,16 @@ public class PreviewActivity extends AppCompatActivity {
     private MediaPlayer mAmbientPlayer;
 
     private SoundPool mSFXPool;
+
+    private void releaseResources() {
+        if (mAmbientPlayer != null) {
+            mAmbientPlayer.stop();
+            mAmbientPlayer.release();
+        }
+
+        mSFXPool.autoPause();
+        mSFXPool.release();
+    }
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -124,7 +136,18 @@ public class PreviewActivity extends AppCompatActivity {
 
         ColorRevealView mColorRevealView = new ColorRevealView(this);
 
-        Typeface defTypeface = Typeface.createFromAsset(getAssets(), "mplus_rounded1c_thin.ttf");
+        Typeface defTypeface = Typeface.createFromAsset(getAssets(), "mplus_rounded1c_bold.ttf");
+
+        scriptReader.setScriptReaderListener(new ScriptReaderListener() {
+            @Override
+            public void onReadFinish() {
+                root_FrameLayout.setEnabled(false);
+                new Handler().postDelayed(() -> {
+                    releaseResources();
+                    finish();
+                }, 3000);
+            }
+        });
 
         scriptEngine.setReadCommandListener(new OnReadCommandListener() {
             @Override
@@ -343,13 +366,7 @@ public class PreviewActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        if (mAmbientPlayer != null) {
-            mAmbientPlayer.stop();
-            mAmbientPlayer.release();
-        }
-
-        mSFXPool.autoPause();
-        mSFXPool.release();
+        releaseResources();
     }
 
     @Override
