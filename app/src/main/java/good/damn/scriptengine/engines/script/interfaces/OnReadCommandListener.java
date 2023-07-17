@@ -19,5 +19,5 @@ public interface OnReadCommandListener {
 
     void onError(String errorMsg);
 
-    void onVector(byte[] vect);
+    void onVector(byte[] vect, String[] advancedText);
 }

@@ -15,6 +15,7 @@ import good.damn.traceview.graphics.Entity;
 import good.damn.traceview.graphics.Line;
 import good.damn.traceview.interfaces.OnDrawTracesListener;
 import good.damn.traceview.interfaces.OnTraceFinishListener;
+import good.damn.traceview.interfaces.OnVectorAnimationListener;
 import good.damn.traceview.models.FileSVC;
 
 public class TraceView extends View implements View.OnTouchListener {
@@ -30,6 +31,7 @@ public class TraceView extends View implements View.OnTouchListener {
         }
     };
 
+    private OnVectorAnimationListener mOnVectorAnimationListener;
     private OnTraceFinishListener mOnTraceFinishListener;
     private OnDrawTracesListener mOnDrawTracesListener;
 
@@ -103,8 +105,17 @@ public class TraceView extends View implements View.OnTouchListener {
         mEntityAnimator.setTraceView(this);
         mEntityAnimator.setEntities(mEntities);
         mEntityAnimator.setOnTraceFinishListener(mOnTraceFinishListener);
+        mEntityAnimator.setOnVectorAnimationListener(mOnVectorAnimationListener);
 
         calculate();
+    }
+
+    public void setOnVectorAnimationListener(OnVectorAnimationListener finishListener) {
+        mOnVectorAnimationListener = finishListener;
+        if (mEntityAnimator == null) {
+            return;
+        }
+        mEntityAnimator.setOnVectorAnimationListener(finishListener);
     }
 
     public void setOnTraceFinishListener(OnTraceFinishListener finishListener) {

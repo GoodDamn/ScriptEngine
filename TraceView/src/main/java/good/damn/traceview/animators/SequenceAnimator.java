@@ -23,6 +23,11 @@ public class SequenceAnimator extends EntityAnimator{
         addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationEnd(@NonNull Animator animator) {
+
+                if (mOnVectorAnimationListener != null) {
+                    mOnVectorAnimationListener.onFinish(mCurrentEntityIndex);
+                }
+
                 mCurrentEntityIndex++;
                 if (mCurrentEntityIndex >= mEntities.length) {
                     if (mOnTraceFinishListener != null) {
@@ -36,7 +41,11 @@ public class SequenceAnimator extends EntityAnimator{
                 setDuration(mCurrentEntity.getDuration());
                 SequenceAnimator.super.start();
             }
-            @Override public void onAnimationStart(@NonNull Animator animator) {}
+            @Override public void onAnimationStart(@NonNull Animator animator) {
+                if (mOnVectorAnimationListener != null) {
+                    mOnVectorAnimationListener.onStart(mCurrentEntityIndex);
+                }
+            }
             @Override public void onAnimationCancel(@NonNull Animator animator) {}
             @Override public void onAnimationRepeat(@NonNull Animator animator) {}
         });

@@ -241,7 +241,7 @@ public class ScriptEngine {
                     }
 
                     if (mOnReadCommandListener != null) {
-                        mOnReadCommandListener.onVector(vect);
+                        mOnReadCommandListener.onVector(vect,textConfig.mAdvancedText);
                     }
                     break;
                 default:

@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 
 import good.damn.traceview.graphics.Entity;
 import good.damn.traceview.interfaces.OnTraceFinishListener;
+import good.damn.traceview.interfaces.OnVectorAnimationListener;
 import good.damn.traceview.views.TraceView;
 
 public abstract class EntityAnimator {
@@ -19,6 +20,7 @@ public abstract class EntityAnimator {
     private TraceView mTraceView;
 
     protected OnTraceFinishListener mOnTraceFinishListener;
+    protected OnVectorAnimationListener mOnVectorAnimationListener;
 
     protected Entity[] mEntities;
 
@@ -49,6 +51,10 @@ public abstract class EntityAnimator {
 
     public void setEntities(Entity[] entities) {
         mEntities = entities;
+    }
+
+    public void setOnVectorAnimationListener(OnVectorAnimationListener listener) {
+        mOnVectorAnimationListener = listener;
     }
 
     public void setOnTraceFinishListener(OnTraceFinishListener listener) {

@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 import android.view.ViewPropertyAnimator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.ViewAnimator;
 
 import androidx.annotation.NonNull;
@@ -51,6 +52,7 @@ import good.damn.scriptengine.views.TextViewPhrase;
 import good.damn.textviewset.TextViewSet;
 import good.damn.textviewset.interfaces.TextViewSetListener;
 import good.damn.traceview.interfaces.OnTraceFinishListener;
+import good.damn.traceview.interfaces.OnVectorAnimationListener;
 import good.damn.traceview.models.FileSVC;
 import good.damn.traceview.utils.FileUtils;
 import good.damn.traceview.views.TraceView;
@@ -138,7 +140,7 @@ public class PreviewActivity extends AppCompatActivity {
 
         ColorRevealView mColorRevealView = new ColorRevealView(this);
 
-        Typeface defTypeface = Typeface.createFromAsset(getAssets(), "mplus_rounded1c_bold.ttf");
+        Typeface defTypeface = Typeface.createFromAsset(getAssets(), "mplus_rounded1c_thin.ttf");
 
         scriptReader.setScriptReaderListener(new ScriptReaderListener() {
             @Override
@@ -245,12 +247,45 @@ public class PreviewActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onVector(byte[] vect) {
+            public void onVector(byte[] vect, String[] advancedText) {
                 root_FrameLayout.setEnabled(false);
 
                 mHasTraceView = true;
-
                 TraceView traceView = new TraceView(PreviewActivity.this);
+                TextViewSet textViewSet = null;
+
+                if (advancedText != null) {
+                    textViewSet = new TextViewSet(context);
+                }
+
+                final TextViewSet finalTextViewSet = textViewSet;
+
+                if (finalTextViewSet != null) {
+                    textViewSet.setBackgroundColor(0);
+                    textViewSet.setAntiAlias(true);
+                    textViewSet.setTextColor(mCurrentTextColor);
+                    textViewSet.setTextSize(15.0f * metrics.density);
+                    textViewSet.setTypeface(defTypeface);
+                    String[] s = new String[advancedText.length-1];
+                    for (byte i = 1; i < advancedText.length; i++) {
+                        s[i-1] = advancedText[i];
+                    }
+                    textViewSet.setSource(s);
+                    textViewSet.setAnimation(TextViewSet.ANIMATION_ALPHA);
+
+                    traceView.setOnVectorAnimationListener(new OnVectorAnimationListener() {
+                        @Override
+                        public void onStart(byte index) {
+                            finalTextViewSet.next(index);
+                        }
+                        @Override public void onFinish(byte index) {}
+                    });
+
+                    root_FrameLayout.addView(textViewSet,
+                            FrameLayout.LayoutParams.MATCH_PARENT,
+                            FrameLayout.LayoutParams.MATCH_PARENT);
+                }
+
                 traceView.setId(ViewCompat.generateViewId());
                 traceView.setBackgroundColor(0);
 
@@ -266,12 +301,19 @@ public class PreviewActivity extends AppCompatActivity {
                             mCurrentViewPhrase.fadeOutTransition(sRandom, 2.1f);
                         }
 
-                        scriptReader.next();
+                        if (finalTextViewSet != null) {
+                            finalTextViewSet.animate()
+                                    .alpha(0.0f)
+                                    .withEndAction(()->root_FrameLayout.removeView(finalTextViewSet))
+                                    .start();
+                        }
 
                         traceView.animate()
                                 .alpha(0.0f)
                                 .withEndAction(()-> root_FrameLayout.removeView(traceView))
                                 .start();
+
+                        scriptReader.next();
                     }
                 });
 
@@ -283,9 +325,8 @@ public class PreviewActivity extends AppCompatActivity {
 
                 traceView.animate()
                         .alpha(1.0f)
-                        .withEndAction(traceView::startAnimation)
                         .setDuration(1650)
-                        .start();
+                        .withEndAction(traceView::startAnimation).start();
             }
 
             @Override
@@ -298,10 +339,12 @@ public class PreviewActivity extends AppCompatActivity {
             @Override
             public void onCreate(ScriptTextConfig textConfig) {
 
-                if (textConfig.mAdvancedText != null) {
+                if (!(mHasTraceView || textConfig.mAdvancedText == null)) {
                     root_FrameLayout.setEnabled(false);
+
                     TextViewSet textViewSet = new TextViewSet(context);
                     textViewSet.setBackgroundColor(0);
+                    textViewSet.setAntiAlias(true);
                     textViewSet.setTextInterval(10.0f * metrics.density);
                     textViewSet.setTypeface(defTypeface);
                     textViewSet.setTextColor(mCurrentTextColor);
