@@ -48,6 +48,8 @@ import good.damn.scriptengine.utils.Utilities;
 import good.damn.scriptengine.views.ColorRevealView;
 import good.damn.scriptengine.views.GifView;
 import good.damn.scriptengine.views.TextViewPhrase;
+import good.damn.textviewset.TextViewSet;
+import good.damn.textviewset.interfaces.TextViewSetListener;
 import good.damn.traceview.interfaces.OnTraceFinishListener;
 import good.damn.traceview.models.FileSVC;
 import good.damn.traceview.utils.FileUtils;
@@ -171,7 +173,10 @@ public class PreviewActivity extends AppCompatActivity {
                 imageView.setX(scriptImage.x * metrics.widthPixels);
                 imageView.setY(scriptImage.y * metrics.heightPixels);
 
-                imageView.animate().scaleY(1.0f).scaleX(1.0f).withEndAction(() ->
+                imageView.animate()
+                        .scaleY(1.0f)
+                        .scaleX(1.0f)
+                        .withEndAction(() ->
                                 imageView.animate().scaleX(.0f).scaleY(.0f).setStartDelay(1250).withEndAction(() ->
                                         root_FrameLayout.removeView(imageView)).start())
                         .start();
@@ -281,8 +286,6 @@ public class PreviewActivity extends AppCompatActivity {
                         .withEndAction(traceView::startAnimation)
                         .setDuration(1650)
                         .start();
-
-
             }
 
             @Override
@@ -294,6 +297,39 @@ public class PreviewActivity extends AppCompatActivity {
         scriptEngine.setOnCreateViewListener(new OnCreateScriptTextViewListener() {
             @Override
             public void onCreate(ScriptTextConfig textConfig) {
+
+                if (textConfig.mAdvancedText != null) {
+                    root_FrameLayout.setEnabled(false);
+                    TextViewSet textViewSet = new TextViewSet(context);
+                    textViewSet.setBackgroundColor(0);
+                    textViewSet.setTextInterval(10.0f * metrics.density);
+                    textViewSet.setTypeface(defTypeface);
+                    textViewSet.setTextColor(mCurrentTextColor);
+                    textViewSet.setTextSize(textConfig.textSize * metrics.density);
+                    textViewSet.setSource(textConfig.mAdvancedText);
+
+                    textViewSet.setListener(new TextViewSetListener() {
+                        @Override
+                        public void onFinish() {
+                            scriptReader.next();
+                            root_FrameLayout.setEnabled(true);
+
+                            textViewSet.animate()
+                                    .alpha(0)
+                                    .translationY(265*metrics.density)
+                                    .setDuration(1850)
+                                    .withEndAction(()-> root_FrameLayout.removeView(textViewSet))
+                                    .start();
+                        }
+                    });
+
+                    root_FrameLayout.addView(textViewSet,
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT);
+                    textViewSet.start();
+                    return;
+                }
+
                 TextViewPhrase phrase = new TextViewPhrase(context);
 
                 if (mHorizontalPadding == -1) {

@@ -114,9 +114,15 @@ public class ScriptEngine {
         System.arraycopy(chunk, offset,textBytes,0,textLength);
 
         String text = new String(textBytes, StandardCharsets.UTF_8).trim();
-
         ScriptTextConfig textConfig = new ScriptTextConfig();
-        textConfig.spannableString = new SpannableString(text);
+
+        String[] advancedText = text.split("\\|");
+
+        if (advancedText.length != 1) {
+            textConfig.mAdvancedText = advancedText;
+        }
+
+        textConfig.spannableString = new SpannableString(advancedText[0]);
 
         Log.d(TAG, "read: TEXT_BYTES_LENGTH: " + textBytes.length + " TEXT_LENGTH: " + textLength + " TEXT:" + text);
 
@@ -237,7 +243,6 @@ public class ScriptEngine {
                     if (mOnReadCommandListener != null) {
                         mOnReadCommandListener.onVector(vect);
                     }
-
                     break;
                 default:
                     mOnReadCommandListener.onError("Invalid command index: " + commandIndex);
