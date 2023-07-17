@@ -18,3 +18,4 @@ dependencyResolutionManagement {
 rootProject.name = "ScriptEngine"
 include ':app'
 include ':TraceView'
+include ':textviewset'

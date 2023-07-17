@@ -266,17 +266,14 @@ public class PreviewActivity extends AppCompatActivity {
                     textViewSet.setTextColor(mCurrentTextColor);
                     textViewSet.setTextSize(15.0f * metrics.density);
                     textViewSet.setTypeface(defTypeface);
-                    String[] s = new String[advancedText.length-1];
-                    for (byte i = 1; i < advancedText.length; i++) {
-                        s[i-1] = advancedText[i];
-                    }
-                    textViewSet.setSource(s);
+                    advancedText[0] = "";
+                    textViewSet.setSource(advancedText);
                     textViewSet.setAnimation(TextViewSet.ANIMATION_ALPHA);
 
                     traceView.setOnVectorAnimationListener(new OnVectorAnimationListener() {
                         @Override
                         public void onStart(byte index) {
-                            finalTextViewSet.next(index);
+                            finalTextViewSet.next(index+1);
                         }
                         @Override public void onFinish(byte index) {}
                     });
