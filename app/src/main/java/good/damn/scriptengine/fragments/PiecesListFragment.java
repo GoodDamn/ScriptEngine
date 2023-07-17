@@ -196,6 +196,8 @@ public class PiecesListFragment extends Fragment {
                             return;
                         }
 
+                        mFileNameSSE = null;
+
                         Utilities.showMessage("PASTED", context);
                         String data = clipboardManager
                                 .getPrimaryClip()
@@ -203,6 +205,19 @@ public class PiecesListFragment extends Fragment {
                                 .getText()
                                 .toString();
 
+                        //Add items to the top
+
+                        String[] arr = data.split("\\n+");
+                        for (byte i = (byte) (arr.length-1); i >= 0; i--) {
+                            mPieces.add(0,new Piece(
+                                    FileReaderUtils.BlankChunk(arr[i].getBytes(StandardCharsets.UTF_8)),
+                                    arr[i]));
+                        }
+
+                        piecesAdapter.setPieces(mPieces);
+                        piecesAdapter.notifyItemRangeInserted(0,arr.length);
+
+                        /*
                         mPieces = new ArrayList<>();
 
                         String[] arr = data.split("\\n+");
@@ -213,7 +228,7 @@ public class PiecesListFragment extends Fragment {
                         }
 
                         piecesAdapter.setPieces(mPieces);
-                        piecesAdapter.notifyDataSetChanged();
+                        piecesAdapter.notifyDataSetChanged();*/
                         mTouchesToPaste = 0;
                     }
                 });
