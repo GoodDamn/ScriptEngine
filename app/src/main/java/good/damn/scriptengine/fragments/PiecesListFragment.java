@@ -59,10 +59,9 @@ public class PiecesListFragment extends Fragment {
     private OnClickTextPiece mOnClickTextPiece;
     private View.OnClickListener mOnResFolderClickListener;
 
-    private ArrayList<Piece> mPieces = null;
+    private String[] mClipData;
 
-    private byte mTouchesToPaste = 0;
-    private long mCurrentTime = 0;
+    private ArrayList<Piece> mPieces = null;
 
     private String mFileNameSSE = null;
 
@@ -112,6 +111,58 @@ public class PiecesListFragment extends Fragment {
         PiecesAdapter piecesAdapter = new PiecesAdapter(mPieces, mOnClickTextPiece);
 
         piecesRecyclerView.setAdapter(piecesAdapter);
+
+        Dialog dialogPaste = new Dialog(context);
+        dialogPaste.setCancelable(true);
+        dialogPaste.setContentView(R.layout.dialog_how_to_paste);
+
+        dialogPaste.findViewById(R.id.dialog_paste_btn_top)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        for (byte i = (byte) (mClipData.length-1); i >= 0; i--) {
+                            mPieces.add(0,new Piece(
+                                    FileReaderUtils.BlankChunk(mClipData[i].getBytes(StandardCharsets.UTF_8)),
+                                    mClipData[i]));
+                        }
+                        piecesAdapter.setPieces(mPieces);
+                        piecesAdapter.notifyItemRangeInserted(0, mClipData.length);
+
+                        dialogPaste.cancel();
+                    }
+                });
+
+        dialogPaste.findViewById(R.id.dialog_paste_btn_replace)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mPieces.clear();
+                        for (String mClipDatum : mClipData) {
+                            mPieces.add(new Piece(
+                                    FileReaderUtils.BlankChunk(mClipDatum.getBytes(StandardCharsets.UTF_8)),
+                                    mClipDatum));
+                        }
+                        piecesAdapter.setPieces(mPieces);
+                        piecesAdapter.notifyDataSetChanged();
+                        dialogPaste.cancel();
+                    }
+                });
+
+        dialogPaste.findViewById(R.id.dialog_paste_btn_bottom)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        int oldLength = mClipData.length;
+                        for (byte i = 0; i <mClipData.length; i++) {
+                            mPieces.add(new Piece(
+                                    FileReaderUtils.BlankChunk(mClipData[i].getBytes(StandardCharsets.UTF_8)),
+                                    mClipData[i]));
+                        }
+                        piecesAdapter.setPieces(mPieces);
+                        piecesAdapter.notifyItemRangeInserted(oldLength, oldLength+mClipData.length);
+                        dialogPaste.cancel();
+                    }
+                });
 
         v.findViewById(R.id.f_pieces_list_open_scripts)
                 .setOnClickListener(new View.OnClickListener() {
@@ -185,17 +236,6 @@ public class PiecesListFragment extends Fragment {
                     @Override
                     public void onClick(View view) {
 
-                        if (mCurrentTime + 1500 < System.currentTimeMillis()) {
-                            mTouchesToPaste = 0;
-                            mCurrentTime = System.currentTimeMillis();
-                        }
-
-                        if (mTouchesToPaste < 2) {
-                            mTouchesToPaste++;
-                            Utilities.showMessage("TOUCHES TO PASTE: " + (3-mTouchesToPaste), context);
-                            return;
-                        }
-
                         mFileNameSSE = null;
 
                         Utilities.showMessage("PASTED", context);
@@ -205,31 +245,9 @@ public class PiecesListFragment extends Fragment {
                                 .getText()
                                 .toString();
 
-                        //Add items to the top
+                        mClipData = data.split("\\n+");
 
-                        String[] arr = data.split("\\n+");
-                        for (byte i = (byte) (arr.length-1); i >= 0; i--) {
-                            mPieces.add(0,new Piece(
-                                    FileReaderUtils.BlankChunk(arr[i].getBytes(StandardCharsets.UTF_8)),
-                                    arr[i]));
-                        }
-
-                        piecesAdapter.setPieces(mPieces);
-                        piecesAdapter.notifyItemRangeInserted(0,arr.length);
-
-                        /*
-                        mPieces = new ArrayList<>();
-
-                        String[] arr = data.split("\\n+");
-                        for (String t: arr) {
-                            mPieces.add(new Piece(
-                                    FileReaderUtils.BlankChunk(t.getBytes(StandardCharsets.UTF_8)),
-                                    t));
-                        }
-
-                        piecesAdapter.setPieces(mPieces);
-                        piecesAdapter.notifyDataSetChanged();*/
-                        mTouchesToPaste = 0;
+                        dialogPaste.show();
                     }
                 });
 

@@ -261,7 +261,7 @@ public class ScriptEngine {
         }
 
         File[] files = file.listFiles();
-        if (files == null){
+        if (files == null) {
             return;
         }
 
