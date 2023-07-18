@@ -29,7 +29,7 @@ public abstract class Entity {
     protected final Paint mPaintBackground = new Paint();
     protected final Paint mPaintDebug = new Paint();
 
-    protected final int mStickBound = 25;
+    protected int mStickBound = 25;
 
     protected float mTraceStartX = 0;
     protected float mTraceStartY = 0;
@@ -51,7 +51,7 @@ public abstract class Entity {
                 curY-mStickBound < y && y < curY+mStickBound;
     }
 
-    public Entity() {
+    public Entity(float density) {
         mPaintForeground.setColor(0xff00ff59);
         mPaintForeground.setStrokeWidth(10);
         mPaintForeground.setStrokeCap(Paint.Cap.ROUND);
@@ -63,6 +63,8 @@ public abstract class Entity {
         mPaintBackground.setColor(0x55ffffff);
         mPaintBackground.setStrokeWidth(10);
         mPaintBackground.setStrokeCap(Paint.Cap.ROUND);
+
+        mStickBound = (int) (25 * density);
     }
 
     public void setDuration(short duration) {

@@ -289,7 +289,7 @@ public class PiecesListFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 assert context != null;
-                Utilities.showMessage("LINKING...",context);
+                //Utilities.showMessage("LINKING...",context);
 
                 long current = System.currentTimeMillis();
                 new Thread(()->{
@@ -302,7 +302,7 @@ public class PiecesListFragment extends Fragment {
 
                     new Handler(Looper.getMainLooper())
                             .post(()->{
-                                Utilities.showMessage("STARTING PREVIEW PROCESS AFTER " + (System.currentTimeMillis()-current) + "ms", context);
+                                //Utilities.showMessage("STARTING PREVIEW PROCESS AFTER " + (System.currentTimeMillis()-current) + "ms", context);
                                 Intent intent = new Intent(getActivity(), PreviewActivity.class);
                                 intent.putExtra("dumbPath", path);
                                 startActivity(intent);

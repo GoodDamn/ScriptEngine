@@ -124,6 +124,18 @@ public class AddFilesAdapter extends FilesAdapter {
                             Log.d(TAG, "onImageFile: " + file);
                             copyFile(file);
                         }
+
+                        @Override
+                        public void onVectorFile(File file) {
+                            Log.d(TAG, "onVectorFile: " + file);
+                            copyFile(file);
+                        }
+
+                        @Override
+                        public void onFile(File file, String extension) {
+                            Log.d(TAG, "onFile: " + file);
+                            copyFile(file);
+                        }
                     });
                 }
             });

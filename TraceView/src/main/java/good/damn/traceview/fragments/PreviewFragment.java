@@ -22,9 +22,10 @@ public class PreviewFragment extends Fragment {
     private static final String TAG = "PreviewFragment";
 
     private TraceView mTraceView;
+    private float mDensity = 1.0f;
 
     public void startPreview(String path) {
-        FileSVC fileSVC = FileUtils.retrieveSVCFile(path,getContext());
+        FileSVC fileSVC = FileUtils.retrieveSVCFile(path,getContext(),mDensity);
         if (fileSVC == null) {
             Log.d(TAG, "startPreview: FILE.svc IS NULL");
             return;
@@ -42,6 +43,8 @@ public class PreviewFragment extends Fragment {
 
         mTraceView = new TraceView(context);
         mTraceView.setBackgroundColor(0);
+
+        mDensity = context.getResources().getDisplayMetrics().density;
 
         mTraceView.setOnTraceFinishListener(new OnTraceFinishListener() {
             @Override

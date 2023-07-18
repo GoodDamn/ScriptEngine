@@ -24,6 +24,10 @@ public class Line extends Entity {
     private boolean mIsXBigger = false;
     private boolean mDoesItTouchPivot = false;
 
+    public Line(float density) {
+        super(density);
+    }
+
     @Override
     public void onDraw(Canvas canvas) {
         // Background line

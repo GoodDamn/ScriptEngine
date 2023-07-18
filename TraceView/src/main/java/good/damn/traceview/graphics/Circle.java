@@ -24,7 +24,8 @@ public class Circle extends Entity {
     private float mPivotPointTrigger = 5.0f;
 
 
-    public Circle() {
+    public Circle(float density) {
+        super(density);
         mPaintBackground.setStyle(Paint.Style.STROKE);
         mPaintForeground.setStyle(Paint.Style.STROKE);
     }

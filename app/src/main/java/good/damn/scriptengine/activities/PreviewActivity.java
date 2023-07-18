@@ -97,6 +97,9 @@ public class PreviewActivity extends AppCompatActivity {
 
         Context context = this;
 
+
+        float dp = context.getResources().getDisplayMetrics().density;
+
         String path = getIntent().getStringExtra("dumbPath");
 
         if (path == null) {
@@ -291,7 +294,7 @@ public class PreviewActivity extends AppCompatActivity {
                 traceView.setId(ViewCompat.generateViewId());
                 traceView.setBackgroundColor(0);
 
-                FileSVC fileSVC = FileUtils.retrieveSVCFile(vect);
+                FileSVC fileSVC = FileUtils.retrieveSVCFile(vect,dp);
 
                 traceView.setVectorsSource(fileSVC);
                 traceView.setOnTraceFinishListener(new OnTraceFinishListener() {
@@ -341,6 +344,10 @@ public class PreviewActivity extends AppCompatActivity {
             @Override
             public void onCreate(ScriptTextConfig textConfig) {
 
+                if (textConfig.textColor != 0xff000000) {
+                    mCurrentTextColor = textConfig.textColor;
+                }
+
                 if (!(mHasTraceView || textConfig.mAdvancedText == null)) {
                     root_FrameLayout.setEnabled(false);
 
@@ -356,13 +363,14 @@ public class PreviewActivity extends AppCompatActivity {
                     textViewSet.setListener(new TextViewSetListener() {
                         @Override
                         public void onFinish() {
-                            scriptReader.next();
-                            root_FrameLayout.setEnabled(true);
-
                             textViewSet.animate()
                                     .alpha(0)
                                     .translationY(265*metrics.density)
                                     .setDuration(1850)
+                                    .withStartAction(()-> {
+                                        scriptReader.next();
+                                        root_FrameLayout.setEnabled(true);
+                                    }).setStartDelay(700)
                                     .withEndAction(()-> root_FrameLayout.removeView(textViewSet))
                                     .start();
                         }
@@ -382,10 +390,6 @@ public class PreviewActivity extends AppCompatActivity {
                         mTextYWithTraceView = (int) (phrase.getHeight() * 0.35f);
                         mHorizontalPadding = (int) (phrase.getWidth() * 0.1f);
                     });
-                }
-
-                if (textConfig.textColor != 0xff000000) {
-                    mCurrentTextColor = textConfig.textColor;
                 }
 
                 phrase.setTextColor(mCurrentTextColor);

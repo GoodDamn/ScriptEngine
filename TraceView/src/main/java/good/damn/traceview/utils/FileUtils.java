@@ -80,7 +80,7 @@ public class FileUtils {
         }
     }
 
-    public static FileSVC retrieveSVCFile(InputStream fis)
+    public static FileSVC retrieveSVCFile(InputStream fis, float density)
             throws IOException {
         Entity[] entities;
         byte fileConfig = (byte) fis.read();
@@ -119,10 +119,10 @@ public class FileUtils {
 
             switch (fis.read()) {
                 case 1:
-                    entity = new Circle();
+                    entity = new Circle(density);
                     break;
                 default:
-                    entity = new Line();
+                    entity = new Line(density);
                     break;
             }
 
@@ -165,18 +165,18 @@ public class FileUtils {
         return fileSVC;
     }
 
-    public static FileSVC retrieveSVCFile(byte[] in) {
+    public static FileSVC retrieveSVCFile(byte[] in, float density) {
         try {
-            return retrieveSVCFile(new ByteArrayInputStream(in));
+            return retrieveSVCFile(new ByteArrayInputStream(in),density);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    public static FileSVC retrieveSVCFile(String path, Context context) {
+    public static FileSVC retrieveSVCFile(String path, Context context, float density) {
         try {
-            return retrieveSVCFile(new FileInputStream(context.getCacheDir() + path));
+            return retrieveSVCFile(new FileInputStream(context.getCacheDir() + path),density);
         } catch (IOException e) {
             e.printStackTrace();
         }
