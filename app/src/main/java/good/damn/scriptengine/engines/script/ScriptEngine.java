@@ -38,7 +38,6 @@ public class ScriptEngine {
 
     private OnReadCommandListener mOnReadCommandListener;
 
-
     public void setOnCreateViewListener(OnCreateScriptTextViewListener configureViewListener) {
         mOnCreateScriptTextViewListener = configureViewListener;
     }
@@ -253,8 +252,36 @@ public class ScriptEngine {
         mOnCreateScriptTextViewListener.onCreate(textConfig);
     }
 
+    public static void releaseResources(Context context) {
+        Log.d(TAG, "releaseResources: CLEARING TEMP FOLDER...");
+        File file = new File(context.getCacheDir() + "/tempTopic");
 
-    public static File createTempFile(byte[] file,String extension,File dir) throws IOException {
+        if (!file.exists()) {
+            return;
+        }
+
+        File[] files = file.listFiles();
+        if (files == null){
+            return;
+        }
+
+        for (File temp: files) {
+            if (temp.delete()) {
+                Log.d(TAG, "releaseResources:" + temp.getName() + " IS CLEARED FROM TEMP FOLDER");
+            }
+        }
+    }
+
+    public static File createTempFile(byte[] file,String extension,Context context) throws IOException {
+
+        File dir = new File(context.getCacheDir() + "/tempTopic");
+
+        if (!dir.exists()) {
+            if (dir.mkdir()) {
+                Log.d(TAG, "createTempFile: DIRECTORY HAS BEEN CREATED");
+            }
+        }
+
         File tempAmbient = File.createTempFile(
                 String.valueOf(System.currentTimeMillis()),
                 extension,
@@ -263,8 +290,6 @@ public class ScriptEngine {
         FileOutputStream fos = new FileOutputStream(tempAmbient);
         fos.write(file);
         fos.close();
-
-        tempAmbient.deleteOnExit();
 
         return tempAmbient;
     }

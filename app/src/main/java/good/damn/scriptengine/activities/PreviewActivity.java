@@ -74,6 +74,9 @@ public class PreviewActivity extends AppCompatActivity {
     private SoundPool mSFXPool;
 
     private void releaseResources() {
+
+        Log.d(TAG, "releaseResources: ");
+
         if (mAmbientPlayer != null) {
             mAmbientPlayer.stop();
             mAmbientPlayer.release();
@@ -81,6 +84,8 @@ public class PreviewActivity extends AppCompatActivity {
 
         mSFXPool.autoPause();
         mSFXPool.release();
+
+        ScriptEngine.releaseResources(this);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -214,7 +219,7 @@ public class PreviewActivity extends AppCompatActivity {
                     File tempSFX = ScriptEngine.createTempFile(
                             sfx,
                             ".mp3",
-                            context.getCacheDir()
+                            context
                     );
 
                     mSFXPool.load(tempSFX.getPath(), 1);
@@ -231,7 +236,7 @@ public class PreviewActivity extends AppCompatActivity {
                     File tempAmbient = ScriptEngine.createTempFile(
                             ambientMusic,
                             ".mp3",
-                            context.getCacheDir());
+                            context);
 
                     if (mAmbientPlayer == null) { // First start
                         mAmbientPlayer = MediaPlayer.create(context, Uri.fromFile(tempAmbient));
