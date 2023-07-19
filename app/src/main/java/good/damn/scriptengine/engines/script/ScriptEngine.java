@@ -1,10 +1,20 @@
 package good.damn.scriptengine.engines.script;
 
 import android.content.Context;
+import android.graphics.BitmapFactory;
+import android.graphics.Movie;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.SoundPool;
+import android.net.Uri;
+import android.os.Build;
 import android.text.SpannableString;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -19,7 +29,10 @@ import good.damn.scriptengine.engines.script.utils.ScriptCommandsUtils;
 import good.damn.scriptengine.engines.script.utils.ScriptDefinerUtils;
 import good.damn.scriptengine.interfaces.OnFileScriptListener;
 import good.damn.scriptengine.engines.script.models.ScriptBuildResult;
+import good.damn.scriptengine.utils.FileOutputUtils;
+import good.damn.scriptengine.utils.FileUtils;
 import good.damn.scriptengine.utils.Utilities;
+import good.damn.traceview.utils.ByteUtils;
 
 public class ScriptEngine {
 
@@ -32,11 +45,31 @@ public class ScriptEngine {
     public static final byte READ_AMBIENT = 6;
     public static final byte READ_VECTOR = 7;
 
+    private SoundPool mSFXPool;
+
     private OnCreateScriptTextViewListener mOnCreateScriptTextViewListener;
 
     private OnFileScriptListener mOnFileScriptListener;
 
     private OnReadCommandListener mOnReadCommandListener;
+
+    public ScriptEngine() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .build();
+
+            mSFXPool = new SoundPool.Builder()
+                    .setMaxStreams(3)
+                    .setAudioAttributes(audioAttributes)
+                    .build();
+            return;
+        }
+
+        mSFXPool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
+    }
 
     public void setOnCreateViewListener(OnCreateScriptTextViewListener configureViewListener) {
         mOnCreateScriptTextViewListener = configureViewListener;
@@ -250,6 +283,76 @@ public class ScriptEngine {
             j += argSize;
         }
         mOnCreateScriptTextViewListener.onCreate(textConfig);
+    }
+
+    public void loadResources(File skcFile, Context context) {
+
+        try {
+            FileInputStream fis = new FileInputStream(skcFile);
+            byte[] bufInt = new byte[4];
+
+            fis.read(bufInt);
+
+            int resLength = ByteUtils.integer(bufInt);
+
+            int resPosition = (int) (skcFile.length()-resLength-4);
+
+            fis.skip(resPosition);
+
+            byte resCount = (byte) fis.read();
+
+            Object[] files = new Object[resCount];
+
+            int prevPos = 0;
+            int currentPos;
+            int fileLength;
+
+            int fileSectionPos = resCount * 4;
+
+            byte sfxID = 0;
+            byte[] file;
+
+            for (byte i = 0; i < 7; i++) {
+                fis.read(bufInt); // end file position
+                currentPos = ByteUtils.integer(bufInt);
+                fileLength = currentPos - prevPos;
+
+                file = new byte[fileLength];
+
+                int ret = fileSectionPos-(i+1)*4;
+
+                fis.skip(ret);
+                // Read file content
+                // Read header file
+                byte h = (byte) fis.read();
+                Log.d(TAG, "loadResources: HEADER: " + h);
+                fis.skip(-1);
+                fis.read(file);
+                if (h == 71) { // GIF
+                    files[i] = Movie.decodeByteArray(file,0,file.length);
+                } else if (h == 37) { // PNG
+                    files[i] = BitmapFactory.decodeByteArray(file,0,file.length);
+                } else if (h == 73) { // MP3
+                    File tempFile = ScriptEngine.createTempFile(file, ".mp3",context);
+                    if (fileLength <= 1048576) { // 1 MB
+                        files[i] = sfxID;
+                        mSFXPool.load(tempFile.getAbsolutePath(),1);
+                        sfxID++;
+                    } else {
+                        MediaPlayer player = MediaPlayer.create(context, Uri.fromFile(tempFile));
+                        player.setLooping(true);
+
+
+                        files[i] = player;
+                    }
+                }
+
+                fis.skip(-fileLength-ret);
+            }
+            fis.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void releaseResources(Context context) {

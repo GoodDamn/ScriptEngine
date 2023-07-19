@@ -69,21 +69,21 @@ public class PreviewActivity extends AppCompatActivity {
 
     private TextViewPhrase mCurrentViewPhrase;
 
-    private MediaPlayer mAmbientPlayer;
+    //private MediaPlayer mAmbientPlayer;
 
-    private SoundPool mSFXPool;
+    //private SoundPool mSFXPool;
 
     private void releaseResources() {
 
         Log.d(TAG, "releaseResources: ");
 
-        if (mAmbientPlayer != null) {
+        /*if (mAmbientPlayer != null) {
             mAmbientPlayer.stop();
             mAmbientPlayer.release();
         }
 
         mSFXPool.autoPause();
-        mSFXPool.release();
+        mSFXPool.release();*/
 
         ScriptEngine.releaseResources(this);
     }
@@ -96,7 +96,6 @@ public class PreviewActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate: INITIALIZING CONTENT FILE .SKC");
 
         Context context = this;
-
 
         float dp = context.getResources().getDisplayMetrics().density;
 
@@ -111,22 +110,7 @@ public class PreviewActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate: PATH TO CONTENT: " + path);
 
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-
-            AudioAttributes audioAttributes = new AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .build();
-
-            mSFXPool = new SoundPool.Builder()
-                    .setMaxStreams(10)
-                    .setAudioAttributes(audioAttributes)
-                    .build();
-        } else {
-            mSFXPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
-        }
-
-        mSFXPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+        /*mSFXPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
             @Override
             public void onLoadComplete(SoundPool soundPool, int soundID, int status) {
                 Log.d(TAG, "onLoadComplete: SOUND_ID: " + soundID + " STATUS: " + status);
@@ -137,16 +121,20 @@ public class PreviewActivity extends AppCompatActivity {
                         0,
                         1.0f);
             }
-        });
+        });*/
 
         DisplayMetrics metrics = getResources().getDisplayMetrics();
 
+        File skcFile = new File(path);
+
         ScriptEngine scriptEngine = new ScriptEngine();
-        ScriptReader scriptReader = new ScriptReader(scriptEngine, new File(path));
+        scriptEngine.loadResources(skcFile,context);
 
-        FrameLayout root_FrameLayout = new FrameLayout(this);
+        ScriptReader scriptReader = new ScriptReader(scriptEngine, skcFile);
 
-        ColorRevealView mColorRevealView = new ColorRevealView(this);
+        FrameLayout root_FrameLayout = new FrameLayout(context);
+
+        ColorRevealView mColorRevealView = new ColorRevealView(context);
 
         Typeface defTypeface = Typeface.createFromAsset(getAssets(), "mplus_rounded1c_thin.ttf");
 
@@ -218,7 +206,7 @@ public class PreviewActivity extends AppCompatActivity {
 
             @Override
             public void onSFX(byte[] sfx) {
-                try {
+                /*try {
                     File tempSFX = ScriptEngine.createTempFile(
                             sfx,
                             ".mp3",
@@ -229,12 +217,12 @@ public class PreviewActivity extends AppCompatActivity {
 
                 } catch (IOException e) {
                     e.printStackTrace();
-                }
+                }*/
             }
 
             @Override
             public void onAmbient(byte[] ambientMusic) {
-                try {
+                /*try {
 
                     File tempAmbient = ScriptEngine.createTempFile(
                             ambientMusic,
@@ -251,7 +239,7 @@ public class PreviewActivity extends AppCompatActivity {
                     mAmbientPlayer.start();
                 } catch (IOException e) {
                     e.printStackTrace();
-                }
+                }*/
             }
 
             @Override

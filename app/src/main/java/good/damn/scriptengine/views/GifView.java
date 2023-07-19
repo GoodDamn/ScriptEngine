@@ -42,6 +42,10 @@ public class GifView extends View {
         mMovieGif = Movie.decodeByteArray(byteArray,0, byteArray.length);
     }
 
+    public void setSource(Movie movie) {
+        mMovieGif = movie;
+    }
+
     public void setSource(String path) {
         mMovieGif = Movie.decodeFile(path);
     }
