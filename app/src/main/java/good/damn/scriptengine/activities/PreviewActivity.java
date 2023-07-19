@@ -3,8 +3,10 @@ package good.damn.scriptengine.activities;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Movie;
 import android.graphics.Typeface;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
@@ -14,6 +16,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.text.style.ForegroundColorSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -68,24 +71,19 @@ public class PreviewActivity extends AppCompatActivity {
     private boolean mHasTraceView = false;
 
     private TextViewPhrase mCurrentViewPhrase;
+    private MediaPlayer mediaPlayerCurrent;
 
-    //private MediaPlayer mAmbientPlayer;
-
-    //private SoundPool mSFXPool;
+    private ScriptEngine mScriptEngine;
 
     private void releaseResources() {
-
         Log.d(TAG, "releaseResources: ");
 
-        /*if (mAmbientPlayer != null) {
-            mAmbientPlayer.stop();
-            mAmbientPlayer.release();
+        if (mediaPlayerCurrent != null) {
+            mediaPlayerCurrent.stop();
+            mediaPlayerCurrent.release();
         }
 
-        mSFXPool.autoPause();
-        mSFXPool.release();*/
-
-        ScriptEngine.releaseResources(this);
+        mScriptEngine.releaseResources(this);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -109,28 +107,14 @@ public class PreviewActivity extends AppCompatActivity {
 
         Log.d(TAG, "onCreate: PATH TO CONTENT: " + path);
 
-
-        /*mSFXPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
-            @Override
-            public void onLoadComplete(SoundPool soundPool, int soundID, int status) {
-                Log.d(TAG, "onLoadComplete: SOUND_ID: " + soundID + " STATUS: " + status);
-                mSFXPool.play(soundID,
-                        1.0f,
-                        1.0f,
-                        1,
-                        0,
-                        1.0f);
-            }
-        });*/
-
         DisplayMetrics metrics = getResources().getDisplayMetrics();
 
         File skcFile = new File(path);
 
-        ScriptEngine scriptEngine = new ScriptEngine();
-        scriptEngine.loadResources(skcFile,context);
+        mScriptEngine = new ScriptEngine();
+        mScriptEngine.loadResources(skcFile,context);
 
-        ScriptReader scriptReader = new ScriptReader(scriptEngine, skcFile);
+        ScriptReader scriptReader = new ScriptReader(mScriptEngine, skcFile);
 
         FrameLayout root_FrameLayout = new FrameLayout(context);
 
@@ -149,16 +133,16 @@ public class PreviewActivity extends AppCompatActivity {
             }
         });
 
-        scriptEngine.setReadCommandListener(new OnReadCommandListener() {
+        mScriptEngine.setReadCommandListener(new OnReadCommandListener() {
             @Override
             public void onBackground(int color) {
                 mColorRevealView.start(color);
             }
 
             @Override
-            public void onImage(byte[] img, ScriptGraphicsFile scriptImage) {
+            public void onImage(Bitmap bitmap, ScriptGraphicsFile scriptImage) {
                 ImageView imageView = new ImageView(context);
-                imageView.setImageBitmap(BitmapFactory.decodeByteArray(img, 0, img.length));
+                imageView.setImageBitmap(bitmap);
                 FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                 params.width = (int) (metrics.density * scriptImage.width);
                 params.height = (int) (metrics.density * scriptImage.height);
@@ -181,9 +165,9 @@ public class PreviewActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onGif(byte[] gif, ScriptGraphicsFile gifScript) {
+            public void onGif(Movie movie, ScriptGraphicsFile gifScript) {
                 GifView gifView = new GifView(context);
-                gifView.setSource(gif);
+                gifView.setSource(movie);
                 gifView.setId(ViewCompat.generateViewId());
 
                 gifView.setGifListener(new GifView.GifListener() {
@@ -205,7 +189,13 @@ public class PreviewActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onSFX(byte[] sfx) {
+            public void onSFX(byte soundID, SoundPool soundPool) {
+                soundPool.play(soundID,
+                        1.0f,
+                        1.0f,
+                        1,
+                        0,
+                        1.0f);
                 /*try {
                     File tempSFX = ScriptEngine.createTempFile(
                             sfx,
@@ -221,7 +211,14 @@ public class PreviewActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAmbient(byte[] ambientMusic) {
+            public void onAmbient(MediaPlayer nextPlayer) {
+                if (mediaPlayerCurrent != null) {
+                    mediaPlayerCurrent.stop();
+                    mediaPlayerCurrent.release();
+                }
+                mediaPlayerCurrent = nextPlayer;
+                mediaPlayerCurrent.start();
+
                 /*try {
 
                     File tempAmbient = ScriptEngine.createTempFile(
@@ -243,7 +240,7 @@ public class PreviewActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onVector(byte[] vect, String[] advancedText) {
+            public void onVector(FileSVC fileSVC, String[] advancedText) {
                 root_FrameLayout.setEnabled(false);
 
                 mHasTraceView = true;
@@ -290,8 +287,6 @@ public class PreviewActivity extends AppCompatActivity {
                 traceView.setId(ViewCompat.generateViewId());
                 traceView.setBackgroundColor(0);
 
-                FileSVC fileSVC = FileUtils.retrieveSVCFile(vect,dp);
-
                 traceView.setVectorsSource(fileSVC);
                 traceView.setOnTraceFinishListener(new OnTraceFinishListener() {
                     @Override
@@ -337,7 +332,7 @@ public class PreviewActivity extends AppCompatActivity {
             }
         });
 
-        scriptEngine.setOnCreateViewListener(new OnCreateScriptTextViewListener() {
+        mScriptEngine.setOnCreateViewListener(new OnCreateScriptTextViewListener() {
             @Override
             public void onCreate(ScriptTextConfig textConfig) {
 

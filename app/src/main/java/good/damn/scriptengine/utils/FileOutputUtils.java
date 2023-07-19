@@ -56,8 +56,8 @@ public class FileOutputUtils {
         // write file's begin positions
         int currentPosition = 0;
         for (byte i = 0; i < resDir.length; i++) {
-            fos.write(Utilities.gbInt(currentPosition));
             currentPosition += resDir[i].length();
+            fos.write(Utilities.gbInt(currentPosition));
         }
 
         //write each file's content

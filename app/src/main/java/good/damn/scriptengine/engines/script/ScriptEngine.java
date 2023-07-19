@@ -1,6 +1,7 @@
 package good.damn.scriptengine.engines.script;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Movie;
 import android.media.AudioAttributes;
@@ -30,9 +31,10 @@ import good.damn.scriptengine.engines.script.utils.ScriptDefinerUtils;
 import good.damn.scriptengine.interfaces.OnFileScriptListener;
 import good.damn.scriptengine.engines.script.models.ScriptBuildResult;
 import good.damn.scriptengine.utils.FileOutputUtils;
-import good.damn.scriptengine.utils.FileUtils;
 import good.damn.scriptengine.utils.Utilities;
+import good.damn.traceview.models.FileSVC;
 import good.damn.traceview.utils.ByteUtils;
+import good.damn.traceview.utils.FileUtils;
 
 public class ScriptEngine {
 
@@ -45,7 +47,9 @@ public class ScriptEngine {
     public static final byte READ_AMBIENT = 6;
     public static final byte READ_VECTOR = 7;
 
-    private SoundPool mSFXPool;
+    private final SoundPool mSFXPool;
+
+    private Object[] mResources;
 
     private OnCreateScriptTextViewListener mOnCreateScriptTextViewListener;
 
@@ -202,22 +206,22 @@ public class ScriptEngine {
                         return;
                     }
 
-                    byte[] img = null;
+                    /*byte[] img = null;
                     if (mOnFileScriptListener != null) {
                         img = mOnFileScriptListener.onResource(scriptImage.resID);
                     }
 
                     if (img == null) {
                         return;
-                    }
+                    }*/
 
                     if (mOnReadCommandListener != null)
-                        mOnReadCommandListener.onImage(img,scriptImage);
+                        mOnReadCommandListener.onImage((Bitmap) mResources[scriptImage.resID],scriptImage);
 
                     break;
                 case READ_GIF:
                     ScriptGraphicsFile gifScript = ScriptDefinerUtils.Gif(chunk,currentOffset);
-
+/*
                     byte[] gif = null;
                     if (mOnFileScriptListener != null) {
                         gif = mOnFileScriptListener.onResource(gifScript.resID);
@@ -226,13 +230,13 @@ public class ScriptEngine {
                     if (gif == null) {
                         return;
                     }
-
+*/
                     if (mOnReadCommandListener != null)
-                        mOnReadCommandListener.onGif(gif, gifScript);
+                        mOnReadCommandListener.onGif((Movie) mResources[gifScript.resID], gifScript);
                     break;
                 case READ_SFX:
                     sResFile = ScriptDefinerUtils.SFX(chunk,currentOffset);
-
+/*
                     byte[] sfx = null;
                     if (mOnFileScriptListener != null) {
                         sfx = mOnFileScriptListener.onResource(sResFile.resID);
@@ -241,14 +245,16 @@ public class ScriptEngine {
                     if (sfx == null) {
                         return;
                     }
-
-                    if (mOnReadCommandListener != null)
-                        mOnReadCommandListener.onSFX(sfx);
+*/
+                    if (mOnReadCommandListener != null) {
+                        Log.d(TAG, "read: SFX: " + mResources[sResFile.resID] + " " + sResFile.resID);
+                        mOnReadCommandListener.onSFX((Byte) mResources[sResFile.resID],mSFXPool);
+                    }
 
                     break;
                 case READ_AMBIENT:
                     sResFile = ScriptDefinerUtils.Ambient(chunk,currentOffset);
-                    byte[] ambientMusic = null;
+                    /*byte[] ambientMusic = null;
                     if (mOnFileScriptListener != null) {
                         ambientMusic = mOnFileScriptListener.onResource(sResFile.resID);
                     }
@@ -256,24 +262,24 @@ public class ScriptEngine {
                     if (ambientMusic == null) {
                         return;
                     }
-
+*/
                     if (mOnReadCommandListener != null)
-                        mOnReadCommandListener.onAmbient(ambientMusic);
+                        mOnReadCommandListener.onAmbient((MediaPlayer) mResources[sResFile.resID]);
 
                     break;
                 case READ_VECTOR:
                     sResFile = ScriptDefinerUtils.Vector(chunk,currentOffset);
-                    byte[] vect = null;
+                    /*byte[] vect = null;
                     if (mOnFileScriptListener != null) {
                         vect = mOnFileScriptListener.onResource(sResFile.resID);
                     }
 
                     if (vect == null) {
                         return;
-                    }
+                    }*/
 
                     if (mOnReadCommandListener != null) {
-                        mOnReadCommandListener.onVector(vect,textConfig.mAdvancedText);
+                        mOnReadCommandListener.onVector((FileSVC) mResources[sResFile.resID],textConfig.mAdvancedText);
                     }
                     break;
                 default:
@@ -301,7 +307,7 @@ public class ScriptEngine {
 
             byte resCount = (byte) fis.read();
 
-            Object[] files = new Object[resCount];
+            mResources = new Object[resCount];
 
             int prevPos = 0;
             int currentPos;
@@ -309,44 +315,48 @@ public class ScriptEngine {
 
             int fileSectionPos = resCount * 4;
 
-            byte sfxID = 0;
+            byte sfxID = 1;
             byte[] file;
 
-            for (byte i = 0; i < 7; i++) {
+            for (byte i = 0; i < resCount; i++) {
                 fis.read(bufInt); // end file position
                 currentPos = ByteUtils.integer(bufInt);
                 fileLength = currentPos - prevPos;
 
+                Log.d(TAG, "loadResources: FILE_LENGTH: " + fileLength + " BUF_INT: " + Arrays.toString(bufInt));
+
                 file = new byte[fileLength];
 
-                int ret = fileSectionPos-(i+1)*4;
+                int ret = fileSectionPos-(i+1)*4+prevPos;
 
                 fis.skip(ret);
                 // Read file content
                 // Read header file
                 byte h = (byte) fis.read();
-                Log.d(TAG, "loadResources: HEADER: " + h);
+                Log.d(TAG, "loadResources: HEADER: " +(h&0xff));
                 fis.skip(-1);
                 fis.read(file);
                 if (h == 71) { // GIF
-                    files[i] = Movie.decodeByteArray(file,0,file.length);
-                } else if (h == 37) { // PNG
-                    files[i] = BitmapFactory.decodeByteArray(file,0,file.length);
+                    mResources[i] = Movie.decodeByteArray(file,0,file.length);
+                } else if ((h & 0xff) == 137) { // PNG
+                    mResources[i] = BitmapFactory.decodeByteArray(file,0,file.length);
                 } else if (h == 73) { // MP3
                     File tempFile = ScriptEngine.createTempFile(file, ".mp3",context);
                     if (fileLength <= 1048576) { // 1 MB
-                        files[i] = sfxID;
+                        mResources[i] = sfxID;
+                        Log.d(TAG, "loadResources: SFX: " + i + " " + sfxID);
                         mSFXPool.load(tempFile.getAbsolutePath(),1);
                         sfxID++;
                     } else {
                         MediaPlayer player = MediaPlayer.create(context, Uri.fromFile(tempFile));
                         player.setLooping(true);
-
-
-                        files[i] = player;
+                        mResources[i] = player;
                     }
+                } else { // vector content file
+                    mResources[i] = FileUtils.retrieveSVCFile(file,context.getResources().getDisplayMetrics().density);
                 }
 
+                prevPos = currentPos;
                 fis.skip(-fileLength-ret);
             }
             fis.close();
@@ -355,7 +365,11 @@ public class ScriptEngine {
         }
     }
 
-    public static void releaseResources(Context context) {
+    public void releaseResources(Context context) {
+
+        mSFXPool.autoPause();
+        mSFXPool.release();
+
         Log.d(TAG, "releaseResources: CLEARING TEMP FOLDER...");
         File file = new File(context.getCacheDir() + "/tempTopic");
 
@@ -385,15 +399,15 @@ public class ScriptEngine {
             }
         }
 
-        File tempAmbient = File.createTempFile(
+        File temp = File.createTempFile(
                 String.valueOf(System.currentTimeMillis()),
                 extension,
                 dir);
 
-        FileOutputStream fos = new FileOutputStream(tempAmbient);
+        FileOutputStream fos = new FileOutputStream(temp);
         fos.write(file);
         fos.close();
 
-        return tempAmbient;
+        return temp;
     }
 }
