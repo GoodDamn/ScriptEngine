@@ -278,6 +278,14 @@ public class PreviewActivity extends AppCompatActivity {
                     textViewSet.setSource(advancedText);
                     textViewSet.setAnimation(TextViewSet.ANIMATION_ALPHA);
 
+                    textViewSet.setAlpha(0);
+
+                    textViewSet.animate()
+                            .alpha(1.0f)
+                            .setStartDelay(1501)
+                            .setDuration(1500)
+                            .start();
+
                     traceView.setOnVectorAnimationListener(new OnVectorAnimationListener() {
                         @Override
                         public void onStart(byte index) {
@@ -330,6 +338,7 @@ public class PreviewActivity extends AppCompatActivity {
 
                 traceView.animate()
                         .alpha(1.0f)
+                        .setStartDelay(1501)
                         .setDuration(1650)
                         .withEndAction(traceView::startAnimation).start();
             }
@@ -411,7 +420,13 @@ public class PreviewActivity extends AppCompatActivity {
                                 .setDuration(1500);
 
                 if (mHasTraceView) {
-                    animator = animator.y(mTextYWithTraceView);
+                    animator = animator
+                            .withEndAction(()-> {
+                                phrase.animate()
+                                        .y(mTextYWithTraceView)
+                                        .setDuration(1300)
+                                        .start();
+                            });
                     mHasTraceView = false;
                 }
 
