@@ -1,12 +1,17 @@
 package good.damn.scriptengine.fragments;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Movie;
 import android.media.Image;
+import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -44,12 +49,20 @@ import good.damn.scriptengine.activities.PreviewActivity;
 import good.damn.scriptengine.adapters.FilesAdapter;
 import good.damn.scriptengine.adapters.recycler_view.PiecesAdapter;
 import good.damn.scriptengine.engines.script.ScriptEngine;
+import good.damn.scriptengine.engines.script.ScriptReader;
+import good.damn.scriptengine.engines.script.interfaces.OnCreateScriptTextViewListener;
+import good.damn.scriptengine.engines.script.interfaces.OnReadCommandListener;
+import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
+import good.damn.scriptengine.engines.script.models.ScriptTextConfig;
 import good.damn.scriptengine.interfaces.OnClickTextPiece;
+import good.damn.scriptengine.interfaces.OnFileScriptListener;
+import good.damn.scriptengine.interfaces.ScriptReaderListener;
 import good.damn.scriptengine.models.Piece;
 import good.damn.scriptengine.utils.FileOutputUtils;
 import good.damn.scriptengine.utils.FileReaderUtils;
 import good.damn.scriptengine.utils.ToolsUtilities;
 import good.damn.scriptengine.utils.Utilities;
+import good.damn.traceview.models.FileSVC;
 import good.damn.traceview.utils.ByteUtils;
 
 public class PiecesListFragment extends Fragment {
@@ -80,7 +93,7 @@ public class PiecesListFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_pieces_list, container, false);
 
-        Context context = getContext();
+        Activity context = getActivity();
 
         RecyclerView piecesRecyclerView = v.findViewById(R.id.f_pieces_list_recyclerView);
         piecesRecyclerView.setHasFixedSize(false);
@@ -174,11 +187,61 @@ public class PiecesListFragment extends Fragment {
                                     public void onFile(File file, String extension) {
                                         Log.d(TAG, "onFile: EXTENSION: " + extension);
 
-                                        if (!extension.equals("sse")) {
-                                            Utilities.showMessage("INCORRECT FILE (NEED .sse FILE)",context);
+                                        if (!extension.equals("skc")) {
+                                            Utilities.showMessage("INCORRECT FILE (NEED .skc FILE)",context);
                                             return;
                                         }
 
+                                        final ScriptEngine scriptEngine = new ScriptEngine();
+                                        final ScriptReader scriptReader = new ScriptReader(scriptEngine,file);
+                                        scriptEngine.setReadCommandListener(new OnReadCommandListener() {
+                                            @Override
+                                            public void onBackground(int color) {
+                                                Log.d(TAG, "onBackground: SCRIPT: ");
+                                            }
+
+                                            @Override
+                                            public void onImage(Bitmap bitmap, ScriptGraphicsFile graphicsFile) {
+                                                Log.d(TAG, "onImage: SCRIPT: ");
+                                            }
+
+                                            @Override
+                                            public void onGif(Movie movie, ScriptGraphicsFile gifScript) {
+                                                Log.d(TAG, "onGif: SCRIPT: ");
+                                            }
+
+                                            @Override
+                                            public void onSFX(byte soundID, SoundPool soundPool) {
+                                                Log.d(TAG, "onSFX: SCRIPT: ");
+                                            }
+
+                                            @Override
+                                            public void onAmbient(MediaPlayer mediaPlayer) {
+                                                Log.d(TAG, "onAmbient: SCRIPT: ");
+                                            }
+
+                                            @Override
+                                            public void onError(String errorMsg) {
+                                                Log.d(TAG, "onError: SCRIPT: ");
+                                            }
+
+                                            @Override
+                                            public void onVector(FileSVC fileSVC, String[] advancedText) {
+                                                Log.d(TAG, "onVector: SCRIPT: ");
+                                            }
+                                        });
+
+                                        scriptEngine.setOnCreateViewListener(new OnCreateScriptTextViewListener() {
+                                            @Override
+                                            public void onCreate(ScriptTextConfig text) {
+                                                Log.d(TAG, "onCreate: SCRIPT: " + text.spannableString.toString());
+                                                scriptReader.next();
+                                            }
+                                        });
+                                        //mPieces = new ArrayList<>();
+                                        scriptReader.next();
+
+                                        /*
                                         try {
                                             FileInputStream fis = new FileInputStream(file);
                                             short size = (short) (fis.read() & 0xff);
@@ -223,7 +286,7 @@ public class PiecesListFragment extends Fragment {
                                         } catch (IOException e) {
                                             e.printStackTrace();
                                         }
-
+*/
                                     }
                                 }, Environment.getExternalStorageDirectory().getAbsolutePath()+"/ScriptProjects");
                     }
@@ -255,32 +318,40 @@ public class PiecesListFragment extends Fragment {
                 .setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if (mFileNameSSE == null) {
-                            Dialog dialog = new Dialog(context);
-                            dialog.setCancelable(true);
-                            dialog.setContentView(R.layout.dialog_save_as);
-
-                            EditText et = dialog.findViewById(R.id.dialog_save_et_fileName);
-
-                            dialog.findViewById(R.id.dialog_save_btn_save)
-                                  .setOnClickListener(new View.OnClickListener() {
-                                      @Override
-                                      public void onClick(View view) {
-                                          String name = et.getText().toString().trim();
-                                          if (name.isEmpty()) {
-                                              return;
-                                          }
-                                          mFileNameSSE = name + ".sse";
-                                          dialog.dismiss();
-                                          FileOutputUtils.mkSSEFile(mFileNameSSE,mPieces,getActivity());
-                                      }
-                                  });
-
-                            dialog.show();
+                        if (mFileNameSSE != null) {
+                            FileOutputUtils.mkSKCFile(mFileNameSSE,
+                                    Environment.getExternalStorageDirectory()
+                                            .getAbsolutePath() + "/ScriptProjects",
+                                    mPieces,
+                                    getActivity());
                             return;
                         }
+                        Dialog dialog = new Dialog(context);
+                        dialog.setCancelable(true);
+                        dialog.setContentView(R.layout.dialog_save_as);
 
-                        FileOutputUtils.mkSSEFile(mFileNameSSE,mPieces,getActivity());
+                        EditText et = dialog.findViewById(R.id.dialog_save_et_fileName);
+
+                        dialog.findViewById(R.id.dialog_save_btn_save)
+                                .setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        String name = et.getText().toString().trim();
+                                        if (name.isEmpty()) {
+                                            return;
+                                        }
+                                        mFileNameSSE = name + ".skc";
+                                        dialog.dismiss();
+                                        FileOutputUtils.mkSKCFile(mFileNameSSE,
+                                                Environment.getExternalStorageDirectory()
+                                                        .getAbsolutePath() + "/ScriptProjects",
+                                                mPieces,
+                                                getActivity());
+
+                                    }
+                                });
+
+                        dialog.show();
                     }
                 });
 
@@ -293,7 +364,7 @@ public class PiecesListFragment extends Fragment {
 
                 long current = System.currentTimeMillis();
                 new Thread(()->{
-                    String path = FileOutputUtils.mkSKCFile(mPieces,context);
+                    String path = FileOutputUtils.mkSKCFile(mPieces, context);
                     if (path == null) {
                         Utilities.showMessage("ERROR IS OCCURRED DURING LINKING PROCESS",
                                 context);

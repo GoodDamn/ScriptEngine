@@ -196,18 +196,6 @@ public class PreviewActivity extends AppCompatActivity {
                         1,
                         0,
                         1.0f);
-                /*try {
-                    File tempSFX = ScriptEngine.createTempFile(
-                            sfx,
-                            ".mp3",
-                            context
-                    );
-
-                    mSFXPool.load(tempSFX.getPath(), 1);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }*/
             }
 
             @Override
@@ -218,25 +206,6 @@ public class PreviewActivity extends AppCompatActivity {
                 }
                 mediaPlayerCurrent = nextPlayer;
                 mediaPlayerCurrent.start();
-
-                /*try {
-
-                    File tempAmbient = ScriptEngine.createTempFile(
-                            ambientMusic,
-                            ".mp3",
-                            context);
-
-                    if (mAmbientPlayer == null) { // First start
-                        mAmbientPlayer = MediaPlayer.create(context, Uri.fromFile(tempAmbient));
-                        mAmbientPlayer.setLooping(true);
-                    } else {
-
-                    }
-
-                    mAmbientPlayer.start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }*/
             }
 
             @Override
@@ -300,12 +269,14 @@ public class PreviewActivity extends AppCompatActivity {
                         if (finalTextViewSet != null) {
                             finalTextViewSet.animate()
                                     .alpha(0.0f)
+                                    .setStartDelay(0)
                                     .withEndAction(()->root_FrameLayout.removeView(finalTextViewSet))
                                     .start();
                         }
 
                         traceView.animate()
                                 .alpha(0.0f)
+                                .setStartDelay(0)
                                 .withEndAction(()-> root_FrameLayout.removeView(traceView))
                                 .start();
 

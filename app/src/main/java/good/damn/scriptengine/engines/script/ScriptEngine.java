@@ -195,89 +195,36 @@ public class ScriptEngine {
                 case READ_BACKGROUND: // bg
                     int color = ScriptDefinerUtils.Background(chunk,currentOffset);
                     Log.d(TAG, "read: BACKGROUND COLOR: " + color);
-
                     if (mOnReadCommandListener != null)
                         mOnReadCommandListener.onBackground(color);
-
                     break;
                 case READ_IMAGE:
                     ScriptGraphicsFile scriptImage = ScriptDefinerUtils.Image(chunk,currentOffset);
                     if (scriptImage == null) {
                         return;
                     }
-
-                    /*byte[] img = null;
-                    if (mOnFileScriptListener != null) {
-                        img = mOnFileScriptListener.onResource(scriptImage.resID);
-                    }
-
-                    if (img == null) {
-                        return;
-                    }*/
-
                     if (mOnReadCommandListener != null)
                         mOnReadCommandListener.onImage((Bitmap) mResources[scriptImage.resID],scriptImage);
-
                     break;
                 case READ_GIF:
                     ScriptGraphicsFile gifScript = ScriptDefinerUtils.Gif(chunk,currentOffset);
-/*
-                    byte[] gif = null;
-                    if (mOnFileScriptListener != null) {
-                        gif = mOnFileScriptListener.onResource(gifScript.resID);
-                    }
-
-                    if (gif == null) {
-                        return;
-                    }
-*/
                     if (mOnReadCommandListener != null)
                         mOnReadCommandListener.onGif((Movie) mResources[gifScript.resID], gifScript);
                     break;
                 case READ_SFX:
                     sResFile = ScriptDefinerUtils.SFX(chunk,currentOffset);
-/*
-                    byte[] sfx = null;
-                    if (mOnFileScriptListener != null) {
-                        sfx = mOnFileScriptListener.onResource(sResFile.resID);
-                    }
-
-                    if (sfx == null) {
-                        return;
-                    }
-*/
                     if (mOnReadCommandListener != null) {
                         Log.d(TAG, "read: SFX: " + mResources[sResFile.resID] + " " + sResFile.resID);
                         mOnReadCommandListener.onSFX((Byte) mResources[sResFile.resID],mSFXPool);
                     }
-
                     break;
                 case READ_AMBIENT:
                     sResFile = ScriptDefinerUtils.Ambient(chunk,currentOffset);
-                    /*byte[] ambientMusic = null;
-                    if (mOnFileScriptListener != null) {
-                        ambientMusic = mOnFileScriptListener.onResource(sResFile.resID);
-                    }
-
-                    if (ambientMusic == null) {
-                        return;
-                    }
-*/
                     if (mOnReadCommandListener != null)
                         mOnReadCommandListener.onAmbient((MediaPlayer) mResources[sResFile.resID]);
-
                     break;
                 case READ_VECTOR:
                     sResFile = ScriptDefinerUtils.Vector(chunk,currentOffset);
-                    /*byte[] vect = null;
-                    if (mOnFileScriptListener != null) {
-                        vect = mOnFileScriptListener.onResource(sResFile.resID);
-                    }
-
-                    if (vect == null) {
-                        return;
-                    }*/
-
                     if (mOnReadCommandListener != null) {
                         mOnReadCommandListener.onVector((FileSVC) mResources[sResFile.resID],textConfig.mAdvancedText);
                     }

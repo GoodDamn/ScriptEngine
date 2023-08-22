@@ -7,7 +7,7 @@ public class ByteUtils {
     private static final String TAG = "ByteUtils";
 
     public static byte[] fixedPointNumber(float val) {
-        short v = (short) (val * 1000f);
+        short v = (short) (val * Short.MAX_VALUE);
         Log.d(TAG, "fixedPointNumber: FROM: " + val + " TO: " + v);
         return new byte[] {
                 (byte) ((v >> 8) & 0xff),
@@ -17,7 +17,7 @@ public class ByteUtils {
 
     public static float fixedPointNumber(byte[] in) {
         short v = (short) ((in[0] & 0xff) << 8 | (in[1] & 0xff));
-        float n = v / 1000f;
+        float n = v / (float)Short.MAX_VALUE;
         Log.d(TAG, "fixedPointNumber: IN_BYTES: FROM: " + v + " TO: " + n);
         return n;
     }

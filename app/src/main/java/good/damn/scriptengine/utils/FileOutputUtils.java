@@ -79,17 +79,34 @@ public class FileOutputUtils {
         return new ResourceBuildResult(fileNames,skresFile);
     }
 
-    public static String mkSKCFile(ArrayList<Piece> arrayList, Context context) {
+    public static String mkSKCFile(ArrayList<Piece> arrayList, Activity activity) {
+        return mkSKCFile("dumb.skc",
+                activity.getCacheDir() + FileUtils.DUMB_DIR,
+                arrayList,
+                activity);
+    }
+
+    public static String mkSKCFile(String fileName,
+                                   String dir,
+                                   ArrayList<Piece> arrayList,
+                                   Activity activity) {
+
+        if (ActivityCompat.checkSelfPermission(activity,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(activity,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    200);
+
+            return null;
+        }
 
         FileOutputStream fosSKC;
         FileInputStream fisRes = null;
 
-        String path = context.getCacheDir()
-                + FileUtils.DUMB_DIR;
+        String path = dir;
 
         try {
-
-            String fileName = "/dumb.skc";
 
             File file = new File(path);
 
@@ -99,7 +116,7 @@ public class FileOutputUtils {
                 }
 
                 Log.d(TAG, "makeSKCFile: DUMB DIR HAS BEEN CREATED!");
-                File skcFile = new File(file + fileName);
+                File skcFile = new File(file,fileName);
                 if (!skcFile.createNewFile()) {
                     return null;
                 }
@@ -107,12 +124,12 @@ public class FileOutputUtils {
 
             Log.d(TAG, "makeSKCFile: DUMB FILE HAS BEEN CREATED!");
 
-            path += fileName;
+            path = dir+"/"+fileName;
 
             fosSKC = new FileOutputStream(path);
 
             // Compile resource section
-            ResourceBuildResult result = mkSKResFile(context);
+            ResourceBuildResult result = mkSKResFile(activity);
 
             String[] compiledRes = null;
             int resSectionLength = 0;
@@ -171,7 +188,7 @@ public class FileOutputUtils {
 
         return path;
     }
-
+/*
     public static void mkSSEFile(String name, ArrayList<Piece> mPieces, Activity activity) {
         if (ActivityCompat.checkSelfPermission(activity,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -184,7 +201,7 @@ public class FileOutputUtils {
         }
 
         try {
-            File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/ScriptProjects");
+            File dir = new File();
 
             Log.d(TAG, "onClick: DIR: " + dir);
 
@@ -228,5 +245,5 @@ public class FileOutputUtils {
             e.printStackTrace();
             Utilities.showMessage("ERROR: " + e.getMessage(), activity);
         }
-    }
+    }*/
 }
