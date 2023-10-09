@@ -1,48 +1,36 @@
 package good.damn.scriptengine.fragments;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Movie;
-import android.media.Image;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.Editable;
-import android.text.SpannableString;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
-import java.security.Policy;
 import java.util.ArrayList;
-import java.util.Collection;
 
 import good.damn.scriptengine.R;
 import good.damn.scriptengine.activities.PreviewActivity;
@@ -55,15 +43,15 @@ import good.damn.scriptengine.engines.script.interfaces.OnReadCommandListener;
 import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
 import good.damn.scriptengine.engines.script.models.ScriptTextConfig;
 import good.damn.scriptengine.interfaces.OnClickTextPiece;
-import good.damn.scriptengine.interfaces.OnFileScriptListener;
+import good.damn.scriptengine.interfaces.OnFileResourceListener;
 import good.damn.scriptengine.interfaces.ScriptReaderListener;
 import good.damn.scriptengine.models.Piece;
 import good.damn.scriptengine.utils.FileOutputUtils;
 import good.damn.scriptengine.utils.FileReaderUtils;
+import good.damn.scriptengine.utils.FileUtils;
 import good.damn.scriptengine.utils.ToolsUtilities;
 import good.damn.scriptengine.utils.Utilities;
 import good.damn.traceview.models.FileSVC;
-import good.damn.traceview.utils.ByteUtils;
 
 public class PiecesListFragment extends Fragment {
 
@@ -73,10 +61,10 @@ public class PiecesListFragment extends Fragment {
     private View.OnClickListener mOnResFolderClickListener;
 
     private String[] mClipData;
-
     private ArrayList<Piece> mPieces = null;
 
-    private String mFileNameSSE = null;
+    private String mFileNameSKC = null;
+    private String mTempScriptCode = "";
 
     public void setOnClickTextPieceListener(OnClickTextPiece mOnClickTextPiece) {
         this.mOnClickTextPiece = mOnClickTextPiece;
@@ -192,32 +180,63 @@ public class PiecesListFragment extends Fragment {
                                             return;
                                         }
 
+                                        // Clearing res folder
+                                        
+                                        File resFolder = new File(context.getCacheDir()+FileUtils.RES_DIR);
+
+                                        if (!resFolder.exists()) {
+                                            try {
+                                                if (!resFolder.createNewFile()) {
+                                                    return;
+                                                }
+                                                Log.d(TAG, "onFile: RESOURCES FOLDER IS CREATED!");
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                                return;
+                                            }
+                                        }
+
+                                        File[] resourcesFiles = resFolder.listFiles();
+                                        if (resourcesFiles != null) {
+                                            for (File ff: resourcesFiles) {
+                                                if (ff.delete()) {
+                                                    Log.d(TAG, "onFile: FILE FROM RESOURCES="+ff.getName()+" IS DELETED!");
+                                                }
+                                            }
+                                        }
+
                                         final ScriptEngine scriptEngine = new ScriptEngine();
                                         final ScriptReader scriptReader = new ScriptReader(scriptEngine,file);
+                                        mPieces.clear();
                                         scriptEngine.setReadCommandListener(new OnReadCommandListener() {
                                             @Override
                                             public void onBackground(int color) {
-                                                Log.d(TAG, "onBackground: SCRIPT: ");
+                                                mTempScriptCode += "\nbg #" + Integer.toHexString(color);
+                                                Log.d(TAG, "onBackground: SCRIPT: " + mTempScriptCode);
                                             }
 
                                             @Override
                                             public void onImage(Bitmap bitmap, ScriptGraphicsFile graphicsFile) {
-                                                Log.d(TAG, "onImage: SCRIPT: ");
+                                                mTempScriptCode += "\nimg ";
+                                                Log.d(TAG, "onImage: SCRIPT: " + mTempScriptCode);
                                             }
 
                                             @Override
                                             public void onGif(Movie movie, ScriptGraphicsFile gifScript) {
-                                                Log.d(TAG, "onGif: SCRIPT: ");
+                                                mTempScriptCode += "\ngif ";
+                                                Log.d(TAG, "onGif: SCRIPT: " + mTempScriptCode);
                                             }
 
                                             @Override
                                             public void onSFX(byte soundID, SoundPool soundPool) {
-                                                Log.d(TAG, "onSFX: SCRIPT: ");
+                                                mTempScriptCode += "\nsfx ";
+                                                Log.d(TAG, "onSFX: SCRIPT: " + mTempScriptCode);
                                             }
 
                                             @Override
                                             public void onAmbient(MediaPlayer mediaPlayer) {
-                                                Log.d(TAG, "onAmbient: SCRIPT: ");
+                                                mTempScriptCode += "\namb ";
+                                                Log.d(TAG, "onAmbient: SCRIPT: "+mTempScriptCode);
                                             }
 
                                             @Override
@@ -227,17 +246,68 @@ public class PiecesListFragment extends Fragment {
 
                                             @Override
                                             public void onVector(FileSVC fileSVC, String[] advancedText) {
-                                                Log.d(TAG, "onVector: SCRIPT: ");
+                                                mTempScriptCode += "\nvect ";
+                                                Log.d(TAG, "onVector: SCRIPT: "+mTempScriptCode);
                                             }
                                         });
 
                                         scriptEngine.setOnCreateViewListener(new OnCreateScriptTextViewListener() {
                                             @Override
                                             public void onCreate(ScriptTextConfig text) {
-                                                Log.d(TAG, "onCreate: SCRIPT: " + text.spannableString.toString());
+                                                String textPiece = text.spannableString.toString();
+                                                Log.d(TAG, "onCreate: SCRIPT: " + textPiece);
+
+                                                if (text.textColor != 0xff000000) {
+                                                    mTempScriptCode += "\nfont #"+Integer.toHexString(text.textColor);
+                                                }
+
+                                                Piece piece = new Piece(
+                                                        FileReaderUtils.BlankChunk(textPiece.getBytes(StandardCharsets.UTF_8)),
+                                                        textPiece);
+                                                ScriptEditorFragment.CompileScript(
+                                                        textPiece,
+                                                        mTempScriptCode,
+                                                        piece,
+                                                        scriptEngine,
+                                                        context);
+                                                Log.d(TAG, "onCreate: SCRIPT: " + piece.getSourceCode());
+                                                mPieces.add(piece);
+                                                mTempScriptCode = "";
                                                 scriptReader.next();
                                             }
                                         });
+
+                                        scriptReader.setScriptReaderListener(new ScriptReaderListener() {
+                                            @Override
+                                            public void onReadFinish() {
+                                                Log.d(TAG, "onReadFinish: SCRIPT_READER FINISHED READING");
+                                                piecesAdapter.setPieces(mPieces);
+                                                piecesAdapter.notifyDataSetChanged();
+
+                                                mFileNameSKC = file.getName();
+                                            }
+                                        });
+
+                                        scriptEngine.setFileResourceListener(new OnFileResourceListener() {
+                                            @Override
+                                            public void onFileResource(byte[] fileBytes,
+                                                                       byte resID,
+                                                                       String extension) {
+                                                File f = new File(context.getCacheDir()+FileUtils.RES_DIR,resID+"."+extension);
+                                                try {
+                                                    if (f.createNewFile()) {
+                                                        FileOutputStream fos = new FileOutputStream(f);
+                                                        fos.write(fileBytes);
+                                                        fos.close();
+                                                    }
+                                                } catch (IOException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        });
+                                        
+                                        scriptEngine.loadResources(file,context);
+                                        
                                         //mPieces = new ArrayList<>();
                                         scriptReader.next();
 
@@ -299,7 +369,7 @@ public class PiecesListFragment extends Fragment {
                     @Override
                     public void onClick(View view) {
 
-                        mFileNameSSE = null;
+                        mFileNameSKC = null;
 
                         Utilities.showMessage("PASTED", context);
                         String data = clipboardManager
@@ -318,8 +388,8 @@ public class PiecesListFragment extends Fragment {
                 .setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if (mFileNameSSE != null) {
-                            FileOutputUtils.mkSKCFile(mFileNameSSE,
+                        if (mFileNameSKC != null) {
+                            FileOutputUtils.mkSKCFile(mFileNameSKC,
                                     Environment.getExternalStorageDirectory()
                                             .getAbsolutePath() + "/ScriptProjects",
                                     mPieces,
@@ -340,9 +410,9 @@ public class PiecesListFragment extends Fragment {
                                         if (name.isEmpty()) {
                                             return;
                                         }
-                                        mFileNameSSE = name + ".skc";
+                                        mFileNameSKC = name + ".skc";
                                         dialog.dismiss();
-                                        FileOutputUtils.mkSKCFile(mFileNameSSE,
+                                        FileOutputUtils.mkSKCFile(mFileNameSKC,
                                                 Environment.getExternalStorageDirectory()
                                                         .getAbsolutePath() + "/ScriptProjects",
                                                 mPieces,

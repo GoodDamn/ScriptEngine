@@ -1,6 +1,5 @@
 package good.damn.scriptengine.engines.script;
 
-import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import java.io.File;
@@ -9,10 +8,8 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 
-import good.damn.scriptengine.interfaces.OnFileScriptListener;
 import good.damn.scriptengine.interfaces.ScriptReaderListener;
 import good.damn.scriptengine.utils.Utilities;
-import good.damn.scriptengine.views.TextViewPhrase;
 
 public class ScriptReader {
 
@@ -27,14 +24,14 @@ public class ScriptReader {
     private int mChunkLength;
     private int mFileLength;
 
-    private final byte[] mResourceCount = new byte[1];
-    private final byte[] bFilePosition = new byte[4];
+    //private final byte[] mResourceCount = new byte[1];
+    //private final byte[] bFilePosition = new byte[4];
 
     private final byte[] mBuffer = new byte[2048];
 
     public ScriptReader(ScriptEngine scriptEngine, File file) {
         mScriptEngine = scriptEngine;
-        mScriptEngine.setFileScriptListener(new OnFileScriptListener() {
+        /*mScriptEngine.setFileScriptListener(new OnFileScriptListener() {
             @Override
             public byte[] onResource(int resID) {
                 try {
@@ -89,7 +86,7 @@ public class ScriptReader {
 
                 return null;
             }
-        });
+        });*/
 
         try {
             mChunkStream = new FileInputStream(file);

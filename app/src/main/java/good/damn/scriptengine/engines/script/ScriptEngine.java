@@ -15,11 +15,11 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import good.damn.scriptengine.engines.script.interfaces.OnCreateScriptTextViewListener;
 import good.damn.scriptengine.engines.script.interfaces.OnReadCommandListener;
@@ -28,9 +28,8 @@ import good.damn.scriptengine.engines.script.models.ScriptResourceFile;
 import good.damn.scriptengine.engines.script.models.ScriptTextConfig;
 import good.damn.scriptengine.engines.script.utils.ScriptCommandsUtils;
 import good.damn.scriptengine.engines.script.utils.ScriptDefinerUtils;
-import good.damn.scriptengine.interfaces.OnFileScriptListener;
 import good.damn.scriptengine.engines.script.models.ScriptBuildResult;
-import good.damn.scriptengine.utils.FileOutputUtils;
+import good.damn.scriptengine.interfaces.OnFileResourceListener;
 import good.damn.scriptengine.utils.Utilities;
 import good.damn.traceview.models.FileSVC;
 import good.damn.traceview.utils.ByteUtils;
@@ -47,17 +46,21 @@ public class ScriptEngine {
     public static final byte READ_AMBIENT = 6;
     public static final byte READ_VECTOR = 7;
 
+    private final HashMap<String, ReadCommand> mReadCommands = new HashMap<>();
+
     private final SoundPool mSFXPool;
 
     private Object[] mResources;
 
     private OnCreateScriptTextViewListener mOnCreateScriptTextViewListener;
 
-    private OnFileScriptListener mOnFileScriptListener;
+    private OnFileResourceListener mOnFileResourceListener;
 
     private OnReadCommandListener mOnReadCommandListener;
 
     public ScriptEngine() {
+        initCommands();
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 
             AudioAttributes audioAttributes = new AudioAttributes.Builder()
@@ -79,8 +82,8 @@ public class ScriptEngine {
         mOnCreateScriptTextViewListener = configureViewListener;
     }
 
-    public void setFileScriptListener(OnFileScriptListener onFileScriptListener) {
-        mOnFileScriptListener = onFileScriptListener;
+    public void setFileResourceListener(OnFileResourceListener listener) {
+        mOnFileResourceListener = listener;
     }
 
     public void setReadCommandListener(OnReadCommandListener onReadCommandListener) {
@@ -88,8 +91,6 @@ public class ScriptEngine {
     }
 
     public ScriptBuildResult compile(String line, Context context) {
-        byte[] args = null;
-
         String[] argv = line.split("\\s+");
 
         ScriptBuildResult scriptBuildResult = new ScriptBuildResult();
@@ -99,38 +100,16 @@ public class ScriptEngine {
         if (argv[0].isEmpty())
             return scriptBuildResult;
 
-        switch (argv[0].toLowerCase()){
-            case "textsize": // 0
-                args = ScriptCommandsUtils.TextSize(argv,context);
-                break;
-            case "font": // 1
-                args = ScriptCommandsUtils.Font(argv,context);
-                break;
-            case "bg": // 2 background
-                args = ScriptCommandsUtils.Background(argv,context);
-                break;
-            case "img": // put image on the screen 3
-                args = ScriptCommandsUtils.Image(argv,context,scriptBuildResult);
-                break;
-            // global commands
-            case "gif": // 4
-                args = ScriptCommandsUtils.Gif(argv,context,scriptBuildResult);
-                break;
-            case "sfx": // 5
-                args = ScriptCommandsUtils.SFX(argv,scriptBuildResult);
-                break;
-            case "amb": // 6
-                args = ScriptCommandsUtils.Ambient(argv,scriptBuildResult);
-                break;
-            case "vect": // 7
-                args = ScriptCommandsUtils.Vector(argv,scriptBuildResult);
-                break;
-            default:
-                Utilities.showMessage("Invalid command: " + argv[0], context);
-                break;
+        ReadCommand command = mReadCommands.get(argv[0].toLowerCase());
+
+        if (command == null) {
+            Utilities.showMessage("Invalid command: " + argv[0], context);
+        } else {
+            scriptBuildResult.setCompiledScript(
+                    command.read(argv,context,scriptBuildResult)
+            );
         }
 
-        scriptBuildResult.setCompiledScript(args);
         return scriptBuildResult;
     }
 
@@ -265,6 +244,8 @@ public class ScriptEngine {
             byte sfxID = 1;
             byte[] file;
 
+            String extension = "";
+
             for (byte i = 0; i < resCount; i++) {
                 fis.read(bufInt); // end file position
                 currentPos = ByteUtils.integer(bufInt);
@@ -283,12 +264,16 @@ public class ScriptEngine {
                 Log.d(TAG, "loadResources: HEADER: " +(h&0xff));
                 fis.skip(-1);
                 fis.read(file);
+
                 if (h == 71) { // GIF
                     mResources[i] = Movie.decodeByteArray(file,0,file.length);
+                    extension = "gif";
                 } else if ((h & 0xff) == 137) { // PNG
                     mResources[i] = BitmapFactory.decodeByteArray(file,0,file.length);
+                    extension = "png";
                 } else if (h == 73) { // MP3
                     File tempFile = ScriptEngine.createTempFile(file, ".mp3",context);
+                    extension = "mp3";
                     if (fileLength <= 1048576) { // 1 MB
                         mResources[i] = sfxID;
                         Log.d(TAG, "loadResources: SFX: " + i + " " + sfxID);
@@ -300,7 +285,12 @@ public class ScriptEngine {
                         mResources[i] = player;
                     }
                 } else { // vector content file
+                    extension = "svc";
                     mResources[i] = FileUtils.retrieveSVCFile(file,context.getResources().getDisplayMetrics().density);
+                }
+
+                if (mOnFileResourceListener != null) {
+                    mOnFileResourceListener.onFileResource(file,i,extension);
                 }
 
                 prevPos = currentPos;
@@ -356,5 +346,37 @@ public class ScriptEngine {
         fos.close();
 
         return temp;
+    }
+
+    private void initCommands() {
+        mReadCommands.put("textSize", (argv, context, scriptBuildResult) ->
+                ScriptCommandsUtils.TextSize(argv,context));
+
+        mReadCommands.put("font", (argv, context, scriptBuildResult) ->
+                ScriptCommandsUtils.Font(argv,context));
+
+        mReadCommands.put("bg", (argv, context, scriptBuildResult) ->
+                ScriptCommandsUtils.Background(argv,context));
+
+        mReadCommands.put("img", ScriptCommandsUtils::Image);
+        mReadCommands.put("gif", ScriptCommandsUtils::Gif);
+
+        mReadCommands.put("sfx", (argv, context, scriptBuildResult) ->
+                ScriptCommandsUtils.SFX(argv,scriptBuildResult));
+
+        mReadCommands.put("amb",
+                (argv, context, scriptBuildResult) ->
+                        ScriptCommandsUtils.Ambient(argv,scriptBuildResult));
+
+        mReadCommands.put("vect", (argv, context, scriptBuildResult) ->
+                ScriptCommandsUtils.Vector(argv,scriptBuildResult));
+    }
+
+    private interface ExecuteCommand {
+        ScriptResourceFile execute();
+    }
+
+    private interface ReadCommand {
+        byte[] read(String[] argv, Context context, ScriptBuildResult scriptBuildResult);
     }
 }
