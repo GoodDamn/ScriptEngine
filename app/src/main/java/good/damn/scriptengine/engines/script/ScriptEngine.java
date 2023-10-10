@@ -39,16 +39,9 @@ public class ScriptEngine {
 
     private static final String TAG = "ScriptEngine";
 
-    public static final byte READ_BACKGROUND = 2;
-    public static final byte READ_IMAGE = 3;
-    public static final byte READ_GIF = 4;
-    public static final byte READ_SFX = 5;
-    public static final byte READ_AMBIENT = 6;
-    public static final byte READ_VECTOR = 7;
-
     private final HashMap<String, ReadCommand> mReadCommands = new HashMap<>();
 
-    private final SoundPool mSFXPool;
+    private SoundPool mSFXPool;
 
     private Object[] mResources;
 
@@ -57,6 +50,47 @@ public class ScriptEngine {
     private OnFileResourceListener mOnFileResourceListener;
 
     private OnReadCommandListener mOnReadCommandListener;
+
+    private final ExecuteCommand[] mExecuteCommands = new ExecuteCommand[]{
+            ScriptDefinerUtils::TextSize,
+            ScriptDefinerUtils::Font,
+            (chunk, currentOffset, argSize, textConfig) -> {
+                int color = ScriptDefinerUtils.Background(chunk, currentOffset);
+                Log.d(TAG, "read: BACKGROUND COLOR: " + color);
+                if (mOnReadCommandListener != null)
+                    mOnReadCommandListener.onBackground(color);
+            },
+            (chunk, currentOffset, argSize, textConfig) -> {
+                ScriptGraphicsFile scriptImage = ScriptDefinerUtils.Image(chunk,currentOffset);
+                if (scriptImage != null) {
+                    if (mOnReadCommandListener != null)
+                        mOnReadCommandListener.onImage((Bitmap) mResources[scriptImage.resID],scriptImage);
+                }
+            },
+            (chunk, currentOffset, argSize, textConfig) -> {
+                ScriptGraphicsFile gifScript = ScriptDefinerUtils.Gif(chunk,currentOffset);
+                if (mOnReadCommandListener != null)
+                    mOnReadCommandListener.onGif((Movie) mResources[gifScript.resID], gifScript);
+            },
+            (chunk, currentOffset, argSize, textConfig) -> {
+                ScriptResourceFile sResFile = ScriptDefinerUtils.SFX(chunk,currentOffset);
+                if (mOnReadCommandListener != null) {
+                    Log.d(TAG, "read: SFX: " + mResources[sResFile.resID] + " " + sResFile.resID);
+                    mOnReadCommandListener.onSFX((Byte) mResources[sResFile.resID],mSFXPool);
+                }
+            },
+            (chunk, currentOffset, argSize, textConfig) -> {
+                ScriptResourceFile sResFile = ScriptDefinerUtils.Ambient(chunk,currentOffset);
+                if (mOnReadCommandListener != null)
+                    mOnReadCommandListener.onAmbient((MediaPlayer) mResources[sResFile.resID]);
+            },
+            (chunk, currentOffset, argSize, textConfig) -> {
+                ScriptResourceFile sResFile = ScriptDefinerUtils.Vector(chunk,currentOffset);
+                if (mOnReadCommandListener != null) {
+                    mOnReadCommandListener.onVector((FileSVC) mResources[sResFile.resID],textConfig.mAdvancedText);
+                }
+            },
+    };
 
     public ScriptEngine() {
         initCommands();
@@ -106,7 +140,7 @@ public class ScriptEngine {
             Utilities.showMessage("Invalid command: " + argv[0], context);
         } else {
             scriptBuildResult.setCompiledScript(
-                    command.read(argv,context,scriptBuildResult)
+                    command.read(argv, context, scriptBuildResult)
             );
         }
 
@@ -121,12 +155,12 @@ public class ScriptEngine {
 
         Log.d(TAG, "read: CHUNK_LENGTH: " + " CHUNK[0]:" + chunk[offset]);
 
-        short textLength = Utilities.gn(chunk[offset],chunk[offset+1]);
+        short textLength = Utilities.gn(chunk[offset], chunk[offset + 1]);
 
         offset += 2;
 
         byte[] textBytes = new byte[textLength];
-        System.arraycopy(chunk, offset,textBytes,0,textLength);
+        System.arraycopy(chunk, offset, textBytes, 0, textLength);
 
         String text = new String(textBytes, StandardCharsets.UTF_8).trim();
         ScriptTextConfig textConfig = new ScriptTextConfig();
@@ -143,75 +177,33 @@ public class ScriptEngine {
 
         int i = textLength;
 
-        if (chunk.length == i+offset) { // No script to miss this one
+        if (chunk.length == i + offset) { // No script to miss this one
             mOnCreateScriptTextViewListener.onCreate(textConfig);
             return;
         }
 
-        short scriptSize = (short) (chunk[i+offset] & 0xFF);
+        short scriptSize = (short) (chunk[i + offset] & 0xFF);
         i++;
-        Log.d(TAG, "read: SCRIPT_SIZE: "+ scriptSize);
+        Log.d(TAG, "read: SCRIPT_SIZE: " + scriptSize);
 
-        for (int j = 0; j < scriptSize;) {
-
-            ScriptResourceFile sResFile = null;
-
-            int currentOffset = i+j+offset;
-            int argSize = chunk[currentOffset] & 0xFF;
+        for (int j = 0; j < scriptSize; ) {
+            int currentOffset = i + j + offset;
+            short argSize = (short) (chunk[currentOffset] & 0xFF);
             currentOffset++;
             byte commandIndex = chunk[currentOffset];
 
-            Log.d(TAG, "read: J: "+ j + " SCRIPT_SIZE:" +scriptSize +
+            Log.d(TAG, "read: J: " + j + " SCRIPT_SIZE:" + scriptSize +
                     " OFFSET:" + currentOffset + " ARG_SIZE: " + argSize +
                     " COMMAND_INDEX: " + commandIndex);
-            switch (commandIndex) {
-                case 0: // textSize
-                    ScriptDefinerUtils.TextSize(chunk,currentOffset,argSize,textConfig);
-                    break;
-                case 1: // font
-                    ScriptDefinerUtils.Font(chunk,currentOffset,argSize,textConfig);
-                    break;
-                case READ_BACKGROUND: // bg
-                    int color = ScriptDefinerUtils.Background(chunk,currentOffset);
-                    Log.d(TAG, "read: BACKGROUND COLOR: " + color);
-                    if (mOnReadCommandListener != null)
-                        mOnReadCommandListener.onBackground(color);
-                    break;
-                case READ_IMAGE:
-                    ScriptGraphicsFile scriptImage = ScriptDefinerUtils.Image(chunk,currentOffset);
-                    if (scriptImage == null) {
-                        return;
-                    }
-                    if (mOnReadCommandListener != null)
-                        mOnReadCommandListener.onImage((Bitmap) mResources[scriptImage.resID],scriptImage);
-                    break;
-                case READ_GIF:
-                    ScriptGraphicsFile gifScript = ScriptDefinerUtils.Gif(chunk,currentOffset);
-                    if (mOnReadCommandListener != null)
-                        mOnReadCommandListener.onGif((Movie) mResources[gifScript.resID], gifScript);
-                    break;
-                case READ_SFX:
-                    sResFile = ScriptDefinerUtils.SFX(chunk,currentOffset);
-                    if (mOnReadCommandListener != null) {
-                        Log.d(TAG, "read: SFX: " + mResources[sResFile.resID] + " " + sResFile.resID);
-                        mOnReadCommandListener.onSFX((Byte) mResources[sResFile.resID],mSFXPool);
-                    }
-                    break;
-                case READ_AMBIENT:
-                    sResFile = ScriptDefinerUtils.Ambient(chunk,currentOffset);
-                    if (mOnReadCommandListener != null)
-                        mOnReadCommandListener.onAmbient((MediaPlayer) mResources[sResFile.resID]);
-                    break;
-                case READ_VECTOR:
-                    sResFile = ScriptDefinerUtils.Vector(chunk,currentOffset);
-                    if (mOnReadCommandListener != null) {
-                        mOnReadCommandListener.onVector((FileSVC) mResources[sResFile.resID],textConfig.mAdvancedText);
-                    }
-                    break;
-                default:
-                    mOnReadCommandListener.onError("Invalid command index: " + commandIndex);
-                    break;
+
+            if (commandIndex > mExecuteCommands.length) {
+                mOnReadCommandListener.onError("Invalid command Ref: " + commandIndex);
+                continue;
             }
+
+            mExecuteCommands[commandIndex]
+                    .execute(chunk,currentOffset,argSize,textConfig);
+
             j += argSize;
         }
         mOnCreateScriptTextViewListener.onCreate(textConfig);
@@ -227,7 +219,7 @@ public class ScriptEngine {
 
             int resLength = ByteUtils.integer(bufInt);
 
-            int resPosition = (int) (skcFile.length()-resLength-4);
+            int resPosition = (int) (skcFile.length() - resLength - 4);
 
             fis.skip(resPosition);
 
@@ -255,29 +247,29 @@ public class ScriptEngine {
 
                 file = new byte[fileLength];
 
-                int ret = fileSectionPos-(i+1)*4+prevPos;
+                int ret = fileSectionPos - (i + 1) * 4 + prevPos;
 
                 fis.skip(ret);
                 // Read file content
                 // Read header file
                 byte h = (byte) fis.read();
-                Log.d(TAG, "loadResources: HEADER: " +(h&0xff));
+                Log.d(TAG, "loadResources: HEADER: " + (h & 0xff));
                 fis.skip(-1);
                 fis.read(file);
 
                 if (h == 71) { // GIF
-                    mResources[i] = Movie.decodeByteArray(file,0,file.length);
+                    mResources[i] = Movie.decodeByteArray(file, 0, file.length);
                     extension = "gif";
                 } else if ((h & 0xff) == 137) { // PNG
-                    mResources[i] = BitmapFactory.decodeByteArray(file,0,file.length);
+                    mResources[i] = BitmapFactory.decodeByteArray(file, 0, file.length);
                     extension = "png";
                 } else if (h == 73) { // MP3
-                    File tempFile = ScriptEngine.createTempFile(file, ".mp3",context);
+                    File tempFile = ScriptEngine.createTempFile(file, ".mp3", context);
                     extension = "mp3";
                     if (fileLength <= 1048576) { // 1 MB
                         mResources[i] = sfxID;
                         Log.d(TAG, "loadResources: SFX: " + i + " " + sfxID);
-                        mSFXPool.load(tempFile.getAbsolutePath(),1);
+                        mSFXPool.load(tempFile.getAbsolutePath(), 1);
                         sfxID++;
                     } else {
                         MediaPlayer player = MediaPlayer.create(context, Uri.fromFile(tempFile));
@@ -286,15 +278,15 @@ public class ScriptEngine {
                     }
                 } else { // vector content file
                     extension = "svc";
-                    mResources[i] = FileUtils.retrieveSVCFile(file,context.getResources().getDisplayMetrics().density);
+                    mResources[i] = FileUtils.retrieveSVCFile(file, context.getResources().getDisplayMetrics().density);
                 }
 
                 if (mOnFileResourceListener != null) {
-                    mOnFileResourceListener.onFileResource(file,i,extension);
+                    mOnFileResourceListener.onFileResource(file, i, extension);
                 }
 
                 prevPos = currentPos;
-                fis.skip(-fileLength-ret);
+                fis.skip(-fileLength - ret);
             }
             fis.close();
         } catch (IOException e) {
@@ -319,14 +311,14 @@ public class ScriptEngine {
             return;
         }
 
-        for (File temp: files) {
+        for (File temp : files) {
             if (temp.delete()) {
                 Log.d(TAG, "releaseResources:" + temp.getName() + " IS CLEARED FROM TEMP FOLDER");
             }
         }
     }
 
-    public static File createTempFile(byte[] file,String extension,Context context) throws IOException {
+    public static File createTempFile(byte[] file, String extension, Context context) throws IOException {
 
         File dir = new File(context.getCacheDir() + "/tempTopic");
 
@@ -350,30 +342,33 @@ public class ScriptEngine {
 
     private void initCommands() {
         mReadCommands.put("textSize", (argv, context, scriptBuildResult) ->
-                ScriptCommandsUtils.TextSize(argv,context));
+                ScriptCommandsUtils.TextSize(argv, context));
 
         mReadCommands.put("font", (argv, context, scriptBuildResult) ->
-                ScriptCommandsUtils.Font(argv,context));
+                ScriptCommandsUtils.Font(argv, context));
 
         mReadCommands.put("bg", (argv, context, scriptBuildResult) ->
-                ScriptCommandsUtils.Background(argv,context));
+                ScriptCommandsUtils.Background(argv, context));
 
         mReadCommands.put("img", ScriptCommandsUtils::Image);
         mReadCommands.put("gif", ScriptCommandsUtils::Gif);
 
         mReadCommands.put("sfx", (argv, context, scriptBuildResult) ->
-                ScriptCommandsUtils.SFX(argv,scriptBuildResult));
+                ScriptCommandsUtils.SFX(argv, scriptBuildResult));
 
         mReadCommands.put("amb",
                 (argv, context, scriptBuildResult) ->
-                        ScriptCommandsUtils.Ambient(argv,scriptBuildResult));
+                        ScriptCommandsUtils.Ambient(argv, scriptBuildResult));
 
         mReadCommands.put("vect", (argv, context, scriptBuildResult) ->
-                ScriptCommandsUtils.Vector(argv,scriptBuildResult));
+                ScriptCommandsUtils.Vector(argv, scriptBuildResult));
     }
 
     private interface ExecuteCommand {
-        ScriptResourceFile execute();
+        void execute(byte[] chunk,
+                     int currentOffset,
+                     short argSize,
+                     ScriptTextConfig textConfig);
     }
 
     private interface ReadCommand {
