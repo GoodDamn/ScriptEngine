@@ -19,11 +19,11 @@ public interface OnReadCommandListener {
 
     void onGif(Movie movie, ScriptGraphicsFile gifScript);
 
-    void onSFX(byte soundID, SoundPool soundPool);
+    void onSFX(byte soundID, SoundPool soundPool, String fileName);
 
-    void onAmbient(MediaPlayer mediaPlayer);
+    void onAmbient(MediaPlayer mediaPlayer, String fileName);
 
     void onError(String errorMsg);
 
-    void onVector(FileSVC fileSVC, String[] advancedText);
+    void onVector(FileSVC fileSVC, String[] advancedText, String fileName);
 }

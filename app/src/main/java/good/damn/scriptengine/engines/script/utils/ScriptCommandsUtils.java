@@ -280,8 +280,8 @@ public class ScriptCommandsUtils {
         byte[] origin = new byte[2];
         origin[0] = 7; // argSize (2 args * 2 bytes) + 4 next args
         origin[1] = 4; // commandIndex
-        short xPos = Short.parseShort(argv[2]);
-        short yPos = Short.parseShort(argv[3]);
+        short xPos = (short) Float.parseFloat(argv[2]);
+        short yPos = (short) Float.parseFloat(argv[3]);
 
         if (xPos > displayMetrics.widthPixels || xPos < 0) {
             Utilities.showMessage("img command hasn't executed("+

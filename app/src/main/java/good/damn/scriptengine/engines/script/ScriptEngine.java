@@ -43,7 +43,7 @@ public class ScriptEngine {
 
     private SoundPool mSFXPool;
 
-    private Object[] mResources;
+    private ResourceFile[] mResources;
 
     private OnCreateScriptTextViewListener mOnCreateScriptTextViewListener;
 
@@ -62,32 +62,55 @@ public class ScriptEngine {
             },
             (chunk, currentOffset, argSize, textConfig) -> {
                 ScriptGraphicsFile scriptImage = ScriptDefinerUtils.Image(chunk,currentOffset);
-                if (scriptImage != null) {
-                    if (mOnReadCommandListener != null)
-                        mOnReadCommandListener.onImage((Bitmap) mResources[scriptImage.resID],scriptImage);
+                if (scriptImage == null) {
+                    return;
                 }
+                ResourceFile res = mResources[scriptImage.resID];
+                scriptImage.fileName = res.fileName;
+                if (mOnReadCommandListener != null)
+                    mOnReadCommandListener.onImage((Bitmap) res.resource,scriptImage);
             },
             (chunk, currentOffset, argSize, textConfig) -> {
                 ScriptGraphicsFile gifScript = ScriptDefinerUtils.Gif(chunk,currentOffset);
+                if (gifScript == null) {
+                    return;
+                }
+                ResourceFile res = mResources[gifScript.resID];
+                gifScript.fileName = res.fileName;
                 if (mOnReadCommandListener != null)
-                    mOnReadCommandListener.onGif((Movie) mResources[gifScript.resID], gifScript);
+                    mOnReadCommandListener.onGif((Movie) res.resource, gifScript);
             },
             (chunk, currentOffset, argSize, textConfig) -> {
                 ScriptResourceFile sResFile = ScriptDefinerUtils.SFX(chunk,currentOffset);
+                if (sResFile == null) {
+                    return;
+                }
+                ResourceFile res = mResources[sResFile.resID];
                 if (mOnReadCommandListener != null) {
-                    Log.d(TAG, "read: SFX: " + mResources[sResFile.resID] + " " + sResFile.resID);
-                    mOnReadCommandListener.onSFX((Byte) mResources[sResFile.resID],mSFXPool);
+                    Log.d(TAG, "read: SFX: " + res + " " + sResFile.resID);
+                    mOnReadCommandListener.onSFX((Byte) res.resource,mSFXPool, res.fileName);
                 }
             },
             (chunk, currentOffset, argSize, textConfig) -> {
                 ScriptResourceFile sResFile = ScriptDefinerUtils.Ambient(chunk,currentOffset);
+                if (sResFile == null) {
+                    return;
+                }
+
+                ResourceFile res = mResources[sResFile.resID];
+
                 if (mOnReadCommandListener != null)
-                    mOnReadCommandListener.onAmbient((MediaPlayer) mResources[sResFile.resID]);
+                    mOnReadCommandListener.onAmbient((MediaPlayer) res.resource,res.fileName);
             },
             (chunk, currentOffset, argSize, textConfig) -> {
                 ScriptResourceFile sResFile = ScriptDefinerUtils.Vector(chunk,currentOffset);
+                if (sResFile == null) {
+                    return;
+                }
+
+                ResourceFile res = mResources[sResFile.resID];
                 if (mOnReadCommandListener != null) {
-                    mOnReadCommandListener.onVector((FileSVC) mResources[sResFile.resID],textConfig.mAdvancedText);
+                    mOnReadCommandListener.onVector((FileSVC) res.resource,textConfig.mAdvancedText, res.fileName);
                 }
             },
     };
@@ -225,7 +248,7 @@ public class ScriptEngine {
 
             byte resCount = (byte) fis.read();
 
-            mResources = new Object[resCount];
+            mResources = new ResourceFile[resCount];
 
             int prevPos = 0;
             int currentPos;
@@ -257,29 +280,35 @@ public class ScriptEngine {
                 fis.skip(-1);
                 fis.read(file);
 
+                ResourceFile resourceFile = new ResourceFile();
+
                 if (h == 71) { // GIF
-                    mResources[i] = Movie.decodeByteArray(file, 0, file.length);
+                    resourceFile.resource = Movie.decodeByteArray(file, 0, file.length);
                     extension = "gif";
                 } else if ((h & 0xff) == 137) { // PNG
-                    mResources[i] = BitmapFactory.decodeByteArray(file, 0, file.length);
+                    resourceFile.resource = BitmapFactory.decodeByteArray(file, 0, file.length);
                     extension = "png";
                 } else if (h == 73) { // MP3
                     File tempFile = ScriptEngine.createTempFile(file, ".mp3", context);
                     extension = "mp3";
                     if (fileLength <= 1048576) { // 1 MB
-                        mResources[i] = sfxID;
+                        resourceFile.resource = sfxID;
                         Log.d(TAG, "loadResources: SFX: " + i + " " + sfxID);
                         mSFXPool.load(tempFile.getAbsolutePath(), 1);
                         sfxID++;
                     } else {
                         MediaPlayer player = MediaPlayer.create(context, Uri.fromFile(tempFile));
                         player.setLooping(true);
-                        mResources[i] = player;
+                        resourceFile.resource = player;
                     }
                 } else { // vector content file
                     extension = "svc";
-                    mResources[i] = FileUtils.retrieveSVCFile(file, context.getResources().getDisplayMetrics().density);
+                    resourceFile.resource = FileUtils.retrieveSVCFile(file, context.getResources().getDisplayMetrics().density);
                 }
+
+                resourceFile.fileName = i + "." + extension;
+
+                mResources[i] = resourceFile;
 
                 if (mOnFileResourceListener != null) {
                     mOnFileResourceListener.onFileResource(file, i, extension);
@@ -362,6 +391,11 @@ public class ScriptEngine {
 
         mReadCommands.put("vect", (argv, context, scriptBuildResult) ->
                 ScriptCommandsUtils.Vector(argv, scriptBuildResult));
+    }
+
+    private class ResourceFile {
+        public Object resource;
+        public String fileName;
     }
 
     private interface ExecuteCommand {

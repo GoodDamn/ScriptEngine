@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -82,6 +83,12 @@ public class PiecesListFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_pieces_list, container, false);
 
         Activity context = getActivity();
+
+        if (context == null) {
+            return null;
+        }
+
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
 
         RecyclerView piecesRecyclerView = v.findViewById(R.id.f_pieces_list_recyclerView);
         piecesRecyclerView.setHasFixedSize(false);
@@ -216,26 +223,28 @@ public class PiecesListFragment extends Fragment {
                                             }
 
                                             @Override
-                                            public void onImage(Bitmap bitmap, ScriptGraphicsFile graphicsFile) {
-                                                mTempScriptCode += "\nimg ";
+                                            public void onImage(Bitmap bitmap ,ScriptGraphicsFile graphicsFile) {
+                                                mTempScriptCode += "\nimg " + graphicsFile.fileName
+                                                        + graphicsFile.xyString(metrics)
+                                                        + graphicsFile.sizeString(metrics);
                                                 Log.d(TAG, "onImage: SCRIPT: " + mTempScriptCode);
                                             }
 
                                             @Override
                                             public void onGif(Movie movie, ScriptGraphicsFile gifScript) {
-                                                mTempScriptCode += "\ngif ";
+                                                mTempScriptCode += "\ngif " + gifScript.fileName + gifScript.xyString(metrics);
                                                 Log.d(TAG, "onGif: SCRIPT: " + mTempScriptCode);
                                             }
 
                                             @Override
-                                            public void onSFX(byte soundID, SoundPool soundPool) {
-                                                mTempScriptCode += "\nsfx ";
+                                            public void onSFX(byte soundID, SoundPool soundPool, String fileName) {
+                                                mTempScriptCode += "\nsfx " + fileName;
                                                 Log.d(TAG, "onSFX: SCRIPT: " + mTempScriptCode);
                                             }
 
                                             @Override
-                                            public void onAmbient(MediaPlayer mediaPlayer) {
-                                                mTempScriptCode += "\namb ";
+                                            public void onAmbient(MediaPlayer mediaPlayer, String fileName) {
+                                                mTempScriptCode += "\namb " + fileName;
                                                 Log.d(TAG, "onAmbient: SCRIPT: "+mTempScriptCode);
                                             }
 
@@ -245,8 +254,8 @@ public class PiecesListFragment extends Fragment {
                                             }
 
                                             @Override
-                                            public void onVector(FileSVC fileSVC, String[] advancedText) {
-                                                mTempScriptCode += "\nvect ";
+                                            public void onVector(FileSVC fileSVC, String[] advancedText, String fileName) {
+                                                mTempScriptCode += "\nvect " + fileName;
                                                 Log.d(TAG, "onVector: SCRIPT: "+mTempScriptCode);
                                             }
                                         });
@@ -307,56 +316,8 @@ public class PiecesListFragment extends Fragment {
                                         });
                                         
                                         scriptEngine.loadResources(file,context);
-                                        
-                                        //mPieces = new ArrayList<>();
+
                                         scriptReader.next();
-
-                                        /*
-                                        try {
-                                            FileInputStream fis = new FileInputStream(file);
-                                            short size = (short) (fis.read() & 0xff);
-
-                                            mPieces = new ArrayList<>();
-
-                                            byte[] bufShort = new byte[2];
-
-                                            ScriptEngine scriptEngine = new ScriptEngine();
-
-                                            for (short i = 0; i < size; i++) {
-                                                fis.read(bufShort); // read text size
-
-                                                byte[] text = new byte[ByteUtils.Short(bufShort,0)];
-
-                                                fis.read(bufShort); // read script size
-
-                                                byte[] script = new byte[ByteUtils.Short(bufShort,0)];
-
-                                                fis.read(text);
-                                                fis.read(script);
-
-                                                String t = new String(text, StandardCharsets.UTF_8);
-                                                String s = new String(script, StandardCharsets.UTF_8);
-
-                                                Log.d(TAG, "onFile: INDEX " + i + "||||||||||||||||||||||");
-                                                Log.d(TAG, "onFile: " + t);
-                                                Log.d(TAG, "onFile: "+s);
-
-                                                Piece piece = new Piece(FileReaderUtils.BlankChunk(text),t);
-                                                ScriptEditorFragment.CompileScript(t,s,piece,scriptEngine,context);
-                                                mPieces.add(piece);
-                                            }
-
-                                            fis.close();
-
-                                            piecesAdapter.setPieces(mPieces);
-                                            piecesAdapter.notifyDataSetChanged();
-
-                                            mFileNameSSE = file.getName();
-
-                                        } catch (IOException e) {
-                                            e.printStackTrace();
-                                        }
-*/
                                     }
                                 }, Environment.getExternalStorageDirectory().getAbsolutePath()+"/ScriptProjects");
                     }

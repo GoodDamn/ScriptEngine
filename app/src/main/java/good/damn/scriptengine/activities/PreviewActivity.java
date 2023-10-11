@@ -189,7 +189,7 @@ public class PreviewActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onSFX(byte soundID, SoundPool soundPool) {
+            public void onSFX(byte soundID, SoundPool soundPool, String fileName) {
                 soundPool.play(soundID,
                         1.0f,
                         1.0f,
@@ -199,7 +199,7 @@ public class PreviewActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAmbient(MediaPlayer nextPlayer) {
+            public void onAmbient(MediaPlayer nextPlayer, String fileName) {
                 if (mediaPlayerCurrent != null) {
                     mediaPlayerCurrent.stop();
                     mediaPlayerCurrent.release();
@@ -209,7 +209,7 @@ public class PreviewActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onVector(FileSVC fileSVC, String[] advancedText) {
+            public void onVector(FileSVC fileSVC, String[] advancedText, String fileName) {
                 root_FrameLayout.setEnabled(false);
 
                 mHasTraceView = true;
