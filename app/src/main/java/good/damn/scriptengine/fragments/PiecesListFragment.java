@@ -43,6 +43,7 @@ import good.damn.scriptengine.engines.script.interfaces.OnCreateScriptTextViewLi
 import good.damn.scriptengine.engines.script.interfaces.OnReadCommandListener;
 import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
 import good.damn.scriptengine.engines.script.models.ScriptTextConfig;
+import good.damn.scriptengine.engines.script.utils.ToolsScriptEngine;
 import good.damn.scriptengine.interfaces.OnClickTextPiece;
 import good.damn.scriptengine.interfaces.OnFileResourceListener;
 import good.damn.scriptengine.interfaces.ScriptReaderListener;
@@ -212,7 +213,7 @@ public class PiecesListFragment extends Fragment {
                                             }
                                         }
 
-                                        final ScriptEngine scriptEngine = new ScriptEngine(new OnReadCommandListener() {
+                                        final ToolsScriptEngine scriptEngine = new ToolsScriptEngine(new OnReadCommandListener() {
                                             @Override
                                             public void onBackground(int color) {
                                                 mTempScriptCode += "\nbg #" + Integer.toHexString(color);
@@ -234,14 +235,14 @@ public class PiecesListFragment extends Fragment {
                                             }
 
                                             @Override
-                                            public void onSFX(byte soundID, SoundPool soundPool, String fileName) {
-                                                mTempScriptCode += "\nsfx " + fileName;
+                                            public void onSFX(ScriptEngine.ResourceFile<Byte> sfx, SoundPool soundPool) {
+                                                mTempScriptCode += "\nsfx " + sfx.fileName;
                                                 Log.d(TAG, "onSFX: SCRIPT: " + mTempScriptCode);
                                             }
 
                                             @Override
-                                            public void onAmbient(MediaPlayer mediaPlayer, String fileName) {
-                                                mTempScriptCode += "\namb " + fileName;
+                                            public void onAmbient(ScriptEngine.ResourceFile<MediaPlayer> amb) {
+                                                mTempScriptCode += "\namb " + amb.fileName;
                                                 Log.d(TAG, "onAmbient: SCRIPT: "+mTempScriptCode);
                                             }
 
@@ -251,8 +252,8 @@ public class PiecesListFragment extends Fragment {
                                             }
 
                                             @Override
-                                            public void onVector(FileSVC fileSVC, String[] advancedText, String fileName) {
-                                                mTempScriptCode += "\nvect " + fileName;
+                                            public void onVector(ScriptEngine.ResourceFile<FileSVC> vect, String[] advancedText) {
+                                                mTempScriptCode += "\nvect " + vect.fileName;
                                                 Log.d(TAG, "onVector: SCRIPT: "+mTempScriptCode);
                                             }
                                         });

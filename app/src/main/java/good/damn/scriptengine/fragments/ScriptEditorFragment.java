@@ -87,10 +87,10 @@ public class ScriptEditorFragment extends Fragment {
             @Override public void onBackground(int color) {}
             @Override public void onImage(Bitmap bitmap, ScriptGraphicsFile graphicsFile) {}
             @Override public void onGif(Movie movie, ScriptGraphicsFile gifScript) {}
-            @Override public void onSFX(byte soundID, SoundPool soundPool, String fileName) {}
-            @Override public void onAmbient(MediaPlayer mediaPlayer, String fileName) {}
+            @Override public void onSFX(ScriptEngine.ResourceFile<Byte> b, SoundPool soundPool) {}
+            @Override public void onAmbient(ScriptEngine.ResourceFile<MediaPlayer> amb) {}
             @Override public void onError(String errorMsg) {}
-            @Override public void onVector(FileSVC fileSVC, String[] advancedText, String fileName) {}
+            @Override public void onVector(ScriptEngine.ResourceFile<FileSVC> vect, String[] advancedText) {}
         });
 
         scriptEngine.setOnCreateViewListener(new OnCreateScriptTextViewListener() {

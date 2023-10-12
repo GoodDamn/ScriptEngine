@@ -8,6 +8,7 @@ import android.media.SoundPool;
 
 import java.util.List;
 
+import good.damn.scriptengine.engines.script.ScriptEngine;
 import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
 import good.damn.traceview.models.FileSVC;
 
@@ -19,11 +20,11 @@ public interface OnReadCommandListener {
 
     void onGif(Movie movie, ScriptGraphicsFile gifScript);
 
-    void onSFX(byte soundID, SoundPool soundPool, String fileName);
+    void onSFX(ScriptEngine.ResourceFile<Byte> sfx, SoundPool soundPool);
 
-    void onAmbient(MediaPlayer mediaPlayer, String fileName);
+    void onAmbient(ScriptEngine.ResourceFile<MediaPlayer> amb);
 
     void onError(String errorMsg);
 
-    void onVector(FileSVC fileSVC, String[] advancedText, String fileName);
+    void onVector(ScriptEngine.ResourceFile<FileSVC> vect, String[] advancedText);
 }

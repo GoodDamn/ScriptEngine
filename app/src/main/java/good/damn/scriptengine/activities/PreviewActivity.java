@@ -74,6 +74,7 @@ public class PreviewActivity extends AppCompatActivity {
     private MediaPlayer mediaPlayerCurrent;
 
     private ScriptEngine mScriptEngine;
+    private ScriptReader mScriptReader;
 
     private void releaseResources() {
         Log.d(TAG, "releaseResources: ");
@@ -111,8 +112,6 @@ public class PreviewActivity extends AppCompatActivity {
 
         File skcFile = new File(path);
 
-        ScriptReader scriptReader = new ScriptReader(mScriptEngine, skcFile);
-
         FrameLayout root_FrameLayout = new FrameLayout(context);
 
         ColorRevealView mColorRevealView = new ColorRevealView(context);
@@ -130,8 +129,8 @@ public class PreviewActivity extends AppCompatActivity {
                 ImageView imageView = new ImageView(context);
                 imageView.setImageBitmap(bitmap);
                 FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                params.width = (int) (metrics.density * scriptImage.width);
-                params.height = (int) (metrics.density * scriptImage.height);
+                params.width = (int) (dp * scriptImage.width);
+                params.height = (int) (dp * scriptImage.height);
                 params.gravity = Gravity.START | Gravity.TOP;
                 imageView.setScaleX(.0f);
                 imageView.setScaleY(.0f);
@@ -175,8 +174,8 @@ public class PreviewActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onSFX(byte soundID, SoundPool soundPool, String fileName) {
-                soundPool.play(soundID,
+            public void onSFX(ScriptEngine.ResourceFile<Byte> sfx, SoundPool soundPool) {
+                soundPool.play(sfx.resource,
                         1.0f,
                         1.0f,
                         1,
@@ -185,17 +184,17 @@ public class PreviewActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAmbient(MediaPlayer nextPlayer, String fileName) {
+            public void onAmbient(ScriptEngine.ResourceFile<MediaPlayer> amb) {
                 if (mediaPlayerCurrent != null) {
                     mediaPlayerCurrent.stop();
                     mediaPlayerCurrent.release();
                 }
-                mediaPlayerCurrent = nextPlayer;
+                mediaPlayerCurrent = amb.resource;
                 mediaPlayerCurrent.start();
             }
 
             @Override
-            public void onVector(FileSVC fileSVC, String[] advancedText, String fileName) {
+            public void onVector(ScriptEngine.ResourceFile<FileSVC> vect, String[] advancedText) {
                 root_FrameLayout.setEnabled(false);
 
                 mHasTraceView = true;
@@ -242,7 +241,7 @@ public class PreviewActivity extends AppCompatActivity {
                 traceView.setId(ViewCompat.generateViewId());
                 traceView.setBackgroundColor(0);
 
-                traceView.setVectorsSource(fileSVC);
+                traceView.setVectorsSource(vect.resource);
                 traceView.setOnTraceFinishListener(new OnTraceFinishListener() {
                     @Override
                     public void onFinish() {
@@ -266,7 +265,7 @@ public class PreviewActivity extends AppCompatActivity {
                                 .withEndAction(()-> root_FrameLayout.removeView(traceView))
                                 .start();
 
-                        scriptReader.next();
+                        mScriptReader.next();
                     }
                 });
 
@@ -290,7 +289,9 @@ public class PreviewActivity extends AppCompatActivity {
         });
         mScriptEngine.loadResources(skcFile,context);
 
-        scriptReader.setScriptReaderListener(new ScriptReaderListener() {
+        mScriptReader = new ScriptReader(mScriptEngine, skcFile);
+
+        mScriptReader.setScriptReaderListener(new ScriptReaderListener() {
             @Override
             public void onReadFinish() {
                 root_FrameLayout.setEnabled(false);
@@ -329,7 +330,7 @@ public class PreviewActivity extends AppCompatActivity {
                                     .translationY(265*metrics.density)
                                     .setDuration(1850)
                                     .withStartAction(()-> {
-                                        scriptReader.next();
+                                        mScriptReader.next();
                                         root_FrameLayout.setEnabled(true);
                                     }).setStartDelay(700)
                                     .withEndAction(()-> root_FrameLayout.removeView(textViewSet))
@@ -397,7 +398,7 @@ public class PreviewActivity extends AppCompatActivity {
                         if (mCurrentViewPhrase != null) {
                             mCurrentViewPhrase.fadeOutTransition(sRandom, 2.1f);
                         }
-                        scriptReader.next();
+                        mScriptReader.next();
                         break;
                 }
 
@@ -412,7 +413,7 @@ public class PreviewActivity extends AppCompatActivity {
         // Show view after configured options for activity
         setContentView(root_FrameLayout);
 
-        scriptReader.next();
+        mScriptReader.next();
     }
 
     @Override

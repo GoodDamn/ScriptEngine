@@ -10,6 +10,7 @@ import android.media.MediaPlayer;
 import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.MediaStore;
 import android.text.SpannableString;
 import android.util.Log;
 
@@ -82,25 +83,25 @@ public class ScriptEngine {
                 if (sResFile == null) {
                     return;
                 }
-                ResourceFile res = mResources[sResFile.resID];
-                Log.d(TAG, "read: SFX: " + res + " " + sResFile.resID);
-                mOnReadCommandListener.onSFX((Byte) res.resource,mSFXPool, res.fileName);
+                mOnReadCommandListener.onSFX(
+                        (ScriptEngine.ResourceFile<Byte>) mResources[sResFile.resID],
+                        mSFXPool);
             },
             (chunk, currentOffset, argSize, textConfig) -> {
                 ScriptResourceFile sResFile = ScriptDefinerUtils.Ambient(chunk,currentOffset);
                 if (sResFile == null) {
                     return;
                 }
-                ResourceFile res = mResources[sResFile.resID];
-                mOnReadCommandListener.onAmbient((MediaPlayer) res.resource,res.fileName);
+                mOnReadCommandListener.onAmbient((ScriptEngine.ResourceFile<MediaPlayer>) mResources[sResFile.resID]);
             },
             (chunk, currentOffset, argSize, textConfig) -> {
                 ScriptResourceFile sResFile = ScriptDefinerUtils.Vector(chunk,currentOffset);
                 if (sResFile == null) {
                     return;
                 }
-                ResourceFile res = mResources[sResFile.resID];
-                mOnReadCommandListener.onVector((FileSVC) res.resource,textConfig.mAdvancedText, res.fileName);
+                mOnReadCommandListener.onVector(
+                        (ScriptEngine.ResourceFile<FileSVC>) mResources[sResFile.resID],
+                        textConfig.mAdvancedText);
             },
     };
 
@@ -242,7 +243,7 @@ public class ScriptEngine {
                 fis.skip(-1);
                 fis.read(file);
 
-                ResourceFile resourceFile = new ResourceFile();
+                ResourceFile<Object> resourceFile = new ResourceFile<>();
 
                 if (h == 71) { // GIF
                     resourceFile.resource = Movie.decodeByteArray(file, 0, file.length);
@@ -329,8 +330,8 @@ public class ScriptEngine {
         return temp;
     }
 
-    private static class ResourceFile {
-        public Object resource;
+    public static class ResourceFile<T> {
+        public T resource;
         public String fileName;
     }
 
