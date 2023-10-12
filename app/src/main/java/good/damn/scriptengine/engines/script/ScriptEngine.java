@@ -13,6 +13,8 @@ import android.os.Build;
 import android.text.SpannableString;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -39,8 +41,6 @@ public class ScriptEngine {
 
     private static final String TAG = "ScriptEngine";
 
-    private final HashMap<String, ReadCommand> mReadCommands = new HashMap<>();
-
     private SoundPool mSFXPool;
 
     private ResourceFile[] mResources;
@@ -57,8 +57,7 @@ public class ScriptEngine {
             (chunk, currentOffset, argSize, textConfig) -> {
                 int color = ScriptDefinerUtils.Background(chunk, currentOffset);
                 Log.d(TAG, "read: BACKGROUND COLOR: " + color);
-                if (mOnReadCommandListener != null)
-                    mOnReadCommandListener.onBackground(color);
+                mOnReadCommandListener.onBackground(color);
             },
             (chunk, currentOffset, argSize, textConfig) -> {
                 ScriptGraphicsFile scriptImage = ScriptDefinerUtils.Image(chunk,currentOffset);
@@ -67,8 +66,7 @@ public class ScriptEngine {
                 }
                 ResourceFile res = mResources[scriptImage.resID];
                 scriptImage.fileName = res.fileName;
-                if (mOnReadCommandListener != null)
-                    mOnReadCommandListener.onImage((Bitmap) res.resource,scriptImage);
+                mOnReadCommandListener.onImage((Bitmap) res.resource,scriptImage);
             },
             (chunk, currentOffset, argSize, textConfig) -> {
                 ScriptGraphicsFile gifScript = ScriptDefinerUtils.Gif(chunk,currentOffset);
@@ -77,8 +75,7 @@ public class ScriptEngine {
                 }
                 ResourceFile res = mResources[gifScript.resID];
                 gifScript.fileName = res.fileName;
-                if (mOnReadCommandListener != null)
-                    mOnReadCommandListener.onGif((Movie) res.resource, gifScript);
+                mOnReadCommandListener.onGif((Movie) res.resource, gifScript);
             },
             (chunk, currentOffset, argSize, textConfig) -> {
                 ScriptResourceFile sResFile = ScriptDefinerUtils.SFX(chunk,currentOffset);
@@ -86,37 +83,29 @@ public class ScriptEngine {
                     return;
                 }
                 ResourceFile res = mResources[sResFile.resID];
-                if (mOnReadCommandListener != null) {
-                    Log.d(TAG, "read: SFX: " + res + " " + sResFile.resID);
-                    mOnReadCommandListener.onSFX((Byte) res.resource,mSFXPool, res.fileName);
-                }
+                Log.d(TAG, "read: SFX: " + res + " " + sResFile.resID);
+                mOnReadCommandListener.onSFX((Byte) res.resource,mSFXPool, res.fileName);
             },
             (chunk, currentOffset, argSize, textConfig) -> {
                 ScriptResourceFile sResFile = ScriptDefinerUtils.Ambient(chunk,currentOffset);
                 if (sResFile == null) {
                     return;
                 }
-
                 ResourceFile res = mResources[sResFile.resID];
-
-                if (mOnReadCommandListener != null)
-                    mOnReadCommandListener.onAmbient((MediaPlayer) res.resource,res.fileName);
+                mOnReadCommandListener.onAmbient((MediaPlayer) res.resource,res.fileName);
             },
             (chunk, currentOffset, argSize, textConfig) -> {
                 ScriptResourceFile sResFile = ScriptDefinerUtils.Vector(chunk,currentOffset);
                 if (sResFile == null) {
                     return;
                 }
-
                 ResourceFile res = mResources[sResFile.resID];
-                if (mOnReadCommandListener != null) {
-                    mOnReadCommandListener.onVector((FileSVC) res.resource,textConfig.mAdvancedText, res.fileName);
-                }
+                mOnReadCommandListener.onVector((FileSVC) res.resource,textConfig.mAdvancedText, res.fileName);
             },
     };
 
-    public ScriptEngine() {
-        initCommands();
+    public ScriptEngine(@NonNull OnReadCommandListener rr) {
+        mOnReadCommandListener = rr;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 
@@ -141,33 +130,6 @@ public class ScriptEngine {
 
     public void setFileResourceListener(OnFileResourceListener listener) {
         mOnFileResourceListener = listener;
-    }
-
-    public void setReadCommandListener(OnReadCommandListener onReadCommandListener) {
-        mOnReadCommandListener = onReadCommandListener;
-    }
-
-    public ScriptBuildResult compile(String line, Context context) {
-        String[] argv = line.split("\\s+");
-
-        ScriptBuildResult scriptBuildResult = new ScriptBuildResult();
-
-        argv[0] = argv[0].trim();
-
-        if (argv[0].isEmpty())
-            return scriptBuildResult;
-
-        ReadCommand command = mReadCommands.get(argv[0].toLowerCase());
-
-        if (command == null) {
-            Utilities.showMessage("Invalid command: " + argv[0], context);
-        } else {
-            scriptBuildResult.setCompiledScript(
-                    command.read(argv, context, scriptBuildResult)
-            );
-        }
-
-        return scriptBuildResult;
     }
 
     public void read(byte[] chunk) {
@@ -324,7 +286,6 @@ public class ScriptEngine {
     }
 
     public void releaseResources(Context context) {
-
         mSFXPool.autoPause();
         mSFXPool.release();
 
@@ -348,7 +309,6 @@ public class ScriptEngine {
     }
 
     public static File createTempFile(byte[] file, String extension, Context context) throws IOException {
-
         File dir = new File(context.getCacheDir() + "/tempTopic");
 
         if (!dir.exists()) {
@@ -369,31 +329,7 @@ public class ScriptEngine {
         return temp;
     }
 
-    private void initCommands() {
-        mReadCommands.put("textSize", (argv, context, scriptBuildResult) ->
-                ScriptCommandsUtils.TextSize(argv, context));
-
-        mReadCommands.put("font", (argv, context, scriptBuildResult) ->
-                ScriptCommandsUtils.Font(argv, context));
-
-        mReadCommands.put("bg", (argv, context, scriptBuildResult) ->
-                ScriptCommandsUtils.Background(argv, context));
-
-        mReadCommands.put("img", ScriptCommandsUtils::Image);
-        mReadCommands.put("gif", ScriptCommandsUtils::Gif);
-
-        mReadCommands.put("sfx", (argv, context, scriptBuildResult) ->
-                ScriptCommandsUtils.SFX(argv, scriptBuildResult));
-
-        mReadCommands.put("amb",
-                (argv, context, scriptBuildResult) ->
-                        ScriptCommandsUtils.Ambient(argv, scriptBuildResult));
-
-        mReadCommands.put("vect", (argv, context, scriptBuildResult) ->
-                ScriptCommandsUtils.Vector(argv, scriptBuildResult));
-    }
-
-    private class ResourceFile {
+    private static class ResourceFile {
         public Object resource;
         public String fileName;
     }
@@ -403,9 +339,5 @@ public class ScriptEngine {
                      int currentOffset,
                      short argSize,
                      ScriptTextConfig textConfig);
-    }
-
-    private interface ReadCommand {
-        byte[] read(String[] argv, Context context, ScriptBuildResult scriptBuildResult);
     }
 }

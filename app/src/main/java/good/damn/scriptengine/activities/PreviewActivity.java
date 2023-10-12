@@ -111,9 +111,6 @@ public class PreviewActivity extends AppCompatActivity {
 
         File skcFile = new File(path);
 
-        mScriptEngine = new ScriptEngine();
-        mScriptEngine.loadResources(skcFile,context);
-
         ScriptReader scriptReader = new ScriptReader(mScriptEngine, skcFile);
 
         FrameLayout root_FrameLayout = new FrameLayout(context);
@@ -122,18 +119,7 @@ public class PreviewActivity extends AppCompatActivity {
 
         Typeface defTypeface = Typeface.createFromAsset(getAssets(), "mplus_rounded1c_thin.ttf");
 
-        scriptReader.setScriptReaderListener(new ScriptReaderListener() {
-            @Override
-            public void onReadFinish() {
-                root_FrameLayout.setEnabled(false);
-                new Handler().postDelayed(() -> {
-                    releaseResources();
-                    finish();
-                }, 3000);
-            }
-        });
-
-        mScriptEngine.setReadCommandListener(new OnReadCommandListener() {
+        mScriptEngine = new ScriptEngine(new OnReadCommandListener() {
             @Override
             public void onBackground(int color) {
                 mColorRevealView.start(color);
@@ -300,6 +286,18 @@ public class PreviewActivity extends AppCompatActivity {
             @Override
             public void onError(String errorMsg) {
                 Utilities.showMessage(errorMsg, context);
+            }
+        });
+        mScriptEngine.loadResources(skcFile,context);
+
+        scriptReader.setScriptReaderListener(new ScriptReaderListener() {
+            @Override
+            public void onReadFinish() {
+                root_FrameLayout.setEnabled(false);
+                new Handler().postDelayed(() -> {
+                    releaseResources();
+                    finish();
+                }, 3000);
             }
         });
 

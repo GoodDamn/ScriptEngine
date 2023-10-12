@@ -242,8 +242,8 @@ public class ScriptCommandsUtils {
 
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
 
-        short xPos = Short.parseShort(argv[4]);
-        short yPos = Short.parseShort(argv[5]);
+        float xPos = Float.parseFloat(argv[4]);
+        float yPos = Float.parseFloat(argv[5]);
 
         if (xPos > displayMetrics.widthPixels || xPos < 0) {
             Utilities.showMessage("img command hasn't executed("+ xPos + " on X Axis doesn't belong to [0;"+displayMetrics.widthPixels+"]",
@@ -264,8 +264,8 @@ public class ScriptCommandsUtils {
         return ArrayUtils.concatByteArrays(origin,
                 gb(Short.parseShort(argv[2])), // width of image
                 gb(Short.parseShort(argv[3])), // height of image
-                gb((short) (1000.0f * xPos / displayMetrics.widthPixels)), // normal value of X pos
-                gb((short) (1000.0f * yPos / displayMetrics.heightPixels)), // normal value of Y pos
+                gb((short) (xPos / displayMetrics.widthPixels * Short.MAX_VALUE)), // normal value of X pos
+                gb((short) (yPos / displayMetrics.heightPixels * Short.MAX_VALUE)), // normal value of Y pos
                 new byte[]{-1}); // res mark
     }
 
@@ -280,8 +280,8 @@ public class ScriptCommandsUtils {
         byte[] origin = new byte[2];
         origin[0] = 7; // argSize (2 args * 2 bytes) + 4 next args
         origin[1] = 4; // commandIndex
-        short xPos = (short) Float.parseFloat(argv[2]);
-        short yPos = (short) Float.parseFloat(argv[3]);
+        float xPos = Float.parseFloat(argv[2]);
+        float yPos = Float.parseFloat(argv[3]);
 
         if (xPos > displayMetrics.widthPixels || xPos < 0) {
             Utilities.showMessage("img command hasn't executed("+
@@ -296,8 +296,8 @@ public class ScriptCommandsUtils {
         }
 
         args = ArrayUtils.concatByteArrays(origin,
-                gb((short) (1000.0f * xPos / displayMetrics.widthPixels)), // normal value of X pos
-                gb((short) (1000.0f * yPos / displayMetrics.heightPixels)), // normal value of Y pos
+                gb((short) (xPos / displayMetrics.widthPixels * Short.MAX_VALUE)), // normal value of X pos
+                gb((short) (yPos / displayMetrics.heightPixels * Short.MAX_VALUE)), // normal value of Y pos
                 new byte[]{-1});
 
         return args;

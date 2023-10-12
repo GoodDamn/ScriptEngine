@@ -212,10 +212,7 @@ public class PiecesListFragment extends Fragment {
                                             }
                                         }
 
-                                        final ScriptEngine scriptEngine = new ScriptEngine();
-                                        final ScriptReader scriptReader = new ScriptReader(scriptEngine,file);
-                                        mPieces.clear();
-                                        scriptEngine.setReadCommandListener(new OnReadCommandListener() {
+                                        final ScriptEngine scriptEngine = new ScriptEngine(new OnReadCommandListener() {
                                             @Override
                                             public void onBackground(int color) {
                                                 mTempScriptCode += "\nbg #" + Integer.toHexString(color);
@@ -259,6 +256,9 @@ public class PiecesListFragment extends Fragment {
                                                 Log.d(TAG, "onVector: SCRIPT: "+mTempScriptCode);
                                             }
                                         });
+
+                                        final ScriptReader scriptReader = new ScriptReader(scriptEngine,file);
+                                        mPieces.clear();
 
                                         scriptEngine.setOnCreateViewListener(new OnCreateScriptTextViewListener() {
                                             @Override

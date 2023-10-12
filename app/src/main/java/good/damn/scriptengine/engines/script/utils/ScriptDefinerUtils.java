@@ -154,10 +154,10 @@ public class ScriptDefinerUtils {
         currentOffset += 2;
         int height = gn(chunk[currentOffset], chunk[currentOffset+1]);
         currentOffset += 2;
-        Log.d(TAG, "Image: xPos ENCODED: " + (gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f));
-        float xPos = gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f;
+
+        float xPos = (float) gn(chunk[currentOffset], chunk[currentOffset+1]) / Short.MAX_VALUE;
         currentOffset += 2;
-        float yPos = gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f;
+        float yPos = (float) gn(chunk[currentOffset], chunk[currentOffset+1]) / Short.MAX_VALUE;
         currentOffset += 2;
 
         Log.d(TAG, "read: TOTAL: WIDTH: " + width + " HEIGHT: " + height + " X_POS: " + xPos + " Y_POS: " + yPos);
@@ -183,13 +183,9 @@ public class ScriptDefinerUtils {
         currentOffset++;
 
         // read data of image
-        Log.d(TAG, "Gif: offsets for GIFSize: " + chunk[currentOffset] + " " + chunk[currentOffset+1]);
-        Log.d(TAG, "Gif: GIF " + currentOffset);
-
-        Log.d(TAG, "read: xPos ENCODED: " + (gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f));
-        float xPos = gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f;
+        float xPos = (float) gn(chunk[currentOffset], chunk[currentOffset+1]) / Short.MAX_VALUE;
         currentOffset += 2;
-        float yPos = gn(chunk[currentOffset], chunk[currentOffset+1]) / 1000f;
+        float yPos = (float) gn(chunk[currentOffset], chunk[currentOffset+1]) / Short.MAX_VALUE;
         currentOffset += 2;
 
         byte resID = chunk[currentOffset];
