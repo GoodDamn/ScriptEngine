@@ -1,6 +1,7 @@
 package good.damn.scriptengine.fragments;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,9 +22,14 @@ import good.damn.scriptengine.adapters.FilesAdapter;
 import good.damn.scriptengine.utils.FileUtils;
 import good.damn.scriptengine.utils.Utilities;
 
-public class ResourcesFragment extends Fragment {
+public class ResourcesFragment extends BaseFragment {
 
     private static final String TAG = "ResourcesFragment";
+
+    @Override
+    public void onBrowsedContent(Uri result) {
+
+    }
 
     @Nullable
     @Override

@@ -155,12 +155,7 @@ public class PreviewActivity extends AppCompatActivity {
                 gifView.setSource(movie);
                 gifView.setId(ViewCompat.generateViewId());
 
-                gifView.setGifListener(new GifView.GifListener() {
-                    @Override
-                    public void onFinish() {
-                        root_FrameLayout.removeView(gifView);
-                    }
-                });
+                gifView.setGifListener(() -> root_FrameLayout.removeView(gifView));
 
                 FrameLayout.LayoutParams par =
                         new FrameLayout.LayoutParams(gifView.width(), gifView.height());

@@ -1,14 +1,17 @@
 package good.damn.scriptengine.fragments;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.ClipboardManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Movie;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -20,13 +23,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,18 +61,22 @@ import good.damn.scriptengine.utils.ToolsUtilities;
 import good.damn.scriptengine.utils.Utilities;
 import good.damn.traceview.models.FileSVC;
 
-public class PiecesListFragment extends Fragment {
+public class PiecesListFragment extends BaseFragment {
 
     private static final String TAG = "PiecesListFragment";
+
+    private final ArrayList<Piece> mPieces = new ArrayList<>();
 
     private OnClickTextPiece mOnClickTextPiece;
     private View.OnClickListener mOnResFolderClickListener;
 
+    private View mResView;
+
     private String[] mClipData;
-    private ArrayList<Piece> mPieces = null;
 
     private String mFileNameSKC = null;
     private String mTempScriptCode = "";
+
 
     public void setOnClickTextPieceListener(OnClickTextPiece mOnClickTextPiece) {
         this.mOnClickTextPiece = mOnClickTextPiece;
@@ -76,6 +86,44 @@ public class PiecesListFragment extends Fragment {
     // inside onCreateView() method
     public void setOnClickResFolderListener(View.OnClickListener clickListener) {
         mOnResFolderClickListener = clickListener;
+        if (mResView != null) {
+            mResView.setOnClickListener(mOnResFolderClickListener);
+        }
+    }
+
+    @Override
+    public void onBrowsedContent(Uri result) {
+        try {
+            Context context = getContext();
+
+            if (context == null) {
+                return;
+            }
+
+            ContentResolver resolver = context.getContentResolver();
+
+            if (resolver == null) {
+                return;
+            }
+
+            InputStream is = resolver.openInputStream(result);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] buf = new byte[4096];
+            int n;
+            while((n = is.read(buf)) != -1) {
+                baos.write(buf,0,n);
+            }
+            is.close();
+
+            buf = baos.toByteArray();
+            baos.close();
+
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Nullable
@@ -95,27 +143,8 @@ public class PiecesListFragment extends Fragment {
         piecesRecyclerView.setHasFixedSize(false);
         piecesRecyclerView.setLayoutManager(new LinearLayoutManager(context));
 
-        v.findViewById(R.id.f_pieces_list_resources_page)
-                .setOnClickListener(mOnResFolderClickListener);
-
-        InputStream inputStream = context.getResources().openRawResource(R.raw.text);
-
-        try {
-            mPieces = FileReaderUtils.Txt(inputStream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        if (inputStream != null) {
-            try {
-                inputStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (mPieces == null)
-            return v;
+        mResView = v.findViewById(R.id.f_pieces_list_resources_page);
+        mResView.setOnClickListener(mOnResFolderClickListener);
 
         PiecesAdapter piecesAdapter = new PiecesAdapter(mPieces, mOnClickTextPiece);
 
@@ -177,6 +206,12 @@ public class PiecesListFragment extends Fragment {
                 .setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        ActivityResultLauncher<String> m = getContentBrowser();
+                        if (m != null) {
+                            m.launch("*/*");
+                        }
+
+/*
                         ToolsUtilities.startFileManager(getActivity(),
                                 new FilesAdapter.OnFileClickListener() {
                                     @Override
@@ -320,7 +355,7 @@ public class PiecesListFragment extends Fragment {
 
                                         scriptReader.next();
                                     }
-                                }, Environment.getExternalStorageDirectory().getAbsolutePath()+"/ScriptProjects");
+                                }, Environment.getExternalStorageDirectory().getAbsolutePath()+"/ScriptProjects");*/
                     }
                 });
 

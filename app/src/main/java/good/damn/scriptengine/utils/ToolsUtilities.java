@@ -3,6 +3,7 @@ package good.damn.scriptengine.utils;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.view.View;
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
+import java.nio.channels.InterruptedByTimeoutException;
 
 import good.damn.scriptengine.R;
 import good.damn.scriptengine.adapters.FilesAdapter;
@@ -32,7 +34,13 @@ public class ToolsUtilities {
             return;
         }
 
-        Dialog dialog = new Dialog(activity);
+
+        Intent intent = new Intent();
+        intent.setType("*/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        activity.startActivityForResult(intent, 1);
+
+        /*Dialog dialog = new Dialog(activity);
         dialog.setCancelable(false);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.file_manager);
@@ -91,7 +99,7 @@ public class ToolsUtilities {
         recyclerView.setLayoutManager(new LinearLayoutManager(activity));
         recyclerView.setAdapter(adapter);
 
-        dialog.show();
+        dialog.show();*/
     }
 
     public static void startFileManager(Activity activity, FilesAdapter.OnFileClickListener onFileClickListener){

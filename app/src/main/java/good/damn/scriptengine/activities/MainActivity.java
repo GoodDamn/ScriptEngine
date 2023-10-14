@@ -1,5 +1,8 @@
 package good.damn.scriptengine.activities;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
@@ -7,7 +10,9 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentPagerAdapter;
 
 import android.app.Application;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import good.damn.scriptengine.engines.script.ScriptEngine;
@@ -36,10 +41,22 @@ public class MainActivity extends AppCompatActivity {
         mViewPager.setOffscreenPageLimit(3);
 
         PiecesListFragment piecesListFragment = new PiecesListFragment();
-
         ScriptEditorFragment scriptEditorFragment = new ScriptEditorFragment();
-
         ResourcesFragment resourcesFragment = new ResourcesFragment();
+
+        ActivityResultLauncher<String> launcher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                new ActivityResultCallback<Uri>() {
+            @Override
+            public void onActivityResult(Uri result) {
+                Log.d(TAG, "onActivityResult: URI: " + result.getPath());
+                piecesListFragment.onBrowsedContent(result);
+                resourcesFragment.onBrowsedContent(result);
+            }
+        });
+
+        piecesListFragment.setContentBrowser(launcher);
+        resourcesFragment.setContentBrowser(launcher);
 
         piecesListFragment.setOnClickResFolderListener(new View.OnClickListener() {
             @Override
@@ -62,6 +79,8 @@ public class MainActivity extends AppCompatActivity {
                 resourcesFragment
         };
 
+        setContentView(mViewPager);
+
         mViewPager.setAdapter(new FragmentPagerAdapter(getSupportFragmentManager()) {
             @NonNull
             @Override
@@ -74,7 +93,6 @@ public class MainActivity extends AppCompatActivity {
                 return fragments.length;
             }
         });
-        setContentView(mViewPager);
     }
 
     @Override
