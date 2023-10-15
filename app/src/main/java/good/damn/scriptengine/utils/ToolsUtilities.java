@@ -24,8 +24,8 @@ import good.damn.scriptengine.adapters.FilesAdapter;
 public class ToolsUtilities {
 
     public static void startFileManager(Activity activity,
-                                        FilesAdapter.OnFileClickListener onFileClickListener,
-                                        String path) {
+                                        String path,
+                                        FilesAdapter.OnFileClickListener onFileClickListener) {
         if (ActivityCompat.checkSelfPermission(activity,
                 Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(activity,
@@ -34,13 +34,7 @@ public class ToolsUtilities {
             return;
         }
 
-
-        Intent intent = new Intent();
-        intent.setType("*/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        activity.startActivityForResult(intent, 1);
-
-        /*Dialog dialog = new Dialog(activity);
+        Dialog dialog = new Dialog(activity);
         dialog.setCancelable(false);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.file_manager);
@@ -99,12 +93,7 @@ public class ToolsUtilities {
         recyclerView.setLayoutManager(new LinearLayoutManager(activity));
         recyclerView.setAdapter(adapter);
 
-        dialog.show();*/
+        dialog.show();
     }
 
-    public static void startFileManager(Activity activity, FilesAdapter.OnFileClickListener onFileClickListener){
-        startFileManager(activity,
-                onFileClickListener,
-                Environment.getExternalStorageDirectory().getAbsolutePath());
-    }
 }

@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.EditText;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -40,6 +41,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import good.damn.scriptengine.R;
+import good.damn.scriptengine.activities.MainActivity;
 import good.damn.scriptengine.activities.PreviewActivity;
 import good.damn.scriptengine.adapters.FilesAdapter;
 import good.damn.scriptengine.adapters.recycler_view.PiecesAdapter;
@@ -61,11 +63,13 @@ import good.damn.scriptengine.utils.ToolsUtilities;
 import good.damn.scriptengine.utils.Utilities;
 import good.damn.traceview.models.FileSVC;
 
-public class PiecesListFragment extends BaseFragment {
+public class PiecesListFragment extends Fragment {
 
     private static final String TAG = "PiecesListFragment";
 
     private final ArrayList<Piece> mPieces = new ArrayList<>();
+
+    private DisplayMetrics metrics;
 
     private OnClickTextPiece mOnClickTextPiece;
     private View.OnClickListener mOnResFolderClickListener;
@@ -76,7 +80,6 @@ public class PiecesListFragment extends BaseFragment {
 
     private String mFileNameSKC = null;
     private String mTempScriptCode = "";
-
 
     public void setOnClickTextPieceListener(OnClickTextPiece mOnClickTextPiece) {
         this.mOnClickTextPiece = mOnClickTextPiece;
@@ -91,41 +94,6 @@ public class PiecesListFragment extends BaseFragment {
         }
     }
 
-    @Override
-    public void onBrowsedContent(Uri result) {
-        try {
-            Context context = getContext();
-
-            if (context == null) {
-                return;
-            }
-
-            ContentResolver resolver = context.getContentResolver();
-
-            if (resolver == null) {
-                return;
-            }
-
-            InputStream is = resolver.openInputStream(result);
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            byte[] buf = new byte[4096];
-            int n;
-            while((n = is.read(buf)) != -1) {
-                baos.write(buf,0,n);
-            }
-            is.close();
-
-            buf = baos.toByteArray();
-            baos.close();
-
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -137,7 +105,7 @@ public class PiecesListFragment extends BaseFragment {
             return null;
         }
 
-        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        metrics = context.getResources().getDisplayMetrics();
 
         RecyclerView piecesRecyclerView = v.findViewById(R.id.f_pieces_list_recyclerView);
         piecesRecyclerView.setHasFixedSize(false);
@@ -158,8 +126,8 @@ public class PiecesListFragment extends BaseFragment {
                 .setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        for (byte i = (byte) (mClipData.length-1); i >= 0; i--) {
-                            mPieces.add(0,new Piece(
+                        for (byte i = (byte) (mClipData.length - 1); i >= 0; i--) {
+                            mPieces.add(0, new Piece(
                                     FileReaderUtils.BlankChunk(mClipData[i].getBytes(StandardCharsets.UTF_8)),
                                     mClipData[i]));
                         }
@@ -187,177 +155,162 @@ public class PiecesListFragment extends BaseFragment {
                 });
 
         dialogPaste.findViewById(R.id.dialog_paste_btn_bottom)
-                .setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        int oldLength = mClipData.length;
-                        for (byte i = 0; i <mClipData.length; i++) {
-                            mPieces.add(new Piece(
-                                    FileReaderUtils.BlankChunk(mClipData[i].getBytes(StandardCharsets.UTF_8)),
-                                    mClipData[i]));
-                        }
-                        piecesAdapter.setPieces(mPieces);
-                        piecesAdapter.notifyItemRangeInserted(oldLength, oldLength+mClipData.length);
-                        dialogPaste.cancel();
+                .setOnClickListener(view -> {
+                    int oldLength = mClipData.length;
+                    for (byte i = 0; i < mClipData.length; i++) {
+                        mPieces.add(new Piece(
+                                FileReaderUtils.BlankChunk(mClipData[i].getBytes(StandardCharsets.UTF_8)),
+                                mClipData[i]));
                     }
+                    piecesAdapter.setPieces(mPieces);
+                    piecesAdapter.notifyItemRangeInserted(oldLength, oldLength + mClipData.length);
+                    dialogPaste.cancel();
                 });
 
         v.findViewById(R.id.f_pieces_list_open_scripts)
-                .setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        ActivityResultLauncher<String> m = getContentBrowser();
-                        if (m != null) {
-                            m.launch("*/*");
-                        }
+                .setOnClickListener(view -> ToolsUtilities.startFileManager(context,
+                        MainActivity.PATH_SCRIPT_PROJECTS,
+                        new FilesAdapter.OnFileClickListener() {
+                            @Override
+                            public void onFile(File file, String extension) {
+                                if (!extension.equals("skc")) {
+                                    Utilities.showMessage("INCORRECT FILE (NEED .skc FILE)", context);
+                                    return;
+                                }
 
-/*
-                        ToolsUtilities.startFileManager(getActivity(),
-                                new FilesAdapter.OnFileClickListener() {
-                                    @Override
-                                    public void onFile(File file, String extension) {
-                                        Log.d(TAG, "onFile: EXTENSION: " + extension);
+                                // Clearing res folder
 
-                                        if (!extension.equals("skc")) {
-                                            Utilities.showMessage("INCORRECT FILE (NEED .skc FILE)",context);
+                                File resFolder = new File(context.getCacheDir() + FileUtils.RES_DIR);
+
+                                if (!resFolder.exists()) {
+                                    try {
+                                        if (!resFolder.createNewFile()) {
                                             return;
                                         }
+                                        Log.d(TAG, "onFile: RESOURCES FOLDER IS CREATED!");
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                        return;
+                                    }
+                                }
 
-                                        // Clearing res folder
-                                        
-                                        File resFolder = new File(context.getCacheDir()+FileUtils.RES_DIR);
+                                File[] resourcesFiles = resFolder.listFiles();
+                                if (resourcesFiles != null) {
+                                    for (File ff : resourcesFiles) {
+                                        if (ff.delete()) {
+                                            Log.d(TAG, "onFile: FILE FROM RESOURCES=" + ff.getName() + " IS DELETED!");
+                                        }
+                                    }
+                                }
 
-                                        if (!resFolder.exists()) {
-                                            try {
-                                                if (!resFolder.createNewFile()) {
-                                                    return;
-                                                }
-                                                Log.d(TAG, "onFile: RESOURCES FOLDER IS CREATED!");
-                                            } catch (IOException e) {
-                                                e.printStackTrace();
-                                                return;
-                                            }
+                                final ToolsScriptEngine scriptEngine = new ToolsScriptEngine(new OnReadCommandListener() {
+                                    @Override
+                                    public void onBackground(int color) {
+                                        mTempScriptCode += "\nbg #" + Integer.toHexString(color);
+                                        Log.d(TAG, "onBackground: SCRIPT: " + mTempScriptCode);
+                                    }
+
+                                    @Override
+                                    public void onImage(Bitmap bitmap, ScriptGraphicsFile graphicsFile) {
+                                        mTempScriptCode += "\nimg " + graphicsFile.fileName
+                                                + graphicsFile.xyString(metrics)
+                                                + graphicsFile.sizeString(metrics);
+                                        Log.d(TAG, "onImage: SCRIPT: " + mTempScriptCode);
+                                    }
+
+                                    @Override
+                                    public void onGif(Movie movie, ScriptGraphicsFile gifScript) {
+                                        mTempScriptCode += "\ngif " + gifScript.fileName + gifScript.xyString(metrics);
+                                        Log.d(TAG, "onGif: SCRIPT: " + mTempScriptCode);
+                                    }
+
+                                    @Override
+                                    public void onSFX(ScriptEngine.ResourceFile<Byte> sfx, SoundPool soundPool) {
+                                        mTempScriptCode += "\nsfx " + sfx.fileName;
+                                        Log.d(TAG, "onSFX: SCRIPT: " + mTempScriptCode);
+                                    }
+
+                                    @Override
+                                    public void onAmbient(ScriptEngine.ResourceFile<MediaPlayer> amb) {
+                                        mTempScriptCode += "\namb " + amb.fileName;
+                                        Log.d(TAG, "onAmbient: SCRIPT: " + mTempScriptCode);
+                                    }
+
+                                    @Override
+                                    public void onError(String errorMsg) {
+                                        Log.d(TAG, "onError: SCRIPT: ");
+                                    }
+
+                                    @Override
+                                    public void onVector(ScriptEngine.ResourceFile<FileSVC> vect, String[] advancedText) {
+                                        mTempScriptCode += "\nvect " + vect.fileName;
+                                        Log.d(TAG, "onVector: SCRIPT: " + mTempScriptCode);
+                                    }
+                                });
+
+                                final ScriptReader scriptReader = new ScriptReader(scriptEngine, file);
+                                mPieces.clear();
+
+                                scriptEngine.setOnCreateViewListener(new OnCreateScriptTextViewListener() {
+                                    @Override
+                                    public void onCreate(ScriptTextConfig text) {
+                                        String textPiece = text.spannableString.toString();
+                                        Log.d(TAG, "onCreate: SCRIPT: " + textPiece);
+
+                                        if (text.textColor != 0xff000000) {
+                                            mTempScriptCode += "\nfont #" + Integer.toHexString(text.textColor);
                                         }
 
-                                        File[] resourcesFiles = resFolder.listFiles();
-                                        if (resourcesFiles != null) {
-                                            for (File ff: resourcesFiles) {
-                                                if (ff.delete()) {
-                                                    Log.d(TAG, "onFile: FILE FROM RESOURCES="+ff.getName()+" IS DELETED!");
-                                                }
-                                            }
-                                        }
-
-                                        final ToolsScriptEngine scriptEngine = new ToolsScriptEngine(new OnReadCommandListener() {
-                                            @Override
-                                            public void onBackground(int color) {
-                                                mTempScriptCode += "\nbg #" + Integer.toHexString(color);
-                                                Log.d(TAG, "onBackground: SCRIPT: " + mTempScriptCode);
-                                            }
-
-                                            @Override
-                                            public void onImage(Bitmap bitmap ,ScriptGraphicsFile graphicsFile) {
-                                                mTempScriptCode += "\nimg " + graphicsFile.fileName
-                                                        + graphicsFile.xyString(metrics)
-                                                        + graphicsFile.sizeString(metrics);
-                                                Log.d(TAG, "onImage: SCRIPT: " + mTempScriptCode);
-                                            }
-
-                                            @Override
-                                            public void onGif(Movie movie, ScriptGraphicsFile gifScript) {
-                                                mTempScriptCode += "\ngif " + gifScript.fileName + gifScript.xyString(metrics);
-                                                Log.d(TAG, "onGif: SCRIPT: " + mTempScriptCode);
-                                            }
-
-                                            @Override
-                                            public void onSFX(ScriptEngine.ResourceFile<Byte> sfx, SoundPool soundPool) {
-                                                mTempScriptCode += "\nsfx " + sfx.fileName;
-                                                Log.d(TAG, "onSFX: SCRIPT: " + mTempScriptCode);
-                                            }
-
-                                            @Override
-                                            public void onAmbient(ScriptEngine.ResourceFile<MediaPlayer> amb) {
-                                                mTempScriptCode += "\namb " + amb.fileName;
-                                                Log.d(TAG, "onAmbient: SCRIPT: "+mTempScriptCode);
-                                            }
-
-                                            @Override
-                                            public void onError(String errorMsg) {
-                                                Log.d(TAG, "onError: SCRIPT: ");
-                                            }
-
-                                            @Override
-                                            public void onVector(ScriptEngine.ResourceFile<FileSVC> vect, String[] advancedText) {
-                                                mTempScriptCode += "\nvect " + vect.fileName;
-                                                Log.d(TAG, "onVector: SCRIPT: "+mTempScriptCode);
-                                            }
-                                        });
-
-                                        final ScriptReader scriptReader = new ScriptReader(scriptEngine,file);
-                                        mPieces.clear();
-
-                                        scriptEngine.setOnCreateViewListener(new OnCreateScriptTextViewListener() {
-                                            @Override
-                                            public void onCreate(ScriptTextConfig text) {
-                                                String textPiece = text.spannableString.toString();
-                                                Log.d(TAG, "onCreate: SCRIPT: " + textPiece);
-
-                                                if (text.textColor != 0xff000000) {
-                                                    mTempScriptCode += "\nfont #"+Integer.toHexString(text.textColor);
-                                                }
-
-                                                Piece piece = new Piece(
-                                                        FileReaderUtils.BlankChunk(textPiece.getBytes(StandardCharsets.UTF_8)),
-                                                        textPiece);
-                                                ScriptEditorFragment.CompileScript(
-                                                        textPiece,
-                                                        mTempScriptCode,
-                                                        piece,
-                                                        scriptEngine,
-                                                        context);
-                                                Log.d(TAG, "onCreate: SCRIPT: " + piece.getSourceCode());
-                                                mPieces.add(piece);
-                                                mTempScriptCode = "";
-                                                scriptReader.next();
-                                            }
-                                        });
-
-                                        scriptReader.setScriptReaderListener(new ScriptReaderListener() {
-                                            @Override
-                                            public void onReadFinish() {
-                                                Log.d(TAG, "onReadFinish: SCRIPT_READER FINISHED READING");
-                                                piecesAdapter.setPieces(mPieces);
-                                                piecesAdapter.notifyDataSetChanged();
-
-                                                mFileNameSKC = file.getName();
-                                            }
-                                        });
-
-                                        scriptEngine.setFileResourceListener(new OnFileResourceListener() {
-                                            @Override
-                                            public void onFileResource(byte[] fileBytes,
-                                                                       byte resID,
-                                                                       String extension) {
-                                                File f = new File(context.getCacheDir()+FileUtils.RES_DIR,resID+"."+extension);
-                                                try {
-                                                    if (f.createNewFile()) {
-                                                        FileOutputStream fos = new FileOutputStream(f);
-                                                        fos.write(fileBytes);
-                                                        fos.close();
-                                                    }
-                                                } catch (IOException e) {
-                                                    e.printStackTrace();
-                                                }
-                                            }
-                                        });
-                                        
-                                        scriptEngine.loadResources(file,context);
-
+                                        Piece piece = new Piece(
+                                                FileReaderUtils.BlankChunk(textPiece.getBytes(StandardCharsets.UTF_8)),
+                                                textPiece);
+                                        ScriptEditorFragment.CompileScript(
+                                                textPiece,
+                                                mTempScriptCode,
+                                                piece,
+                                                scriptEngine,
+                                                context);
+                                        Log.d(TAG, "onCreate: SCRIPT: " + piece.getSourceCode());
+                                        mPieces.add(piece);
+                                        mTempScriptCode = "";
                                         scriptReader.next();
                                     }
-                                }, Environment.getExternalStorageDirectory().getAbsolutePath()+"/ScriptProjects");*/
-                    }
-                });
+                                });
+
+                                scriptReader.setScriptReaderListener(new ScriptReaderListener() {
+                                    @Override
+                                    public void onReadFinish() {
+                                        Log.d(TAG, "onReadFinish: SCRIPT_READER FINISHED READING");
+                                        piecesAdapter.setPieces(mPieces);
+                                        piecesAdapter.notifyDataSetChanged();
+
+                                        mFileNameSKC = file.getName();
+                                    }
+                                });
+
+                                scriptEngine.setFileResourceListener(new OnFileResourceListener() {
+                                    @Override
+                                    public void onFileResource(byte[] fileBytes,
+                                                               byte resID,
+                                                               String extension) {
+                                        File f = new File(context.getCacheDir() + FileUtils.RES_DIR, resID + "." + extension);
+                                        try {
+                                            if (f.createNewFile()) {
+                                                FileOutputStream fos = new FileOutputStream(f);
+                                                fos.write(fileBytes);
+                                                fos.close();
+                                            }
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                });
+
+                                scriptEngine.loadResources(file, context);
+
+                                scriptReader.next();
+                            }
+                        }));
 
         ClipboardManager clipboardManager = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
 
@@ -424,32 +377,32 @@ public class PiecesListFragment extends BaseFragment {
 
         v.findViewById(R.id.f_pieces_list_start_debug)
                 .setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                assert context != null;
-                //Utilities.showMessage("LINKING...",context);
+                    @Override
+                    public void onClick(View view) {
+                        assert context != null;
+                        //Utilities.showMessage("LINKING...",context);
 
-                long current = System.currentTimeMillis();
-                new Thread(()->{
-                    String path = FileOutputUtils.mkSKCFile(mPieces, context);
-                    if (path == null) {
-                        Utilities.showMessage("ERROR IS OCCURRED DURING LINKING PROCESS",
-                                context);
-                        return;
+                        long current = System.currentTimeMillis();
+                        new Thread(() -> {
+                            String path = FileOutputUtils.mkSKCFile(mPieces, context);
+                            if (path == null) {
+                                Utilities.showMessage("ERROR IS OCCURRED DURING LINKING PROCESS",
+                                        context);
+                                return;
+                            }
+
+                            new Handler(Looper.getMainLooper())
+                                    .post(() -> {
+                                        //Utilities.showMessage("STARTING PREVIEW PROCESS AFTER " + (System.currentTimeMillis()-current) + "ms", context);
+                                        Intent intent = new Intent(getActivity(), PreviewActivity.class);
+                                        intent.putExtra("dumbPath", path);
+                                        startActivity(intent);
+                                    });
+
+                            Thread.currentThread().interrupt();
+                        }).start();
                     }
-
-                    new Handler(Looper.getMainLooper())
-                            .post(()->{
-                                //Utilities.showMessage("STARTING PREVIEW PROCESS AFTER " + (System.currentTimeMillis()-current) + "ms", context);
-                                Intent intent = new Intent(getActivity(), PreviewActivity.class);
-                                intent.putExtra("dumbPath", path);
-                                startActivity(intent);
-                            });
-
-                    Thread.currentThread().interrupt();
-                }).start();
-            }
-        });
+                });
 
         return v;
     }

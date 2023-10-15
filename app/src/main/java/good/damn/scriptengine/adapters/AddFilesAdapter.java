@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 
 import java.io.File;
@@ -23,16 +24,25 @@ public class AddFilesAdapter extends FilesAdapter {
 
     private static final String TAG = "AddFilesAdapter";
 
+    private final ActivityResultLauncher<String> mContentBrowser;
+
     private final Activity mActivity;
 
-    public AddFilesAdapter(OnFileClickListener onFileClickListener, Activity activity) {
+    public AddFilesAdapter(OnFileClickListener onFileClickListener,
+                           Activity activity,
+                           @NonNull ActivityResultLauncher<String> contentBrowser) {
         super(onFileClickListener);
         mActivity = activity;
+        mContentBrowser = contentBrowser;
     }
 
-    public AddFilesAdapter(OnFileClickListener onFileClickListener, String path, Activity activity) {
+    public AddFilesAdapter(OnFileClickListener onFileClickListener,
+                           String path,
+                           Activity activity,
+                           @NonNull ActivityResultLauncher<String> contentBrowser) {
         super(onFileClickListener, path);
         mActivity = activity;
+        mContentBrowser = contentBrowser;
     }
 
     @Override
@@ -68,13 +78,12 @@ public class AddFilesAdapter extends FilesAdapter {
         super.onBindViewHolder(holder, position);
     }
 
-    private void copyFile(File sourceFile) {
+    public void copyFile(byte[] inp, String name) {
         Utilities.showMessage("COPYING FILE...", mActivity);
 
-        File resFile = new File(mActivity.getCacheDir()+ FileUtils.RES_DIR+"/"+sourceFile
-                .getName().replace(" ","-"));
+        File resFile = new File(mActivity.getCacheDir()
+                +FileUtils.RES_DIR+"/"+ name.replace(" ","-"));
 
-        FileInputStream fis;
         FileOutputStream fos;
 
         try {
@@ -84,19 +93,11 @@ public class AddFilesAdapter extends FilesAdapter {
             }
 
 
-            fis = new FileInputStream(sourceFile);
             fos = new FileOutputStream(resFile);
-
-            byte[] buffer = new byte[2048];
-            int n;
-            while ((n = fis.read(buffer)) != -1) {
-                fos.write(buffer, 0, n);
-            }
-
-            fis.close();
+            fos.write(inp);
             fos.close();
 
-            Utilities.showMessage(sourceFile.getName() + " HAS BEEN COPIED!", mActivity);
+            Utilities.showMessage(name + " HAS BEEN COPIED!", mActivity);
             notifyDataSet();
         } catch (IOException e) {
             e.printStackTrace();
@@ -109,36 +110,32 @@ public class AddFilesAdapter extends FilesAdapter {
             super(itemView);
             mTextView.setText("Add file");
             mPreview.setBackgroundResource(R.drawable.ic_add);
-            itemView.setOnClickListener(new View.OnClickListener() {
+            itemView.setOnClickListener(view -> mContentBrowser.launch("*/*"));
+            /*ToolsUtilities.startFileManager(mActivity, new OnFileClickListener() {
                 @Override
-                public void onClick(View view) {
-                    ToolsUtilities.startFileManager(mActivity, new OnFileClickListener() {
-                        @Override
-                        public void onAudioFile(File file) {
-                            Log.d(TAG, "onAudioFile: FILE: " + file);
-                            copyFile(file);
-                        }
-
-                        @Override
-                        public void onImageFile(File file) {
-                            Log.d(TAG, "onImageFile: " + file);
-                            copyFile(file);
-                        }
-
-                        @Override
-                        public void onVectorFile(File file) {
-                            Log.d(TAG, "onVectorFile: " + file);
-                            copyFile(file);
-                        }
-
-                        @Override
-                        public void onFile(File file, String extension) {
-                            Log.d(TAG, "onFile: " + file);
-                            copyFile(file);
-                        }
-                    });
+                public void onAudioFile(File file) {
+                    Log.d(TAG, "onAudioFile: FILE: " + file);
+                    copyFile(file);
                 }
-            });
+
+                @Override
+                public void onImageFile(File file) {
+                    Log.d(TAG, "onImageFile: " + file);
+                    copyFile(file);
+                }
+
+                @Override
+                public void onVectorFile(File file) {
+                    Log.d(TAG, "onVectorFile: " + file);
+                    copyFile(file);
+                }
+
+                @Override
+                public void onFile(File file, String extension) {
+                    Log.d(TAG, "onFile: " + file);
+                    copyFile(file);
+                }
+            })*/
         }
     }
 }

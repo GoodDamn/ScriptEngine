@@ -88,7 +88,6 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
         File dirEx = Environment.getExternalStorageDirectory();
         mPath = dirEx.getAbsolutePath();
         mFiles = dirEx.listFiles();
-        Log.d(TAG, "FilesAdapter: PATH: " + mPath + " FILES:" + mFiles.length);
         mPages = new ArrayList<>();
         this.onFileClickListener = onFileClickListener;
         mimeTypeMap = MimeTypeMap.getSingleton();
@@ -97,8 +96,6 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileItem> {
     public FilesAdapter(OnFileClickListener onFileClickListener, String path) {
         mPath = path;
         mFiles = new File(path).listFiles();
-        Log.d(TAG, "FilesAdapter: PATH: " + path);
-        Log.d(TAG, "FilesAdapter: FILES: " + mFiles.length);
         mPages = new ArrayList<>();
         this.onFileClickListener = onFileClickListener;
         mimeTypeMap = MimeTypeMap.getSingleton();

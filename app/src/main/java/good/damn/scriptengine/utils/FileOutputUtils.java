@@ -91,16 +91,6 @@ public class FileOutputUtils {
                                    ArrayList<Piece> arrayList,
                                    Activity activity) {
 
-        if (ActivityCompat.checkSelfPermission(activity,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(activity,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    200);
-
-            return null;
-        }
-
         FileOutputStream fosSKC;
         FileInputStream fisRes = null;
 

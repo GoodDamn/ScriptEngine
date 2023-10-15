@@ -15,6 +15,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import java.io.File;
+import java.io.IOException;
+
 import good.damn.scriptengine.engines.script.ScriptEngine;
 import good.damn.scriptengine.fragments.PiecesListFragment;
 import good.damn.scriptengine.fragments.ResourcesFragment;
@@ -28,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
+    public static String PATH_SCRIPT_PROJECTS;
+
     private BlockedViewPager mViewPager;
 
     private long mCurrentTime = 0;
@@ -40,6 +45,13 @@ public class MainActivity extends AppCompatActivity {
 
         mViewPager.setOffscreenPageLimit(3);
 
+        PATH_SCRIPT_PROJECTS = getDataDir() + "/ScriptProjects";
+
+        File projsDir = new File(PATH_SCRIPT_PROJECTS);
+        if (!projsDir.exists() && projsDir.mkdir()) {
+            Log.d(TAG, "onCreate: SCRIPT_PROJ_DIR: CREATED:" + projsDir);
+        }
+
         PiecesListFragment piecesListFragment = new PiecesListFragment();
         ScriptEditorFragment scriptEditorFragment = new ScriptEditorFragment();
         ResourcesFragment resourcesFragment = new ResourcesFragment();
@@ -49,13 +61,15 @@ public class MainActivity extends AppCompatActivity {
                 new ActivityResultCallback<Uri>() {
             @Override
             public void onActivityResult(Uri result) {
+                if (result == null) {
+                    return;
+                }
+
                 Log.d(TAG, "onActivityResult: URI: " + result.getPath());
-                piecesListFragment.onBrowsedContent(result);
                 resourcesFragment.onBrowsedContent(result);
             }
         });
 
-        piecesListFragment.setContentBrowser(launcher);
         resourcesFragment.setContentBrowser(launcher);
 
         piecesListFragment.setOnClickResFolderListener(new View.OnClickListener() {

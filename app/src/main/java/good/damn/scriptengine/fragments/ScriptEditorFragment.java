@@ -71,7 +71,7 @@ public class ScriptEditorFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_script_editor, container,false);
+        View v = inflater.inflate(R.layout.fragment_script_editor, container, false);
 
         Context context = getContext();
 
@@ -84,13 +84,33 @@ public class ScriptEditorFragment extends Fragment {
         TextView textViewHelper = v.findViewById(R.id.script_editor_tv_helper);
 
         ToolsScriptEngine scriptEngine = new ToolsScriptEngine(new OnReadCommandListener() {
-            @Override public void onBackground(int color) {}
-            @Override public void onImage(Bitmap bitmap, ScriptGraphicsFile graphicsFile) {}
-            @Override public void onGif(Movie movie, ScriptGraphicsFile gifScript) {}
-            @Override public void onSFX(ScriptEngine.ResourceFile<Byte> b, SoundPool soundPool) {}
-            @Override public void onAmbient(ScriptEngine.ResourceFile<MediaPlayer> amb) {}
-            @Override public void onError(String errorMsg) {}
-            @Override public void onVector(ScriptEngine.ResourceFile<FileSVC> vect, String[] advancedText) {}
+            @Override
+            public void onBackground(int color) {
+            }
+
+            @Override
+            public void onImage(Bitmap bitmap, ScriptGraphicsFile graphicsFile) {
+            }
+
+            @Override
+            public void onGif(Movie movie, ScriptGraphicsFile gifScript) {
+            }
+
+            @Override
+            public void onSFX(ScriptEngine.ResourceFile<Byte> b, SoundPool soundPool) {
+            }
+
+            @Override
+            public void onAmbient(ScriptEngine.ResourceFile<MediaPlayer> amb) {
+            }
+
+            @Override
+            public void onError(String errorMsg) {
+            }
+
+            @Override
+            public void onVector(ScriptEngine.ResourceFile<FileSVC> vect, String[] advancedText) {
+            }
         });
 
         scriptEngine.setOnCreateViewListener(new OnCreateScriptTextViewListener() {
@@ -119,9 +139,9 @@ public class ScriptEditorFragment extends Fragment {
                         scriptEngine,
                         v.getContext());
 
-                int length = Utilities.gn(mPiece.getChunk(),0);
-                byte[] chunk = new byte[length+2];
-                System.arraycopy(mPiece.getChunk(),4, chunk,0,chunk.length);
+                int length = Utilities.gn(mPiece.getChunk(), 0);
+                byte[] chunk = new byte[length + 2];
+                System.arraycopy(mPiece.getChunk(), 4, chunk, 0, chunk.length);
                 scriptEngine.read(chunk);
             }
         });
@@ -139,8 +159,11 @@ public class ScriptEditorFragment extends Fragment {
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 textViewHelper.setText(start + " " + et_phrase.getText().length());
             }
+
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
             @Override
             public void afterTextChanged(Editable s) {
                 Log.d(TAG, "afterTextChanged: isEdited: " + isEdited);
@@ -157,7 +180,7 @@ public class ScriptEditorFragment extends Fragment {
                 if (t.length() < n) {
                     n = (byte) t.length();
                 }
-                intent.putExtra("fileName", mAdapterPosition+"_"+t.substring(0,n).replace(" ","_")+".svc");
+                intent.putExtra("fileName", mAdapterPosition + "_" + t.substring(0, n).replace(" ", "_") + ".svc");
                 startActivity(intent);
             }
         });
@@ -165,28 +188,30 @@ public class ScriptEditorFragment extends Fragment {
         v.findViewById(R.id.scriptEditor_selectFile).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ToolsUtilities.startFileManager(getActivity(), new FilesAdapter.OnFileClickListener() {
-                    @Override
-                    public void onVectorFile(File file) {
-                        onImageFile(file);
-                    }
+                ToolsUtilities.startFileManager(getActivity(),
+                        context.getCacheDir() + FileUtils.RES_DIR,
+                        new FilesAdapter.OnFileClickListener() {
+                            @Override
+                            public void onVectorFile(File file) {
+                                onImageFile(file);
+                            }
 
-                    @Override
-                    public void onAudioFile(File file) {
-                        onImageFile(file);
-                    }
+                            @Override
+                            public void onAudioFile(File file) {
+                                onImageFile(file);
+                            }
 
-                    @SuppressLint("SetTextI18n")
-                    @Override
-                    public void onImageFile(File file) {
-                        et_script.setText(et_script.getText().toString().trim() + " " + file.getName());
-                        try {
-                            Log.d(TAG, "onImageFile: CANON: " + file.getCanonicalPath() + " ABS:" + file.getAbsolutePath());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }, context.getCacheDir() + FileUtils.RES_DIR);
+                            @SuppressLint("SetTextI18n")
+                            @Override
+                            public void onImageFile(File file) {
+                                et_script.setText(et_script.getText().toString().trim() + " " + file.getName());
+                                try {
+                                    Log.d(TAG, "onImageFile: CANON: " + file.getCanonicalPath() + " ABS:" + file.getAbsolutePath());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
             }
         });
 
@@ -205,7 +230,7 @@ public class ScriptEditorFragment extends Fragment {
         LinkedList<ResourceReference> resPositions = null;
 
         for (byte i = 0; i < arr.length; i++) {
-            ScriptBuildResult result = scriptEngine.compile(arr[i],context);
+            ScriptBuildResult result = scriptEngine.compile(arr[i], context);
             byte[] t = result.getCompiledScript();
             if (t == null)
                 continue;
@@ -216,9 +241,9 @@ public class ScriptEditorFragment extends Fragment {
                 }
 
                 resPositions.add(new ResourceReference(result.getResName(),
-                        scriptLength+t[0]));
+                        scriptLength + t[0]));
             }
-            script = ArrayUtils.concatByteArrays(script,t);
+            script = ArrayUtils.concatByteArrays(script, t);
             scriptLength += t.length;
             Log.d(TAG, "onClick: PARSED_INFO: FOR SCRIPT: " + arr[i] + " SCRIPT_BYTE_LENGTH: " + t.length + " TOTAL_LENGTH:" + script.length);
         }
@@ -231,7 +256,7 @@ public class ScriptEditorFragment extends Fragment {
         byte[] text = ArrayUtils.concatByteArrays(t.getBytes(StandardCharsets.UTF_8),
                 new byte[]{0});
 
-        int length = text.length+1+script.length;
+        int length = text.length + 1 + script.length;
 
         Log.d(TAG, "onClick: CHUNK_LENGTH: FACT: " + length);
 
