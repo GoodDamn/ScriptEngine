@@ -131,12 +131,10 @@ public class FileOutputUtils {
             fosSKC.write(Utilities.gbInt(resSectionLength));
 
             for (Piece piece : arrayList) {
-
                 LinkedList<ResourceReference> references = piece.getResRef();
 
                 byte[] chunk = piece.getChunk();
 
-                Log.d(TAG, "mkSKCFile: COMPILED RESOURCES: " + Arrays.toString(compiledRes));
                 if (references != null) {
                     for (ResourceReference ref: references) {
                         int index = ArrayUtils.bruteForceSearch(compiledRes,ref.getResName());

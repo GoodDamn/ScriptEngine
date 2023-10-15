@@ -2,5 +2,5 @@ package good.damn.scriptengine.interfaces;
 
 public interface OnFileResourceListener {
 
-    void onFileResource(byte[] fileBytes, byte resID, String extension);
+    void onFileResource(byte[] fileBytes, byte resID, String type, String extension);
 }

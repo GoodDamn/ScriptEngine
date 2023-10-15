@@ -292,8 +292,9 @@ public class PiecesListFragment extends Fragment {
                                     @Override
                                     public void onFileResource(byte[] fileBytes,
                                                                byte resID,
+                                                               String type,
                                                                String extension) {
-                                        File f = new File(context.getCacheDir() + FileUtils.RES_DIR, resID + "." + extension);
+                                        File f = new File(context.getCacheDir() + FileUtils.RES_DIR, type+resID + "." + extension);
                                         try {
                                             if (f.createNewFile()) {
                                                 FileOutputStream fos = new FileOutputStream(f);
@@ -312,13 +313,13 @@ public class PiecesListFragment extends Fragment {
                             }
                         }));
 
-        ClipboardManager clipboardManager = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipboardManager clipboardManager = (ClipboardManager)
+                context.getSystemService(Context.CLIPBOARD_SERVICE);
 
         v.findViewById(R.id.f_pieces_list_paste_text)
                 .setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-
                         mFileNameSKC = null;
 
                         Utilities.showMessage("PASTED", context);
@@ -340,8 +341,7 @@ public class PiecesListFragment extends Fragment {
                     public void onClick(View view) {
                         if (mFileNameSKC != null) {
                             FileOutputUtils.mkSKCFile(mFileNameSKC,
-                                    Environment.getExternalStorageDirectory()
-                                            .getAbsolutePath() + "/ScriptProjects",
+                                    MainActivity.PATH_SCRIPT_PROJECTS,
                                     mPieces,
                                     getActivity());
                             return;
@@ -363,8 +363,7 @@ public class PiecesListFragment extends Fragment {
                                         mFileNameSKC = name + ".skc";
                                         dialog.dismiss();
                                         FileOutputUtils.mkSKCFile(mFileNameSKC,
-                                                Environment.getExternalStorageDirectory()
-                                                        .getAbsolutePath() + "/ScriptProjects",
+                                                MainActivity.PATH_SCRIPT_PROJECTS,
                                                 mPieces,
                                                 getActivity());
 
@@ -379,10 +378,6 @@ public class PiecesListFragment extends Fragment {
                 .setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        assert context != null;
-                        //Utilities.showMessage("LINKING...",context);
-
-                        long current = System.currentTimeMillis();
                         new Thread(() -> {
                             String path = FileOutputUtils.mkSKCFile(mPieces, context);
                             if (path == null) {
@@ -393,7 +388,6 @@ public class PiecesListFragment extends Fragment {
 
                             new Handler(Looper.getMainLooper())
                                     .post(() -> {
-                                        //Utilities.showMessage("STARTING PREVIEW PROCESS AFTER " + (System.currentTimeMillis()-current) + "ms", context);
                                         Intent intent = new Intent(getActivity(), PreviewActivity.class);
                                         intent.putExtra("dumbPath", path);
                                         startActivity(intent);

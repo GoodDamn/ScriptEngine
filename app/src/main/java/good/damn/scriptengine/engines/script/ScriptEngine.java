@@ -245,6 +245,7 @@ public class ScriptEngine {
 
                 ResourceFile<Object> resourceFile = new ResourceFile<>();
 
+                String type = "";
                 if (h == 71) { // GIF
                     resourceFile.resource = Movie.decodeByteArray(file, 0, file.length);
                     extension = "gif";
@@ -256,10 +257,12 @@ public class ScriptEngine {
                     extension = "mp3";
                     if (fileLength <= 1048576) { // 1 MB
                         resourceFile.resource = sfxID;
+                        type = "sfx_";
                         Log.d(TAG, "loadResources: SFX: " + i + " " + sfxID);
                         mSFXPool.load(tempFile.getAbsolutePath(), 1);
                         sfxID++;
                     } else {
+                        type = "amb_";
                         MediaPlayer player = MediaPlayer.create(context, Uri.fromFile(tempFile));
                         player.setLooping(true);
                         resourceFile.resource = player;
@@ -269,12 +272,12 @@ public class ScriptEngine {
                     resourceFile.resource = FileUtils.retrieveSVCFile(file, context.getResources().getDisplayMetrics().density);
                 }
 
-                resourceFile.fileName = i + "." + extension;
+                resourceFile.fileName = type + i + "." + extension;
 
                 mResources[i] = resourceFile;
 
                 if (mOnFileResourceListener != null) {
-                    mOnFileResourceListener.onFileResource(file, i, extension);
+                    mOnFileResourceListener.onFileResource(file, i, type, extension);
                 }
 
                 prevPos = currentPos;
