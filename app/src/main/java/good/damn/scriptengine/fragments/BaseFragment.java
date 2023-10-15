@@ -6,6 +6,8 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import java.util.List;
+
 public abstract class BaseFragment extends Fragment {
 
     private ActivityResultLauncher<String> mLauncherContent;
@@ -19,5 +21,5 @@ public abstract class BaseFragment extends Fragment {
         mLauncherContent = m;
     }
 
-    public abstract void onBrowsedContent(Uri result);
+    public abstract void onBrowsedContent(List<Uri> result);
 }

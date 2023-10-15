@@ -11,12 +11,17 @@ import androidx.fragment.app.FragmentPagerAdapter;
 
 import android.app.Application;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 import good.damn.scriptengine.engines.script.ScriptEngine;
 import good.damn.scriptengine.fragments.PiecesListFragment;
@@ -45,7 +50,9 @@ public class MainActivity extends AppCompatActivity {
 
         mViewPager.setOffscreenPageLimit(3);
 
-        PATH_SCRIPT_PROJECTS = getDataDir() + "/ScriptProjects";
+        PATH_SCRIPT_PROJECTS = Environment
+                .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+                + "/ScriptProjects";
 
         File projsDir = new File(PATH_SCRIPT_PROJECTS);
         if (!projsDir.exists() && projsDir.mkdir()) {
@@ -57,18 +64,16 @@ public class MainActivity extends AppCompatActivity {
         ResourcesFragment resourcesFragment = new ResourcesFragment();
 
         ActivityResultLauncher<String> launcher = registerForActivityResult(
-                new ActivityResultContracts.GetContent(),
-                new ActivityResultCallback<Uri>() {
-            @Override
-            public void onActivityResult(Uri result) {
-                if (result == null) {
-                    return;
-                }
-
-                Log.d(TAG, "onActivityResult: URI: " + result.getPath());
-                resourcesFragment.onBrowsedContent(result);
-            }
-        });
+                new ActivityResultContracts.GetMultipleContents(),
+                new ActivityResultCallback<List<Uri>>() {
+                    @Override
+                    public void onActivityResult(List<Uri> result) {
+                        if (result == null) {
+                            return;
+                        }
+                        resourcesFragment.onBrowsedContent(result);
+                    }
+                });
 
         resourcesFragment.setContentBrowser(launcher);
 

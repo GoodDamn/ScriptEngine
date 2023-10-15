@@ -2,8 +2,10 @@ package good.damn.scriptengine.fragments;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import good.damn.scriptengine.adapters.AddFilesAdapter;
 import good.damn.scriptengine.adapters.FilesAdapter;
@@ -34,7 +37,7 @@ public class ResourcesFragment extends BaseFragment {
     private AddFilesAdapter mAddFilesAdapter;
 
     @Override
-    public void onBrowsedContent(Uri result) {
+    public void onBrowsedContent(List<Uri> uris) {
         try {
             Context context = getContext();
             if (context == null) {
@@ -46,27 +49,35 @@ public class ResourcesFragment extends BaseFragment {
                 return;
             }
 
-            InputStream is = resolver.openInputStream(result);
+            for (Uri result: uris) {
+                InputStream is = resolver.openInputStream(result);
 
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            byte[] buf = new byte[4096];
-            int n;
-            while ((n = is.read(buf)) != -1) {
-                baos.write(buf, 0, n);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                byte[] buf = new byte[4096];
+                int n;
+                while ((n = is.read(buf)) != -1) {
+                    baos.write(buf, 0, n);
+                }
+                is.close();
+
+                buf = baos.toByteArray();
+                baos.close();
+
+                String scheme = result.getEncodedSchemeSpecificPart();
+                String extension = MimeTypeMap.getFileExtensionFromUrl(scheme);
+
+                Cursor cursor = resolver.query(result, null, null, null, null);
+                int index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                cursor.moveToFirst();
+                String fileName = cursor.getString(index);
+                cursor.close();
+
+                Log.d(TAG, "onBrowsedContent: SCHEME: " + scheme);
+                Log.d(TAG, "onBrowsedContent: EXTENSION: " + extension);
+
+                mAddFilesAdapter.copyFile(buf, fileName);
             }
-            is.close();
-
-            buf = baos.toByteArray();
-            baos.close();
-
-            String scheme = result.getEncodedSchemeSpecificPart();
-            String extension = MimeTypeMap.getFileExtensionFromUrl(scheme);
-
-            Log.d(TAG, "onBrowsedContent: SCHEME: " + scheme);
-            Log.d(TAG, "onBrowsedContent: EXTENSION: " + extension);
-
-            mAddFilesAdapter.copyFile(buf,result.getLastPathSegment());
-
+            mAddFilesAdapter.notifyDataSet();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -94,7 +105,6 @@ public class ResourcesFragment extends BaseFragment {
 
         RecyclerView recyclerView = new RecyclerView(context);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
-
         recyclerView.setAdapter(mAddFilesAdapter);
 
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.RIGHT, ItemTouchHelper.RIGHT) {

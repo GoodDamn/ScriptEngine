@@ -26,14 +26,6 @@ public class ToolsUtilities {
     public static void startFileManager(Activity activity,
                                         String path,
                                         FilesAdapter.OnFileClickListener onFileClickListener) {
-        if (ActivityCompat.checkSelfPermission(activity,
-                Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(activity,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    200);
-            return;
-        }
-
         Dialog dialog = new Dialog(activity);
         dialog.setCancelable(false);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);

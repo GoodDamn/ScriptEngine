@@ -79,7 +79,7 @@ public class AddFilesAdapter extends FilesAdapter {
     }
 
     public void copyFile(byte[] inp, String name) {
-        Utilities.showMessage("COPYING FILE...", mActivity);
+        Utilities.showMessage("COPYING " + name, mActivity);
 
         File resFile = new File(mActivity.getCacheDir()
                 +FileUtils.RES_DIR+"/"+ name.replace(" ","-"));
@@ -92,13 +92,11 @@ public class AddFilesAdapter extends FilesAdapter {
                 Log.d(TAG, "copyFile: " + resFile.getName() + " HAS BEEN CREATED!");
             }
 
-
             fos = new FileOutputStream(resFile);
             fos.write(inp);
             fos.close();
 
             Utilities.showMessage(name + " HAS BEEN COPIED!", mActivity);
-            notifyDataSet();
         } catch (IOException e) {
             e.printStackTrace();
         }
