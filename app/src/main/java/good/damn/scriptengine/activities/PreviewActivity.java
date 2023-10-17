@@ -46,6 +46,7 @@ import good.damn.scriptengine.engines.script.ScriptReader;
 import good.damn.scriptengine.engines.script.interfaces.OnCreateScriptTextViewListener;
 import good.damn.scriptengine.engines.script.interfaces.OnReadCommandListener;
 import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
+import good.damn.scriptengine.engines.script.models.ScriptMusicFile;
 import good.damn.scriptengine.engines.script.models.ScriptTextConfig;
 import good.damn.scriptengine.interfaces.ScriptReaderListener;
 import good.damn.scriptengine.utils.Utilities;
@@ -179,12 +180,35 @@ public class PreviewActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAmbient(ScriptEngine.ResourceFile<MediaPlayer> amb) {
+            public void onAmbient(ScriptEngine.ResourceFile<ScriptMusicFile> amb) {
                 if (mediaPlayerCurrent != null) {
                     mediaPlayerCurrent.stop();
                     mediaPlayerCurrent.release();
                 }
-                mediaPlayerCurrent = amb.resource;
+                ScriptMusicFile m = amb.resource;
+                mediaPlayerCurrent = m.mediaPlayer;
+
+                TextView tt = new TextView(context);
+                tt.setTextColor(0xffffffff);
+                tt.setText(m.titleArtist);
+
+                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(-2,-2);
+                params.gravity = Gravity.CENTER_HORIZONTAL;
+                params.topMargin = (int) (metrics.heightPixels * 0.75f);
+                tt.setLayoutParams(params);
+                tt.setAlpha(0);
+                root_FrameLayout.addView(tt);
+
+                tt.animate()
+                        .alpha(1.0f)
+                        .setDuration(2500)
+                        .withEndAction(()-> tt.animate()
+                                .alpha(0.0f)
+                                .setStartDelay(3500)
+                                .withEndAction(()->root_FrameLayout.removeView(tt))
+                                .start())
+                        .start();
+
                 mediaPlayerCurrent.start();
             }
 

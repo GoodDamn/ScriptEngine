@@ -50,6 +50,7 @@ import good.damn.scriptengine.engines.script.ScriptReader;
 import good.damn.scriptengine.engines.script.interfaces.OnCreateScriptTextViewListener;
 import good.damn.scriptengine.engines.script.interfaces.OnReadCommandListener;
 import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
+import good.damn.scriptengine.engines.script.models.ScriptMusicFile;
 import good.damn.scriptengine.engines.script.models.ScriptTextConfig;
 import good.damn.scriptengine.engines.script.utils.ToolsScriptEngine;
 import good.damn.scriptengine.interfaces.OnClickTextPiece;
@@ -231,7 +232,7 @@ public class PiecesListFragment extends Fragment {
                                     }
 
                                     @Override
-                                    public void onAmbient(ScriptEngine.ResourceFile<MediaPlayer> amb) {
+                                    public void onAmbient(ScriptEngine.ResourceFile<ScriptMusicFile> amb) {
                                         mTempScriptCode += "\namb " + amb.fileName;
                                         Log.d(TAG, "onAmbient: SCRIPT: " + mTempScriptCode);
                                     }

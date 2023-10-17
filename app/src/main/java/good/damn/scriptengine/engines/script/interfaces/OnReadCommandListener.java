@@ -10,6 +10,7 @@ import java.util.List;
 
 import good.damn.scriptengine.engines.script.ScriptEngine;
 import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
+import good.damn.scriptengine.engines.script.models.ScriptMusicFile;
 import good.damn.traceview.models.FileSVC;
 
 public interface OnReadCommandListener {
@@ -22,7 +23,7 @@ public interface OnReadCommandListener {
 
     void onSFX(ScriptEngine.ResourceFile<Byte> sfx, SoundPool soundPool);
 
-    void onAmbient(ScriptEngine.ResourceFile<MediaPlayer> amb);
+    void onAmbient(ScriptEngine.ResourceFile<ScriptMusicFile> amb);
 
     void onError(String errorMsg);
 

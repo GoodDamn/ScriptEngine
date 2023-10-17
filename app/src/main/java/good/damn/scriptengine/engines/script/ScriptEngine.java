@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Movie;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
 import android.net.Uri;
@@ -27,6 +28,7 @@ import java.util.HashMap;
 import good.damn.scriptengine.engines.script.interfaces.OnCreateScriptTextViewListener;
 import good.damn.scriptengine.engines.script.interfaces.OnReadCommandListener;
 import good.damn.scriptengine.engines.script.models.ScriptGraphicsFile;
+import good.damn.scriptengine.engines.script.models.ScriptMusicFile;
 import good.damn.scriptengine.engines.script.models.ScriptResourceFile;
 import good.damn.scriptengine.engines.script.models.ScriptTextConfig;
 import good.damn.scriptengine.engines.script.utils.ScriptCommandsUtils;
@@ -92,7 +94,7 @@ public class ScriptEngine {
                 if (sResFile == null) {
                     return;
                 }
-                mOnReadCommandListener.onAmbient((ScriptEngine.ResourceFile<MediaPlayer>) mResources[sResFile.resID]);
+                mOnReadCommandListener.onAmbient((ScriptEngine.ResourceFile<ScriptMusicFile>) mResources[sResFile.resID]);
             },
             (chunk, currentOffset, argSize, textConfig) -> {
                 ScriptResourceFile sResFile = ScriptDefinerUtils.Vector(chunk,currentOffset);
@@ -195,7 +197,7 @@ public class ScriptEngine {
         mOnCreateScriptTextViewListener.onCreate(textConfig);
     }
 
-    public void loadResources(File skcFile, Context context) {
+    public void loadResources(File skcFile, @NonNull Context context) {
 
         try {
             FileInputStream fis = new FileInputStream(skcFile);
@@ -263,9 +265,19 @@ public class ScriptEngine {
                         sfxID++;
                     } else {
                         type = "amb_";
-                        MediaPlayer player = MediaPlayer.create(context, Uri.fromFile(tempFile));
-                        player.setLooping(true);
-                        resourceFile.resource = player;
+
+                        Uri audioUri = Uri.fromFile(tempFile);
+
+                        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+                        retriever.setDataSource(context, audioUri);
+
+                        ScriptMusicFile musicFile = new ScriptMusicFile();
+                        musicFile.titleArtist = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
+                            + " - " + retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+                        retriever.close();
+                        musicFile.mediaPlayer = MediaPlayer.create(context, audioUri);
+                        musicFile.mediaPlayer.setLooping(true);
+                        resourceFile.resource = musicFile;
                     }
                 } else { // vector content file
                     extension = "svc";
